@@ -74,6 +74,7 @@ export function getAiConfigStatus() {
   const openaiKey = trimEnv("OPENAI_API_KEY");
   const providerRaw = trimEnv("AI_PROVIDER");
   const provider = getAiProviderName();
+  const googleKeyFormatOk = !googleKey || googleKey.startsWith("AIza");
   return {
     assistant: isAiAssistantEnabled(),
     provider,
@@ -81,6 +82,8 @@ export function getAiConfigStatus() {
       aiEnabledFlag: envFlag("AI_ENABLED", true),
       providerEnv: providerRaw || (googleKey ? "(auto: gemini key present)" : ""),
       googleKey: Boolean(googleKey),
+      /** AI Studio keys start with AIza — other shapes usually fail or hang. */
+      googleKeyFormatOk,
       openaiKey: Boolean(openaiKey),
     },
   };
