@@ -5,21 +5,43 @@ import { createClient } from "@/lib/supabase/server";
 import { PROFILE_PUBLIC } from "@/lib/columns";
 import { env } from "@/lib/env";
 import type { ProfilePrivateRow, ProfileRow } from "@/types/database";
+import type { User } from "@supabase/supabase-js";
 
-/** Verified current user (hits Supabase Auth once per request). */
-export const getUser = cache(async () => {
-  if (!env.supabaseUrl || !env.supabaseAnonKey) return null; // not configured yet: behave as logged out
+const AUTH_TIMEOUT_MS = 5_000;
+
+/** Session from cookies only — no Auth API round-trip (safe for layout / public pages). */
+export const getViewer = cache(async (): Promise<User | null> => {
+  if (!env.supabaseUrl || !env.supabaseAnonKey) return null;
   try {
     const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
-    return data.user ?? null;
+    const { data } = await supabase.auth.getSession();
+    return data.session?.user ?? null;
+  } catch {
+    return null;
+  }
+});
+
+async function getVerifiedUser() {
+  const supabase = await createClient();
+  const result = await Promise.race([
+    supabase.auth.getUser(),
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error("auth_timeout")), AUTH_TIMEOUT_MS)),
+  ]);
+  return result.data.user ?? null;
+}
+
+/** Verified current user (Auth API; capped at 5s so pages do not hang ~60s on bad networks). */
+export const getUser = cache(async () => {
+  if (!env.supabaseUrl || !env.supabaseAnonKey) return null;
+  try {
+    return await getVerifiedUser();
   } catch {
     return null;
   }
 });
 
 export const getCurrentProfile = cache(async (): Promise<ProfileRow | null> => {
-  const user = await getUser();
+  const user = await getViewer();
   if (!user) return null;
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select(PROFILE_PUBLIC).eq("id", user.id).maybeSingle();
@@ -27,7 +49,7 @@ export const getCurrentProfile = cache(async (): Promise<ProfileRow | null> => {
 });
 
 export const getPrivateProfile = cache(async (): Promise<ProfilePrivateRow | null> => {
-  const user = await getUser();
+  const user = await getViewer();
   if (!user) return null;
   const supabase = await createClient();
   const { data } = await supabase.from("profile_private").select("*").eq("id", user.id).maybeSingle();

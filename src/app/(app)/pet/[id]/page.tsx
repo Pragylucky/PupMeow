@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangle, ChevronRight, HeartPulse, Lock, Pencil, QrCode, Syringe, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getUser } from "@/lib/auth";
+import { getViewer } from "@/lib/auth";
 import { MINI_PROFILE } from "@/lib/columns";
 import { PhotoGallery } from "@/components/features/upload/lightbox";
 import { PostGrid } from "@/components/features/feed/post-grid";
@@ -35,7 +35,7 @@ export default async function PetPage({ params }: { params: Promise<{ id: string
   const { id } = await params;
   const pet = await load(id);
   if (!pet) notFound();
-  const user = await getUser();
+  const user = await getViewer();
   const isOwner = user?.id === pet.owner_id;
   const age = formatAge(pet.birthday);
   const photos = pet.photo_urls?.length ? pet.photo_urls : pet.photo_url ? [pet.photo_url] : [];

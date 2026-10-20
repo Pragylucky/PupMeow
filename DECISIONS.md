@@ -50,5 +50,5 @@ Everything below was decided without being able to ask. Each is easy to revisit.
 - **Offline**: a small hand-written service worker (`public/sw.js`): network-first for pages with an `/offline` fallback, cache-first for static assets. No PWA library.
 - **PWA icons** are rendered from the logo with `next/og` at `/pwa-icon/*` (no binary assets to maintain).
 - **Admin "hide" on a profile** is a ban (profiles can't be hidden individually).
-- **Legal pages** are plain-English drafts for your review (DPDP Act 2023, IT Rules 2021 grievance officer, no-sales rule, AI disclaimer). Placeholder emails use `@pupmeow.in`.
+- **Legal pages** are plain-English drafts for your review (DPDP Act 2023, IT Rules 2021 grievance officer, no-sales rule, AI disclaimer). Public contact email is `pupmeow.team@gmail.com` (`CONTACT_EMAIL` in `src/lib/constants.ts`).
 - **Mobile audit at 360px** was done by code review (no browser available in the build sandbox): bottom nav, header, grids (2 columns), filters (wrapping), section headers (wrapping) and sheets (full-width) were checked and fixed.

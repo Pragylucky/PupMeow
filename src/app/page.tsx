@@ -8,21 +8,27 @@ import { KaiaAvatar } from "@/components/features/ai/kaia-avatar";
 import { PetArt } from "@/components/brand/pet-art";
 import { Stamp } from "@/components/brand/bits";
 import { buttonClasses } from "@/components/ui/button";
+import { contactMailto } from "@/lib/constants";
 import type { AdoptionRow, LostFoundRow } from "@/types/database";
 
 export const revalidate = 300;
 
 async function getRecent() {
+  const empty = { lost: [] as LostFoundRow[], adopt: [] as AdoptionRow[], reunited: 0 };
   try {
     const supabase = createPublicClient();
-    const [lost, adopt, reunited] = await Promise.all([
+    const queries = Promise.all([
       supabase.from("lost_found").select(LOST_FOUND_COLUMNS).eq("status", "open").eq("is_hidden", false).order("created_at", { ascending: false }).limit(3),
       supabase.from("adoptions").select(ADOPTION_COLUMNS).eq("status", "available").eq("is_hidden", false).order("created_at", { ascending: false }).limit(3),
       supabase.from("lost_found").select("id", { count: "exact", head: true }).eq("status", "reunited"),
     ]);
+    const [lost, adopt, reunited] = await Promise.race([
+      queries,
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 4_000)),
+    ]);
     return { lost: (lost.data ?? []) as LostFoundRow[], adopt: (adopt.data ?? []) as AdoptionRow[], reunited: reunited.count ?? 0 };
   } catch {
-    return { lost: [], adopt: [], reunited: 0 };
+    return empty;
   }
 }
 
@@ -168,7 +174,7 @@ export default async function LandingPage() {
               <h2 id="ngo-h" className="mt-3 text-[2rem] font-bold">For NGOs and rescuers</h2>
               <p className="mt-2 font-semibold text-white/85">List your animals for free, with your organisation&apos;s name on every listing. Adopters reach you on WhatsApp.</p>
             </div>
-            <a href="mailto:ngo@pupmeow.in?subject=Partner%20with%20Pupmeow" className={buttonClasses("white", "lg")}>Partner with us</a>
+            <a href={contactMailto("Partner with Pupmeow")} className={buttonClasses("white", "lg")}>Partner with us</a>
           </div>
         </section>
 

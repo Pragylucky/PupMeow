@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { HandHeart, MapPin, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getPrivateProfile, getUser, getCurrentProfile } from "@/lib/auth";
+import { getPrivateProfile, getViewer, getCurrentProfile } from "@/lib/auth";
 import { getSpeciesPref } from "@/lib/species-server";
 import { speciesIn } from "@/lib/species";
 import { LOST_FOUND_COLUMNS } from "@/lib/columns";
@@ -26,7 +26,7 @@ const SINCE: Record<string, number> = { "1d": 1, "7d": 7, "30d": 30 };
 
 export default async function LostPage({ searchParams }: { searchParams: Promise<{ tab?: string; area?: string; since?: string }> }) {
   const sp = await searchParams;
-  const user = await getUser();
+  const user = await getViewer();
   const tabs = ["lost", "found", "reunited", ...(user ? ["mine"] : [])];
   const tab = tabs.includes(sp.tab ?? "") ? sp.tab! : "lost";
   const species = await getSpeciesPref();

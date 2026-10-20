@@ -56,35 +56,45 @@ export async function updateSession(request: NextRequest) {
   });
 
   // Public listing/share pages don't need Auth API calls — saves Supabase quota on traffic spikes.
-  const needsAuth =
-    isProtectedPath(pathname) || pathname === "/" || pathname === "/login";
-  if (!needsAuth) return response;
-
-  // Validates the JWT with Supabase Auth and refreshes it when needed.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  if (!isProtectedPath(pathname) && pathname !== "/" && pathname !== "/login") {
+    return response;
+  }
 
   const { search } = request.nextUrl;
+
+  // Home + login: read session from cookies only (no Auth API round-trip). Avoids 5–30s hangs when
+  // Supabase is paused, on bad Wi‑Fi, or the project URL/key is wrong.
+  if (pathname === "/" || pathname === "/login") {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
+
+    if (user && pathname === "/login") {
+      const url = request.nextUrl.clone();
+      url.pathname = safeNext(request.nextUrl.searchParams.get("next"));
+      url.search = "";
+      return copyCookies(response, NextResponse.redirect(url));
+    }
+    if (user && pathname === "/") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/home";
+      url.search = "";
+      return copyCookies(response, NextResponse.redirect(url));
+    }
+    return response;
+  }
+
+  // App routes: validate JWT with Supabase (refreshes session when possible), with a hard timeout.
+  const user = await Promise.race([
+    supabase.auth.getUser().then(({ data }) => data.user ?? null),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), 5_000)),
+  ]);
 
   if (!user && isProtectedPath(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = `?next=${encodeURIComponent(pathname + search)}`;
-    return copyCookies(response, NextResponse.redirect(url));
-  }
-
-  if (user && pathname === "/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = safeNext(request.nextUrl.searchParams.get("next"));
-    url.search = "";
-    return copyCookies(response, NextResponse.redirect(url));
-  }
-
-  if (user && pathname === "/") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/home";
-    url.search = "";
     return copyCookies(response, NextResponse.redirect(url));
   }
 

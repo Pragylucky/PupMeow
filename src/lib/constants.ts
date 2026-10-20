@@ -1,6 +1,14 @@
 import type { Species } from "@/types/database";
 
 export const APP_NAME = "Pupmeow";
+/** Team inbox for contact, partners, support, privacy and grievances. */
+export const CONTACT_EMAIL = "pupmeow.team@gmail.com";
+
+export function contactMailto(subject?: string) {
+  const q = subject ? `?subject=${encodeURIComponent(subject)}` : "";
+  return `mailto:${CONTACT_EMAIL}${q}`;
+}
+
 export const DEFAULT_CITY = "Delhi NCR";
 export const CITIES = ["Delhi NCR"] as const;
 export const AI_DAILY_LIMIT = 30;

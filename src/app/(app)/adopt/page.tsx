@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile, getPrivateProfile, getUser } from "@/lib/auth";
+import { getCurrentProfile, getPrivateProfile, getViewer } from "@/lib/auth";
 import { getSpeciesPref } from "@/lib/species-server";
 import { speciesIn } from "@/lib/species";
 import { ADOPTION_COLUMNS } from "@/lib/columns";
@@ -28,7 +28,7 @@ const AGE: Record<string, [number, number]> = { young: [0, 11], adult: [12, 95],
 export default async function AdoptPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
   const species = await getSpeciesPref();
-  const user = await getUser();
+  const user = await getViewer();
   const [profile, priv] = user ? await Promise.all([getCurrentProfile(), getPrivateProfile()]) : [null, null];
   const viewerArea = priv?.home_area ?? profile?.area ?? null;
   const supabase = await createClient();

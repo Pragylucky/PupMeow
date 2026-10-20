@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, HeartHandshake, MapPin, PawPrint, Settings, Shield, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getUser } from "@/lib/auth";
+import { getViewer } from "@/lib/auth";
 import { PROFILE_PUBLIC } from "@/lib/columns";
 import { Avatar } from "@/components/ui/avatar";
 import { ButtonLink } from "@/components/ui/button";
@@ -37,7 +37,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   const { username } = await params;
   const profile = await loadProfile(username);
   if (!profile || !profile.onboarded) notFound();
-  const viewer = await getUser();
+  const viewer = await getViewer();
   const supabase = await createClient();
   const isMe = viewer?.id === profile.id;
 
