@@ -3,7 +3,7 @@ import { OnlyAt } from "@/components/layout/only-at";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Building2, ChevronLeft, MapPin, ShieldAlert } from "lucide-react";
-import { getUser } from "@/lib/auth";
+import { getViewer } from "@/lib/auth";
 import { PhotoGallery } from "@/components/features/upload/lightbox";
 import { ContactButton } from "@/components/features/listings/contact-button";
 import { ShareButtons } from "@/components/features/listings/share-buttons";
@@ -29,7 +29,7 @@ export default async function AdoptionDetailPage({ params }: { params: Promise<{
   const { id } = await params;
   const a = await getAdoption(id);
   if (!a) notFound();
-  const user = await getUser();
+  const user = await getViewer();
   const isOwner = user?.id === a.author_id;
   const adopted = a.status === "adopted";
   const pronoun = a.gender === "female" ? "her" : a.gender === "male" ? "him" : "them";

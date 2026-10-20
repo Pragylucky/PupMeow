@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CONTACT_EMAIL, contactMailto } from "@/lib/constants";
 export const metadata: Metadata = { title: "Terms of Service", description: "The rules for using Pupmeow." };
 
 export default function TermsPage() {
@@ -25,7 +26,7 @@ export default function TermsPage() {
       <p>AI suggestions are not a substitute for a vet. Kaia, our AI helper, gives general information and may be wrong. In an emergency, go to a vet immediately. Features such as &ldquo;Fill with AI&rdquo;, &ldquo;Write it for me&rdquo; and possible lost-pet matches are suggestions you should check. Use is limited to 30 AI messages per day.</p>
 
       <h2>6. Moderation and enforcement</h2>
-      <p>We use automated (AI) and human moderation. We may hide content, limit features or suspend accounts that break these terms or the guidelines. If you think we got it wrong, write to <a href="mailto:support@pupmeow.in">support@pupmeow.in</a>.</p>
+      <p>We use automated (AI) and human moderation. We may hide content, limit features or suspend accounts that break these terms or the guidelines. If you think we got it wrong, write to <a href={contactMailto("Support — Pupmeow")}>{CONTACT_EMAIL}</a>.</p>
 
       <h2>7. Liability</h2>
       <p>Pupmeow is provided &ldquo;as is&rdquo;. To the extent allowed by law, we are not liable for interactions between members, for the outcome of adoptions or matches, or for indirect losses. Nothing here limits rights you have under the Consumer Protection Act, 2019.</p>
@@ -34,7 +35,7 @@ export default function TermsPage() {
       <p>You can delete your account at any time in Settings. We may close accounts that seriously or repeatedly break these terms.</p>
 
       <h2>9. Law and disputes</h2>
-      <p>These terms are governed by the laws of India. Courts in New Delhi have jurisdiction. Grievances: <a href="mailto:grievance@pupmeow.in">grievance@pupmeow.in</a> (we acknowledge within 24 hours and aim to resolve within 15 days, in line with the IT Rules, 2021).</p>
+      <p>These terms are governed by the laws of India. Courts in New Delhi have jurisdiction. Grievances: <a href={contactMailto("Grievance — Pupmeow")}>{CONTACT_EMAIL}</a> (we acknowledge within 24 hours and aim to resolve within 15 days, in line with the IT Rules, 2021).</p>
     </>
   );
 }

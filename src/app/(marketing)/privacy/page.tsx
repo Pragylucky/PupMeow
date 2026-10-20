@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CONTACT_EMAIL, contactMailto } from "@/lib/constants";
+
 export const metadata: Metadata = { title: "Privacy Policy", description: "How Pupmeow collects, uses and protects your personal data under India's DPDP Act 2023." };
 
 export default function PrivacyPage() {
@@ -45,7 +47,7 @@ export default function PrivacyPage() {
         <li><strong>Access:</strong> download all your data as a JSON file from Settings → Your data.</li>
         <li><strong>Correction:</strong> edit your profile, pets and content at any time.</li>
         <li><strong>Erasure:</strong> delete your account from Settings. This permanently removes your profile, pets, posts, listings, chats and uploaded files.</li>
-        <li><strong>Grievance redressal:</strong> contact our Grievance Officer at <a href="mailto:privacy@pupmeow.in">privacy@pupmeow.in</a>. We aim to reply within 7 days. If you&apos;re unhappy with our response you may approach the Data Protection Board of India.</li>
+        <li><strong>Grievance redressal:</strong> contact our Grievance Officer at <a href={contactMailto("Privacy / grievance — Pupmeow")}>{CONTACT_EMAIL}</a>. We aim to reply within 7 days. If you&apos;re unhappy with our response you may approach the Data Protection Board of India.</li>
         <li><strong>Nominee:</strong> you may nominate a person to exercise these rights on your behalf in case of death or incapacity by writing to us.</li>
       </ul>
 
