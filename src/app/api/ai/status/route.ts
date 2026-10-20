@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
 import { generateText } from "ai";
 import { getAiConfigStatus, isAiAssistantEnabled } from "@/lib/ai/config";
-import { userFacingAiError } from "@/lib/ai/errors";
+import { sanitizeAiErrorSnippet, userFacingAiError } from "@/lib/ai/errors";
 import { getGoogleChatModelId, getLanguageModel } from "@/lib/ai/provider";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 /** Public health check: is Kaia configured on this deployment? (no secrets returned) */
 export async function GET(request: Request) {
   const status = getAiConfigStatus();
   const url = new URL(request.url);
-  const body: Record<string, unknown> = { ...status, chatModel: getGoogleChatModelId() };
+  const body: Record<string, unknown> = {
+    ...status,
+    chatModel: getGoogleChatModelId(),
+    deploySha: (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7) || undefined,
+  };
 
   if (url.searchParams.get("live") === "1" && isAiAssistantEnabled()) {
     try {
@@ -26,6 +30,8 @@ export async function GET(request: Request) {
     } catch (err) {
       body.geminiLive = false;
       body.geminiError = userFacingAiError(err);
+      const detail = sanitizeAiErrorSnippet(err);
+      if (detail) body.geminiErrorDetail = detail;
     }
   }
 
