@@ -7,7 +7,7 @@ export const EMBEDDING_DIMENSIONS = 768;
 
 function googleChatModelId() {
   const fromEnv = (process.env.AI_MODEL ?? process.env.GOOGLE_GENERATIVE_AI_MODEL ?? "").trim();
-  return fromEnv || "gemini-3.8-flash";
+  return fromEnv || "gemini-2.5-flash";
 }
 
 /** Chat / vision / structured-output model for the configured provider. */
