@@ -32,7 +32,7 @@ export function RequestCard({ request: r, viewerId }: { request: MatchRequestWit
     toast(res.ok ? res.message ?? "Done" : res.error ?? "Error", res.ok ? "success" : "error");
     router.refresh();
   });
-  const statusTone = r.status === "accepted" ? "bg-primary text-white" : r.status === "declined" ? "bg-surface-2 text-muted" : "bg-secondary text-ink";
+  const statusTone = r.status === "accepted" ? "bg-primary text-on-primary" : r.status === "declined" ? "bg-surface-2 text-muted" : "bg-secondary text-ink";
   const pair = `${r.from_pet?.name ?? "Pet"} & ${r.to_pet?.name ?? "Pet"}`;
 
   return (

@@ -27,12 +27,20 @@ export async function adminSetHidden(targetType: string, targetId: string, hidde
   return { ok: true, message: hidden ? "Content hidden" : "Content restored" };
 }
 
-export async function adminSetBan(userId: string, banned: boolean): Promise<ActionResult> {
+export async function adminSetBan(userId: string, banned: boolean, reason?: string): Promise<ActionResult> {
   const ctx = await adminCtx();
   if ("error" in ctx) return { ok: false, error: ctx.error };
   const id = z.uuid().safeParse(userId);
   if (!id.success) return { ok: false, error: "Invalid user" };
-  const { error } = await ctx.supabase.rpc("admin_set_ban", { p_user_id: id.data, p_banned: banned });
+  if (banned) {
+    const r = (reason ?? "").trim();
+    if (r.length < 3) return { ok: false, error: "Please add a short reason for the ban (for the audit log)." };
+  }
+  const { error } = await ctx.supabase.rpc("admin_set_ban", {
+    p_user_id: id.data,
+    p_banned: banned,
+    p_reason: banned ? reason?.trim() : null,
+  });
   if (error) return { ok: false, error: friendlyError(error) };
   revalidatePath("/admin");
   return { ok: true, message: banned ? "User banned" : "User unbanned" };

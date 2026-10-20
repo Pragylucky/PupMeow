@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicListingCaches } from "@/lib/cache/revalidate-public";
 import { actionContext } from "@/lib/auth";
 import { lostFoundSchema } from "@/lib/validations/listings";
 import { uuidSchema, zodFieldErrors } from "@/lib/validations/common";
@@ -84,6 +85,7 @@ export async function createLostFound(_prev: ActionResult<string> | null, formDa
   }
 
   revalidatePath("/lost");
+  revalidatePublicListingCaches();
   return { ok: true, data: data.id };
 }
 
@@ -107,6 +109,7 @@ export async function setLostFoundStatus(id: string, status: "open" | "reunited"
   if (!count) return { ok: false, error: "Only the person who posted can change this." };
   revalidatePath(`/lost/${pid.data}`);
   revalidatePath("/lost");
+  revalidatePublicListingCaches();
   return { ok: true, message: status === "reunited" ? "Marked as reunited 🎉" : "Reopened" };
 }
 
@@ -119,7 +122,21 @@ export async function deleteLostFound(id: string): Promise<ActionResult> {
   if (error) return { ok: false, error: friendlyError(error) };
   if (!count) return { ok: false, error: "Not found." };
   revalidatePath("/lost");
+  revalidatePublicListingCaches();
   return { ok: true, message: "Report deleted" };
+}
+
+export async function reportLostSighting(lostId: string, message: string): Promise<ActionResult> {
+  const ctx = await actionContext();
+  if ("error" in ctx) return { ok: false, error: ctx.error };
+  const pid = uuidSchema.safeParse(lostId);
+  if (!pid.success) return { ok: false, error: "Invalid id" };
+  const text = message.trim();
+  if (text.length < 8) return { ok: false, error: "Please add where and when you saw the pet." };
+  const { error } = await ctx.supabase.rpc("report_lost_sighting", { p_lost_id: pid.data, p_message: text });
+  if (error) return { ok: false, error: friendlyError(error) };
+  revalidatePath(`/lost/${pid.data}`);
+  return { ok: true, message: "Sighting sent to the owner in Pupmeow." };
 }
 
 export async function getContact(kind: "lost_found" | "adoption", id: string): Promise<ActionResult<{ method: ContactMethod; value: string }>> {

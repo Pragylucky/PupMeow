@@ -22,7 +22,7 @@ interface Preview { title: string; text: string; image?: string; hidden: boolean
 type Report = ReportRow & { reporter: MiniProfile | null; owner: (MiniProfile & { is_banned: boolean; created_at?: string }) | null };
 
 const KIND: Record<ReportTarget, { label: string; tone: string }> = {
-  post: { label: "Feed", tone: "bg-primary text-white" },
+  post: { label: "Feed", tone: "bg-primary text-on-primary" },
   comment: { label: "Comment", tone: "bg-primary-soft text-primary-strong" },
   profile: { label: "User", tone: "bg-ink text-white" },
   lost_found: { label: "Lost", tone: "bg-danger text-white" },
@@ -71,7 +71,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
   const stats: [string, number | undefined, string][] = [
     ["Open reports", counts.open_reports, "bg-danger text-white"], ["Members", counts.users, "bg-surface"], ["Posts", counts.posts, "bg-surface"],
-    ["Lost (open)", counts.lost_open, "bg-surface"], ["Reunited", counts.reunited, "bg-primary text-white"], ["Adopted", counts.adopted, "bg-secondary text-ink"],
+    ["Lost (open)", counts.lost_open, "bg-surface"], ["Reunited", counts.reunited, "bg-primary text-on-primary"], ["Adopted", counts.adopted, "bg-secondary text-ink"],
   ];
 
   return (
@@ -93,7 +93,40 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         ))}
       </dl>
       {tab === "reports" ? <ReportsQueue status={status} type={type} selected={sp.report} supabase={supabase} /> : <UsersPanel q={sp.q ?? ""} supabase={supabase} />}
+      <AuditLog supabase={supabase} />
     </div>
+  );
+}
+
+async function AuditLog({ supabase }: { supabase: Awaited<ReturnType<typeof createClient>> }) {
+  const { data } = await supabase
+    .from("admin_audit_log")
+    .select("id, action, target_type, target_id, details, created_at, admin:profiles!admin_audit_log_admin_id_fkey(username, display_name)")
+    .order("created_at", { ascending: false })
+    .limit(40);
+  const rows = data ?? [];
+  if (!rows.length) return null;
+  return (
+    <section className="rounded-[var(--radius-lg)] bg-surface p-5 shadow-[var(--shadow-card)]">
+      <h2 className="text-xl font-semibold">Audit log</h2>
+      <p className="mt-1 text-sm text-muted">Recent moderator actions (bans, etc.).</p>
+      <ul className="mt-4 divide-y divide-border">
+        {rows.map((row) => {
+          const rawAdmin = row.admin as { username: string | null; display_name: string | null } | { username: string | null; display_name: string | null }[] | null;
+          const admin = Array.isArray(rawAdmin) ? rawAdmin[0] : rawAdmin;
+          return (
+            <li key={row.id} className="py-3 text-sm">
+              <p className="font-bold">
+                {row.action.replace(/_/g, " ")}
+                {admin?.username ? ` · @${admin.username}` : ""}
+                <span className="font-semibold text-muted"> · {sinceLabel(row.created_at)} ago</span>
+              </p>
+              {row.details && <p className="mt-1 text-muted">{row.details}</p>}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 

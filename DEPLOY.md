@@ -68,11 +68,11 @@ git push -u origin main
 **Authentication → URL configuration**
 
 - **Site URL:** `https://pupmeow.in` (your live domain)
-- **Redirect URLs:** `https://pupmeow.in/**` and `https://*.vercel.app/**` (for preview deploys)
+- **Redirect URLs:** `https://pupmeow.in/**` and `https://*-your-vercel-team.vercel.app/**` (preview deploys only — use your Vercel team slug, not `*.vercel.app`)
 
 Keep `http://localhost:3000/**` for local dev.
 
-**Email:** set up **custom SMTP** (Resend, SES, etc.) so magic links work at scale.
+**Auth providers:** enable **Google** only; disable **Email** (magic link / OTP) in Authentication → Providers so sign-in matches the app.
 
 ---
 

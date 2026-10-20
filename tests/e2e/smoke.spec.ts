@@ -2,8 +2,8 @@ import { test, expect } from "@playwright/test";
 
 test("landing page loads", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: /Delhi's pet community/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Join Pupmeow/i })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /Pet neighbours/i })).toBeVisible();
+  await expect(page.locator("#main").getByRole("link", { name: /Join free/i })).toBeVisible();
 });
 
 test("login page loads", async ({ page }) => {
@@ -13,7 +13,8 @@ test("login page loads", async ({ page }) => {
 
 test("public lost & found page renders without login", async ({ page }) => {
   await page.goto("/lost");
-  await expect(page.getByRole("heading", { level: 1, name: /Lost & Found/i })).toBeVisible();
+  await expect(page.locator("main").getByText("LOST & FOUND", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Join free to report/i })).toBeVisible();
   const id = process.env.E2E_LOST_ID;
   if (id) {
     await page.goto(`/lost/${id}`);

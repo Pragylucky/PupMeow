@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicListingCaches } from "@/lib/cache/revalidate-public";
 import { actionContext } from "@/lib/auth";
 import { adoptionSchema } from "@/lib/validations/listings";
 import { uuidSchema, zodFieldErrors } from "@/lib/validations/common";
@@ -39,6 +40,7 @@ export async function createAdoption(_prev: ActionResult<string> | null, formDat
   if (error || !data) return { ok: false, error: friendlyError(error, "Couldn't publish the listing.") };
   if (mod.verdict === "flag") await flagForReview("adoption", data.id, mod);
   revalidatePath("/adopt");
+  revalidatePublicListingCaches();
   return { ok: true, data: data.id };
 }
 
@@ -52,6 +54,7 @@ export async function setAdoptionStatus(id: string, status: "available" | "adopt
   if (!count) return { ok: false, error: "Only the lister can change this." };
   revalidatePath(`/adopt/${pid.data}`);
   revalidatePath("/adopt");
+  revalidatePublicListingCaches();
   return { ok: true, message: status === "adopted" ? "Marked as adopted 💛" : "Listing reopened" };
 }
 
@@ -64,5 +67,6 @@ export async function deleteAdoption(id: string): Promise<ActionResult> {
   if (error) return { ok: false, error: friendlyError(error) };
   if (!count) return { ok: false, error: "Not found." };
   revalidatePath("/adopt");
+  revalidatePublicListingCaches();
   return { ok: true, message: "Listing deleted" };
 }

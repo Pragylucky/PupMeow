@@ -111,7 +111,9 @@ async function warmup() {
 }
 
 async function runHttpPhases() {
-  const phases = [50, 200, 500, PEAK_CONCURRENCY].filter((n, i, arr) => n <= PEAK_CONCURRENCY && (i === 0 || n > arr[i - 1]));
+  const phases = [...new Set([50, 100, 200, 500, PEAK_CONCURRENCY].filter((n) => n <= PEAK_CONCURRENCY))].sort(
+    (a, b) => a - b,
+  );
   const phaseResults: { concurrency: number; summary: ReturnType<typeof summarize> }[] = [];
 
   console.log(`\n[http] BASE_URL=${BASE} peak=${PEAK_CONCURRENCY}`);

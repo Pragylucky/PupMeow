@@ -41,7 +41,7 @@ export const getUser = cache(async () => {
 });
 
 export const getCurrentProfile = cache(async (): Promise<ProfileRow | null> => {
-  const user = await getViewer();
+  const user = await getUser();
   if (!user) return null;
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select(PROFILE_PUBLIC).eq("id", user.id).maybeSingle();
@@ -49,7 +49,7 @@ export const getCurrentProfile = cache(async (): Promise<ProfileRow | null> => {
 });
 
 export const getPrivateProfile = cache(async (): Promise<ProfilePrivateRow | null> => {
-  const user = await getViewer();
+  const user = await getUser();
   if (!user) return null;
   const supabase = await createClient();
   const { data } = await supabase.from("profile_private").select("*").eq("id", user.id).maybeSingle();

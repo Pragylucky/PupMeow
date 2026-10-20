@@ -86,17 +86,17 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
       }
     >
       <div className="space-y-6">
-        <header className="overflow-hidden rounded-[var(--radius-xl)] bg-primary p-5 text-white sm:p-6">
+        <header className="overflow-hidden rounded-[var(--radius-xl)] bg-primary p-5 text-on-primary sm:p-6">
           <div className="flex items-start gap-4">
             <Avatar src={profile.avatar_url} name={displayName(profile)} size="xl" className="ring-4 ring-white/30" />
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <h1 className="truncate text-[2rem] font-semibold leading-tight sm:text-[2.4rem]">{displayName(profile)}</h1>
-                  <p className="font-bold text-white/85">@{profile.username} · {profile.area && !profile.hide_area ? profile.area : profile.city}</p>
+                  <p className="font-bold text-on-primary/85">@{profile.username} · {profile.area && !profile.hide_area ? profile.area : profile.city}</p>
                 </div>
                 {!isMe && viewer && (
-                  <div className="[&_button]:text-white [&_button:hover]:bg-white/15">
+                  <div className="[&_button]:text-on-primary [&_button:hover]:bg-white/15">
                     <ContentMenu targetType="profile" targetId={profile.id} ownerId={profile.id} viewerId={viewer.id} ownerName={displayName(profile)} label="Profile options" />
                   </div>
                 )}
@@ -104,12 +104,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
               {profile.role === "admin" && <span className="mt-2 inline-flex rounded-full bg-white px-2.5 py-1 text-[0.75rem] font-extrabold text-ink">Pupmeow team</span>}
             </div>
           </div>
-          {profile.bio && <p className="mt-4 whitespace-pre-line font-semibold text-white/95">{profile.bio}</p>}
+          {profile.bio && <p className="mt-4 whitespace-pre-line font-semibold text-on-primary/95">{profile.bio}</p>}
           <dl className="mt-5 grid grid-cols-4 gap-2">
             {[["Pets", petList.length], ["Posts", s.posts], ["Followers", s.followers], ["Following", s.following]].map(([k, v]) => (
               <div key={k} className="rounded-[var(--radius-md)] bg-white/15 px-2 py-2.5 text-center">
                 <dd className="font-heading text-[1.6rem] font-semibold leading-none">{compactNumber(Number(v))}</dd>
-                <dt className="mt-1 text-[0.78rem] font-bold text-white/85">{k}</dt>
+                <dt className="mt-1 text-[0.78rem] font-bold text-on-primary/85">{k}</dt>
               </div>
             ))}
           </dl>

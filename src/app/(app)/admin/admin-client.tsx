@@ -6,6 +6,7 @@ import { EyeOff, Eye, Check, Ban, RotateCcw } from "lucide-react";
 import { adminSetHidden, adminSetBan, adminResolveReport } from "@/lib/actions/admin";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 import type { ReportStatus, ReportTarget } from "@/types/database";
 
@@ -56,10 +57,11 @@ export function ReportActions({ reportIds, status, targetType, targetId, hidden,
 export function BanButton({ userId, banned, big }: { userId: string; banned: boolean; big?: boolean }) {
   const { pending, run } = useRun();
   const [confirm, setConfirm] = useState(false);
+  const [reason, setReason] = useState("");
   if (banned) return <Button size={big ? "md" : "sm"} variant="outline" loading={pending} onClick={() => run(() => adminSetBan(userId, false))}>Unban user</Button>;
   return (
     <>
-      <Button size={big ? "md" : "sm"} variant={big ? "danger" : "danger-ghost"} loading={pending} onClick={() => setConfirm(true)}><Ban className="h-4 w-4" aria-hidden /> Ban user</Button>
+      <Button size={big ? "md" : "sm"} variant={big ? "danger" : "danger-ghost"} loading={pending} onClick={() => { setReason(""); setConfirm(true); }}><Ban className="h-4 w-4" aria-hidden /> Ban user</Button>
       <ConfirmDialog
         open={confirm}
         onClose={() => setConfirm(false)}
@@ -68,8 +70,22 @@ export function BanButton({ userId, banned, big }: { userId: string; banned: boo
         description="They won't be able to post, comment or contact anyone. You can unban them later."
         confirmLabel="Ban user"
         loading={pending}
-        onConfirm={() => { setConfirm(false); run(() => adminSetBan(userId, true)); }}
-      />
+        confirmDisabled={reason.trim().length < 3}
+        onConfirm={() => {
+          setConfirm(false);
+          run(() => adminSetBan(userId, true, reason.trim()));
+        }}
+      >
+        <Textarea
+          label="Reason (saved in audit log)"
+          name="ban_reason"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          rows={3}
+          maxLength={500}
+          placeholder="e.g. Repeated adoption scams, fake lost reports…"
+        />
+      </ConfirmDialog>
     </>
   );
 }

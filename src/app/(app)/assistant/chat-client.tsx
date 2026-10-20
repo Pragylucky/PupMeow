@@ -155,7 +155,7 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
           {messages.map((m) => (
             m.role === "user" ? (
               <div key={m.id} className="flex justify-end">
-                <p className="max-w-[85%] whitespace-pre-line rounded-[1.25rem] rounded-br-md bg-primary px-4 py-3 text-white">{m.content}</p>
+                <p className="max-w-[85%] whitespace-pre-line rounded-[1.25rem] rounded-br-md bg-primary px-4 py-3 text-on-primary">{m.content}</p>
               </div>
             ) : (
               <div key={m.id} className="space-y-3">

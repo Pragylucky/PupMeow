@@ -96,7 +96,7 @@ export function NotificationsList({ initial }: { initial: NotificationWithActor[
                             <>
                               <Avatar src={n.actor?.avatar_url} name={displayName(n.actor)} size="md" />
                               <span className={cn("absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-surface",
-                                n.type === "like" ? "bg-danger text-white" : match ? "bg-cat text-white" : "bg-primary text-white")}>
+                                n.type === "like" ? "bg-danger text-white" : match ? "bg-cat text-white" : "bg-primary text-on-primary")}>
                                 <Icon className="h-3 w-3" aria-hidden />
                               </span>
                             </>

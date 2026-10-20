@@ -18,12 +18,12 @@ export default async function OnboardingPage() {
 
   return (
     <main id="main" className="min-h-dvh bg-background">
-      <div className="bg-primary text-white">
+      <div className="bg-primary text-on-primary">
         <div className="mx-auto flex max-w-3xl items-end justify-between gap-4 px-4 pt-6">
           <div className="pb-8">
             <Logo className="[&_span]:text-white [&_svg]:rounded-[9px] [&_svg]:ring-2 [&_svg]:ring-white/80" />
             <h1 className="mt-6 text-[2.3rem] font-bold leading-tight sm:text-[2.8rem]">{first ? `Welcome, ${first}!` : "Welcome to the pack!"}</h1>
-            <p className="mt-1 font-semibold text-white/90">Let&apos;s set up your profile. It takes about a minute, and you can change everything later.</p>
+            <p className="mt-1 font-semibold text-on-primary/90">Let&apos;s set up your profile. It takes about a minute, and you can change everything later.</p>
           </div>
           <div className="hidden items-end sm:flex" aria-hidden>
             <PetArt pet={{ species: "dog", look: "golden" }} className="h-32 w-32" />

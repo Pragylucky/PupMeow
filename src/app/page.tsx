@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CalendarHeart, ChevronDown, HeartHandshake, MapPin, QrCode, ShieldCheck, Syringe, Users } from "lucide-react";
-import { createPublicClient } from "@/lib/supabase/server";
-import { LOST_FOUND_COLUMNS, ADOPTION_COLUMNS } from "@/lib/columns";
+import { getLandingRecentCached } from "@/lib/cache/public-listings";
 import { MarketingHeader, SiteFooter } from "@/components/marketing/site-footer";
 import { LostFoundCard, AdoptionCard } from "@/components/features/listings/listing-cards";
 import { KaiaAvatar } from "@/components/features/ai/kaia-avatar";
@@ -16,17 +15,10 @@ export const revalidate = 300;
 async function getRecent() {
   const empty = { lost: [] as LostFoundRow[], adopt: [] as AdoptionRow[], reunited: 0 };
   try {
-    const supabase = createPublicClient();
-    const queries = Promise.all([
-      supabase.from("lost_found").select(LOST_FOUND_COLUMNS).eq("status", "open").eq("is_hidden", false).order("created_at", { ascending: false }).limit(3),
-      supabase.from("adoptions").select(ADOPTION_COLUMNS).eq("status", "available").eq("is_hidden", false).order("created_at", { ascending: false }).limit(3),
-      supabase.from("lost_found").select("id", { count: "exact", head: true }).eq("status", "reunited"),
+    return await Promise.race([
+      getLandingRecentCached(),
+      new Promise<typeof empty>((_, reject) => setTimeout(() => reject(new Error("timeout")), 4_000)),
     ]);
-    const [lost, adopt, reunited] = await Promise.race([
-      queries,
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 4_000)),
-    ]);
-    return { lost: (lost.data ?? []) as LostFoundRow[], adopt: (adopt.data ?? []) as AdoptionRow[], reunited: reunited.count ?? 0 };
   } catch {
     return empty;
   }
@@ -47,11 +39,11 @@ export default async function LandingPage() {
       <MarketingHeader />
       <main id="main">
         {/* Hero */}
-        <section className="relative overflow-hidden bg-primary text-white">
+        <section className="relative overflow-hidden bg-primary text-on-primary">
           <div className="mx-auto grid max-w-6xl items-end gap-8 px-5 pb-0 pt-12 md:grid-cols-[1.15fr_1fr] md:pt-20 [&>*]:min-w-0">
             <div className="pb-12 md:pb-20">
               <h1 className="text-[2.9rem] font-bold leading-[1.02] tracking-tight text-balance sm:text-[4.2rem]">Pet neighbours, from Dwarka to Noida.</h1>
-              <p className="mt-5 max-w-lg text-[1.1rem] font-semibold text-white/90 text-pretty">
+              <p className="mt-5 max-w-lg text-[1.1rem] font-semibold text-on-primary/90 text-pretty">
                 Lost-pet alerts for your area, free adoption with no prices ever, playdates in your park, and Kaia for everyday pet questions.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
@@ -62,7 +54,7 @@ export default async function LandingPage() {
                 <Link href="/login?next=/lost/new%3Ftype%3Dfound" className="underline decoration-2 underline-offset-4 hover:text-cream">I found a pet →</Link>
                 <Link href="/lost" className="underline decoration-2 underline-offset-4 hover:text-cream">See lost pets near me</Link>
               </div>
-              <p className="mt-7 text-[0.9rem] font-bold text-white/80">Free forever · Your number stays hidden until you choose to share it · No buying or selling animals</p>
+              <p className="mt-7 text-[0.9rem] font-bold text-on-primary/80">Free forever · Your number stays hidden until you choose to share it · No buying or selling animals</p>
             </div>
             <div className="relative flex h-full min-h-48 items-end justify-center overflow-hidden sm:min-h-64" aria-hidden>
               <span className="absolute bottom-0 left-1/2 h-48 w-[110%] -translate-x-1/2 rounded-t-full bg-white/10" />
@@ -121,10 +113,10 @@ export default async function LandingPage() {
             <PetArt pet={{ species: "dog", look: "golden" }} className="absolute -bottom-3 right-3 h-32 w-32" />
             <div className="h-24" />
           </article>
-          <article className="relative overflow-hidden rounded-[var(--radius-xl)] bg-primary p-7 text-white">
+          <article className="relative overflow-hidden rounded-[var(--radius-xl)] bg-primary p-7 text-on-primary">
             <Syringe className="h-8 w-8" aria-hidden />
             <h2 className="mt-3 text-[2rem] font-bold leading-tight">One page for your pet.</h2>
-            <p className="mt-2 max-w-sm font-semibold text-white/90">Vaccines, vet visits and weight in one private place. Reminders go straight into your phone&apos;s calendar.</p>
+            <p className="mt-2 max-w-sm font-semibold text-on-primary/90">Vaccines, vet visits and weight in one private place. Reminders go straight into your phone&apos;s calendar.</p>
             <ul className="mt-4 flex flex-wrap gap-2 text-sm font-extrabold">
               <li className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5"><CalendarHeart className="h-4 w-4" aria-hidden /> Calendar reminders</li>
               <li className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5"><ShieldCheck className="h-4 w-4" aria-hidden /> Private by default</li>
@@ -137,7 +129,7 @@ export default async function LandingPage() {
           <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 md:grid-cols-2">
             <div className="order-2 space-y-3 md:order-1" aria-label="Example chat">
               <div className="flex items-center gap-2"><KaiaAvatar size={44} className="bg-white" /><span className="font-heading text-xl font-semibold">Kaia</span><span className="rounded-full bg-white px-2.5 py-1 text-xs font-extrabold">Example chat</span></div>
-              <p className="ml-auto max-w-xs rounded-[1.25rem] rounded-br-md bg-primary px-4 py-3 font-semibold text-white">Bruno keeps scratching after walks. Ticks?</p>
+              <p className="ml-auto max-w-xs rounded-[1.25rem] rounded-br-md bg-primary px-4 py-3 font-semibold text-on-primary">Bruno keeps scratching after walks. Ticks?</p>
               <p className="max-w-sm rounded-[1.25rem] rounded-bl-md bg-white px-4 py-3 font-semibold">Could be! Check his ears, neck and between the toes after each walk. If you find one, your vet can suggest the right tick treatment.</p>
             </div>
             <div className="order-1 md:order-2">
@@ -154,7 +146,7 @@ export default async function LandingPage() {
           <ol className="mt-8 grid gap-4 sm:grid-cols-3">
             {[
               ["Sign up in seconds", "Continue with Google. No passwords."],
-              ["Add your pets", "A profile for each dog or cat, with birthday and vaccine reminders."],
+              ["Add your pets", "A profile for each dog or cat, with photos and private health records."],
               ["Pick your area", "See nearby posts, lost pets and adoptions first."],
             ].map(([t, d], i) => (
               <li key={t} className="rounded-[var(--radius-xl)] bg-surface p-6 shadow-[var(--shadow-card)]">
