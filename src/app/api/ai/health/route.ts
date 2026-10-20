@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 import { aiGuard, sameOrigin } from "@/lib/ai/guard";
@@ -12,11 +12,11 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 /** Health record helper: suggests upcoming vaccinations from age + history (with vet disclaimer in UI). */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   if (!sameOrigin(req)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const body = z.object({ petId: z.uuid() }).safeParse(await req.json().catch(() => null));
   if (!body.success) return NextResponse.json({ error: "Invalid pet" }, { status: 400 });
-  const g = await aiGuard("health");
+  const g = await aiGuard("health", req);
   if ("error" in g) return g.error;
   const { data: pet } = await g.supabase.from("pets").select("*").eq("id", body.data.petId).eq("owner_id", g.userId).maybeSingle();
   if (!pet) return NextResponse.json({ error: "Pet not found" }, { status: 404 });

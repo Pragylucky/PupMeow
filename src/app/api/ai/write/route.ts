@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { generateText } from "ai";
 import { aiGuard, sameOrigin } from "@/lib/ai/guard";
 import { getLanguageModel } from "@/lib/ai/provider";
@@ -9,11 +9,11 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 /** "Write it for me" drafts. The user always reviews and edits before posting. */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   if (!sameOrigin(req)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const body = writeRequestSchema.safeParse(await req.json().catch(() => null));
   if (!body.success) return NextResponse.json({ error: body.error.issues[0]?.message ?? "Add a few details first" }, { status: 400 });
-  const g = await aiGuard("write");
+  const g = await aiGuard("write", req);
   if ("error" in g) return g.error;
   try {
     const { text } = await generateText({
