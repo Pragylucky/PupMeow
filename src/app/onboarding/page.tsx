@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/auth";
+import { ensureProfileForUser } from "@/lib/auth/ensure-profile";
+import { getCurrentProfile, getViewer } from "@/lib/auth";
 import { Logo } from "@/components/layout/logo";
 import { PetArt } from "@/components/brand/pet-art";
 import { OnboardingForm } from "./onboarding-form";
@@ -8,7 +9,14 @@ import { OnboardingForm } from "./onboarding-form";
 export const metadata: Metadata = { title: "Set up your profile", robots: { index: false } };
 
 export default async function OnboardingPage() {
-  const profile = await getCurrentProfile();
+  let profile = await getCurrentProfile();
+  if (!profile) {
+    const viewer = await getViewer();
+    if (viewer) {
+      await ensureProfileForUser(viewer);
+      profile = await getCurrentProfile();
+    }
+  }
   if (!profile) redirect("/login?next=/onboarding");
   if (profile.is_banned) redirect("/suspended");
   if (profile.onboarded) redirect("/home");
