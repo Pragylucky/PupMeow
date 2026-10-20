@@ -65,12 +65,9 @@ export function isAiAssistantEnabled(): boolean {
   return isAiEnabled() && envFlag("AI_ENABLED", true);
 }
 
-/** Nav, home tile, and FAB — stay visible when AI is configured but the key still needs fixing. */
+/** Nav, home tile, and FAB — always on unless AI_ENABLED=false (chat APIs still use isAiAssistantEnabled). */
 export function isKaiaListedInApp(): boolean {
-  if (!envFlag("AI_ENABLED", true)) return false;
-  const provider = normalizeProviderName(process.env.AI_PROVIDER ?? "");
-  if (provider === "google" || provider === "openai") return true;
-  return Boolean(resolveGoogleGenerativeAiKey()) || Boolean(trimEnv("OPENAI_API_KEY"));
+  return envFlag("AI_ENABLED", true);
 }
 
 /** LLM moderation on posts/comments (heuristics always run). Off saves an API call per write. */
