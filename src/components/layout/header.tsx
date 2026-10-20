@@ -54,7 +54,8 @@ export function Header({ profile, unread }: { profile: ProfileRow | null; unread
               <NotificationBell userId={profile.id} initialUnread={unread} />
               <DropdownMenu
                 label="Account menu"
-                trigger={<Avatar src={profile.avatar_url} name={profile.display_name ?? profile.username} size="sm" />}
+                triggerClassName="inline-flex h-11 w-11 items-center justify-center rounded-full ring-2 ring-border bg-surface-2 hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                trigger={<Avatar src={profile.avatar_url} name={profile.display_name ?? profile.username} size="md" ring />}
                 items={[
                   { label: "My profile", href: profile.username ? `/u/${profile.username}` : "/settings", icon: <User className="h-4 w-4" /> },
                   { label: "My pets", href: "/pets", icon: <PawPrint className="h-4 w-4" /> },

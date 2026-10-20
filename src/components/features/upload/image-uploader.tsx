@@ -154,16 +154,20 @@ export function ImageUploader({
   const accept = allowPdf ? "image/*,.heic,.heif,application/pdf" : "image/*,.heic,.heif";
   const full = items.length >= max;
   const doneValues = items.filter((i) => i.status === "done" && i.value).map((i) => i.value!);
+  const profilePhoto = max === 1 && shape === "circle";
+
+  const openGallery = () => galleryRef.current?.click();
+  const openCamera = () => cameraRef.current?.click();
 
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      <div className="flex items-baseline justify-between">
+    <div className={cn("flex flex-col gap-2", profilePhoto && "items-center text-center", className)}>
+      <div className={cn("flex w-full items-baseline justify-between", profilePhoto && "max-w-sm justify-center")}>
         <span className="text-sm font-bold" id={`${bucket}-uploader-label`}>{label}</span>
         {max > 1 && <span className="text-xs text-muted">{items.length}/{max}</span>}
       </div>
 
       {items.length > 0 && (
-        <ul className={cn("grid gap-2", max === 1 ? "grid-cols-1" : "grid-cols-3 sm:grid-cols-4")} aria-label="Selected files">
+        <ul className={cn("grid gap-2", max === 1 ? "grid-cols-1" : "grid-cols-3 sm:grid-cols-4", profilePhoto && "w-full max-w-sm")} aria-label="Selected files">
           {items.map((it, idx) => (
             <li
               key={it.key}
@@ -173,8 +177,12 @@ export function ImageUploader({
               onDrop={(e) => { e.preventDefault(); if (dragIndex !== null) move(dragIndex, idx); setDragIndex(null); }}
               onDragEnd={() => setDragIndex(null)}
               className={cn(
-                "group relative overflow-hidden border-2 border-border bg-surface-2",
-                shape === "circle" ? "mx-auto aspect-square w-28 rounded-full" : "aspect-square rounded-[var(--radius-md)]",
+                "group relative overflow-hidden border-2 border-border bg-surface-2 shadow-[var(--shadow-card)]",
+                shape === "circle"
+                  ? profilePhoto
+                    ? "mx-auto aspect-square w-36 rounded-full ring-4 ring-primary/15 sm:w-44"
+                    : "mx-auto aspect-square w-28 rounded-full"
+                  : "aspect-square rounded-[var(--radius-md)]",
                 dragIndex === idx && "opacity-50",
               )}
             >
@@ -207,14 +215,28 @@ export function ImageUploader({
                   )}
                 </div>
               )}
-              <button
-                type="button"
-                onClick={() => remove(it.key)}
-                className="absolute right-1 top-1 rounded-full bg-text/75 p-1 text-white hover:bg-text"
-                aria-label={`Remove ${it.name}`}
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
+              {!profilePhoto && (
+                <button
+                  type="button"
+                  onClick={() => remove(it.key)}
+                  className="absolute right-1 top-1 rounded-full bg-text/75 p-1 text-white hover:bg-text"
+                  aria-label={`Remove ${it.name}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+              {profilePhoto && it.status === "done" && (
+                <button
+                  type="button"
+                  onClick={openGallery}
+                  className="absolute inset-0 flex flex-col items-center justify-end bg-gradient-to-t from-text/55 via-transparent to-transparent pb-3 text-xs font-extrabold text-white opacity-100 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+                  aria-label="Change profile photo"
+                >
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-3 py-1.5 text-[0.8rem] text-ink shadow-sm">
+                    <Camera className="h-4 w-4" aria-hidden /> Change
+                  </span>
+                </button>
+              )}
               {max > 1 && it.status === "done" && items.length > 1 && (
                 <div className="absolute inset-x-1 bottom-1 flex justify-between opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                   <button type="button" onClick={() => move(idx, idx - 1)} disabled={idx === 0} className="rounded-full bg-text/75 p-1 text-white disabled:invisible" aria-label="Move earlier">
@@ -231,6 +253,21 @@ export function ImageUploader({
         </ul>
       )}
 
+      {profilePhoto && full && (
+        <div className="flex w-full max-w-sm flex-wrap justify-center gap-2">
+          <button type="button" onClick={openGallery} className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-border bg-surface px-5 py-2.5 text-sm font-bold hover:border-primary">
+            <ImagePlus className="h-4 w-4" aria-hidden /> Change photo
+          </button>
+          <button
+            type="button"
+            onClick={() => items[0] && remove(items[0].key)}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold text-muted hover:bg-surface-2 hover:text-danger"
+          >
+            <X className="h-4 w-4" aria-hidden /> Remove
+          </button>
+        </div>
+      )}
+
       {!full && (
         <div
           onDragOver={(e) => { if (dragIndex === null) { e.preventDefault(); setDragOver(true); } }}
@@ -238,20 +275,31 @@ export function ImageUploader({
           onDrop={(e) => { if (dragIndex !== null) return; e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files); }}
           className={cn(
             "flex flex-col items-center gap-3 rounded-[var(--radius-lg)] border-2 border-dashed px-4 py-5 text-center transition-colors",
+            profilePhoto ? "w-full max-w-sm py-8" : "",
             dragOver ? "border-primary bg-primary-soft" : "border-border bg-surface",
             error && "border-danger",
           )}
         >
-          <p className="hidden text-sm text-muted md:block">Drag photos here, or</p>
+          {profilePhoto && (
+            <span className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-soft text-primary-strong" aria-hidden>
+              <Camera className="h-9 w-9" />
+            </span>
+          )}
+          <p className={cn("text-sm text-muted", profilePhoto && "font-semibold text-text")}>
+            {profilePhoto ? "Add a profile photo" : <span className="hidden md:inline">Drag photos here, or</span>}
+          </p>
           <div className="flex flex-wrap justify-center gap-2">
-            <button type="button" onClick={() => cameraRef.current?.click()} className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-4 py-2 text-sm font-bold text-primary-strong md:hidden">
+            <button type="button" onClick={openCamera} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary-soft px-4 py-2.5 text-sm font-bold text-primary-strong md:hidden">
               <Camera className="h-4 w-4" aria-hidden /> Camera
             </button>
-            <button type="button" onClick={() => galleryRef.current?.click()} className="inline-flex items-center gap-2 rounded-full border-2 border-border px-4 py-2 text-sm font-bold hover:border-primary">
+            <button type="button" onClick={openGallery} className={cn(
+              "inline-flex min-h-11 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold",
+              profilePhoto ? "bg-primary text-on-primary" : "border-2 border-border hover:border-primary",
+            )}>
               <ImagePlus className="h-4 w-4" aria-hidden /> {allowPdf ? "Choose photo or PDF" : max > 1 ? "Choose photos" : "Choose photo"}
             </button>
           </div>
-          {hint && <p className="text-xs text-muted">{hint}</p>}
+          {hint && <p className="max-w-xs text-xs text-muted">{hint}</p>}
           <input
             ref={galleryRef}
             type="file"

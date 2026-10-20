@@ -4,10 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Avatar } from "@/components/ui/avatar";
 import { MOBILE_NAV, isActive } from "./nav-config";
 import { useCreateSheet } from "./create-sheet";
 
-export function BottomNav({ username }: { username: string | null }) {
+export function BottomNav({
+  username,
+  avatarUrl,
+  displayName,
+}: {
+  username: string | null;
+  avatarUrl?: string | null;
+  displayName?: string | null;
+}) {
   const pathname = usePathname();
   const { open } = useCreateSheet();
   return (
@@ -31,6 +40,7 @@ export function BottomNav({ username }: { username: string | null }) {
           }
           const href = item.href === "/me" ? (username ? `/u/${username}` : "/settings") : item.href;
           const active = isActive(pathname, item.href);
+          const isProfileTab = item.href === "/me";
           return (
             <li key={item.href}>
               <Link
@@ -38,8 +48,24 @@ export function BottomNav({ username }: { username: string | null }) {
                 aria-current={active ? "page" : undefined}
                 className={cn("flex flex-col items-center gap-0.5 py-1 text-[0.72rem] font-extrabold", active ? "text-text" : "text-muted")}
               >
-                <span className={cn("flex h-8 w-12 items-center justify-center rounded-full transition-colors", active && "bg-cream text-ink")}>
-                  <item.icon className="h-[1.3rem] w-[1.3rem]" strokeWidth={active ? 2.5 : 2} aria-hidden />
+                <span
+                  className={cn(
+                    "flex h-9 w-12 items-center justify-center rounded-full transition-colors",
+                    active && !isProfileTab && "bg-cream text-ink",
+                    isProfileTab && active && "ring-2 ring-cream",
+                  )}
+                >
+                  {isProfileTab ? (
+                    <Avatar
+                      src={avatarUrl}
+                      name={displayName}
+                      size="sm"
+                      ring={active}
+                      className={cn(!active && "opacity-90")}
+                    />
+                  ) : (
+                    <item.icon className="h-[1.3rem] w-[1.3rem]" strokeWidth={active ? 2.5 : 2} aria-hidden />
+                  )}
                 </span>
                 <span className="truncate">{item.label}</span>
               </Link>
