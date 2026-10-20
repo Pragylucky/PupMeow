@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const body: Record<string, unknown> = { ...status };
 
-  if (url.searchParams.get("live") === "1" && process.env.AI_STATUS_PROBE === "1" && isAiAssistantEnabled()) {
+  if (url.searchParams.get("live") === "1" && isAiAssistantEnabled()) {
     try {
       const { text } = await generateText({
         model: getLanguageModel(),

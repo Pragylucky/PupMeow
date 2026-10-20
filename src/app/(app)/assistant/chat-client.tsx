@@ -73,10 +73,22 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
     setInput("");
     setBusy(true);
     try {
-      const res = await fetch("/api/ai/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ conversationId: convId, petId: petId || null, message }) });
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId: convId, petId: petId || null, message }),
+      });
       if (!res.ok || !res.body) {
-        const j = await res.json().catch(() => ({ error: "Kaia is unavailable right now." }));
-        throw new Error(j.error ?? "Kaia is unavailable right now.");
+        const raw = await res.text().catch(() => "");
+        let message = "Kaia is unavailable right now.";
+        try {
+          const j = JSON.parse(raw) as { error?: string };
+          if (j.error) message = j.error;
+        } catch {
+          if (raw && raw.length < 280 && !raw.includes("<!DOCTYPE")) message = raw;
+        }
+        throw new Error(message);
       }
       const newId = res.headers.get("X-Conversation-Id");
       const left = Number(res.headers.get("X-AI-Remaining"));

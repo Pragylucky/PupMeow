@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { streamText } from "ai";
 import { aiGuard, sameOrigin } from "@/lib/ai/guard";
 import { getLanguageModel } from "@/lib/ai/provider";
@@ -11,12 +11,18 @@ import type { HealthRecordRow, PetRow } from "@/types/database";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   if (!sameOrigin(req)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const body = chatRequestSchema.safeParse(await req.json().catch(() => null));
   if (!body.success) return NextResponse.json({ error: body.error.issues[0]?.message ?? "Invalid message" }, { status: 400 });
 
-  const g = await aiGuard("chat");
+  let g: Awaited<ReturnType<typeof aiGuard>>;
+  try {
+    g = await aiGuard("chat", req);
+  } catch (err) {
+    console.error("[ai/chat] guard", err);
+    return NextResponse.json({ error: "Couldn't start Kaia. Try again in a minute." }, { status: 500 });
+  }
   if ("error" in g) return g.error;
   const { supabase, userId, area, remaining } = g;
   const { message, petId } = body.data;
@@ -47,16 +53,23 @@ export async function POST(req: Request) {
   await supabase.from("ai_messages").insert({ conversation_id: conversationId, user_id: userId, role: "user", content: message });
   const emergency = detectEmergency(message);
 
-  const result = streamText({
-    model: getLanguageModel(),
-    system: assistantSystemPrompt({ petContext, userArea: area }),
-    messages: [
-      ...((history ?? []) as { role: "user" | "assistant"; content: string }[]).reverse(),
-      { role: "user" as const, content: emergency ? `${message}\n\n[This may be an emergency: start with an urgent go-to-vet-now line.]` : message },
-    ],
-    maxOutputTokens: 700,
-    temperature: 0.5,
-  });
+  let result: ReturnType<typeof streamText>;
+  try {
+    result = streamText({
+      model: getLanguageModel(),
+      system: assistantSystemPrompt({ petContext, userArea: area }),
+      messages: [
+        ...((history ?? []) as { role: "user" | "assistant"; content: string }[]).reverse(),
+        { role: "user" as const, content: emergency ? `${message}\n\n[This may be an emergency: start with an urgent go-to-vet-now line.]` : message },
+      ],
+      maxOutputTokens: 700,
+      temperature: 0.5,
+      abortSignal: AbortSignal.timeout(55_000),
+    });
+  } catch (err) {
+    console.error("[ai/chat] streamText", err);
+    return NextResponse.json({ error: userFacingAiError(err) }, { status: 502 });
+  }
 
   const encoder = new TextEncoder();
   const convId: string = conversationId!;
