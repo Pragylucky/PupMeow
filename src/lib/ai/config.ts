@@ -11,19 +11,28 @@ function trimEnv(name: string): string {
   return (process.env[name] ?? "").trim();
 }
 
+function normalizeApiKey(raw: string): string {
+  const t = raw.trim();
+  if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+    return t.slice(1, -1).trim();
+  }
+  return t;
+}
+
 /** @ai-sdk/google reads GOOGLE_GENERATIVE_AI_API_KEY — accept common Vercel / copy-paste names. */
 export function resolveGoogleGenerativeAiKey(): string | undefined {
   const names = ["GOOGLE_GENERATIVE_AI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"] as const;
+  const found: string[] = [];
   for (const name of names) {
-    const value = trimEnv(name);
-    if (value) {
-      if (!trimEnv("GOOGLE_GENERATIVE_AI_API_KEY")) {
-        process.env.GOOGLE_GENERATIVE_AI_API_KEY = value;
-      }
-      return value;
-    }
+    const value = normalizeApiKey(trimEnv(name));
+    if (value) found.push(value);
   }
-  return undefined;
+  if (!found.length) return undefined;
+  const preferred = found.find((k) => k.startsWith("AIza")) ?? found[0];
+  if (!normalizeApiKey(trimEnv("GOOGLE_GENERATIVE_AI_API_KEY"))) {
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY = preferred;
+  }
+  return preferred;
 }
 
 function normalizeProviderName(raw: string): string {
@@ -43,7 +52,12 @@ export function getAiProviderName(): AiProviderName | null {
 }
 
 export function isAiEnabled(): boolean {
-  return getAiProviderName() !== null;
+  const name = getAiProviderName();
+  if (name === "google") {
+    const key = resolveGoogleGenerativeAiKey();
+    if (!key?.startsWith("AIza")) return false;
+  }
+  return name !== null;
 }
 
 /** Kaia chat / vision / write / health — set AI_ENABLED=false to hide without removing keys. */
@@ -78,6 +92,10 @@ export function getAiConfigStatus() {
   return {
     assistant: isAiAssistantEnabled(),
     provider,
+    hint:
+      googleKey && !googleKeyFormatOk
+        ? "Gemini key must come from Google AI Studio and start with AIza (replace the value in Vercel, then redeploy)."
+        : undefined,
     checks: {
       aiEnabledFlag: envFlag("AI_ENABLED", true),
       providerEnv: providerRaw || (googleKey ? "(auto: gemini key present)" : ""),
