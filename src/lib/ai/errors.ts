@@ -1,11 +1,33 @@
-function errorMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  return String(err ?? "");
+export function flattenAiErrorMessage(err: unknown): string {
+  const parts: string[] = [];
+  let cur: unknown = err;
+  for (let depth = 0; depth < 6 && cur; depth++) {
+    if (cur instanceof Error) {
+      if (cur.message) parts.push(cur.message);
+      cur = (cur as Error & { cause?: unknown }).cause;
+    } else {
+      const s = String(cur).trim();
+      if (s) parts.push(s);
+      break;
+    }
+  }
+  const joined = parts.join(" ");
+  const last = joined.match(/Last error:\s*(?:AI_\w+:\s*)?(.+)/i);
+  return (last?.[1] ?? joined).trim();
+}
+
+/** Short ops-safe snippet for status JSON (no API keys). */
+export function sanitizeAiErrorSnippet(err: unknown, max = 280): string {
+  const msg = flattenAiErrorMessage(err)
+    .replace(/\bAIza[\w-]{10,}\b/g, "[key]")
+    .replace(/\bAQ\.[\w.-]{20,}\b/g, "[key]");
+  if (!msg) return "";
+  return msg.length <= max ? msg : `${msg.slice(0, max - 1)}…`;
 }
 
 /** Turn provider / SDK errors into short user-facing copy (no secrets). */
 export function userFacingAiError(err: unknown): string {
-  const msg = errorMessage(err);
+  const msg = flattenAiErrorMessage(err);
   const lower = msg.toLowerCase();
   if (lower.includes("api key not valid") || lower.includes("api_key_invalid")) {
     return "The Gemini API key on the server is invalid. In Vercel, paste your key from Google AI Studio into GOOGLE_GENERATIVE_AI_API_KEY, then redeploy.";
