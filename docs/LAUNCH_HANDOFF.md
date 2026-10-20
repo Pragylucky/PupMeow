@@ -1,7 +1,7 @@
 # Pupmeow — Launch handoff
 
 **Document version:** 20 October 2026  
-**Product:** Pupmeow (pupmeow.in) — Delhi NCR pet community  
+**Product:** Pupmeow ([pupmeow.vercel.app](https://pupmeow.vercel.app)) — Delhi NCR pet community  
 **Team contact:** pupmeow.team@gmail.com  
 **Instagram:** https://www.instagram.com/pupmeow.in  
 
@@ -63,7 +63,7 @@ Pupmeow is a **mobile-friendly website** (installable as a PWA) for **dog and ca
 
 - [ ] **Vercel:** Latest `main` deployed; env vars set (Supabase URL/keys, `NEXT_PUBLIC_SITE_URL`, AI keys if Kaia on).  
 - [ ] **Supabase migration:** Run `supabase/migrations/20261011001500_admin_audit_sightings.sql` (sightings RPC, ban reason, `admin_audit_log`).  
-- [ ] **Supabase Auth:** Google **on**, Email **off**. Site URL `https://pupmeow.in` (+ Vercel preview redirect pattern in `DEPLOY.md`).  
+- [ ] **Supabase Auth:** Google **on**, Email **off**. Site URL `https://pupmeow.vercel.app` (+ Vercel preview redirect pattern in `DEPLOY.md`).  
 - [ ] **Google Cloud:** OAuth consent screen **Published** (or test users while Testing).  
 - [ ] **Admin SQL** (production):
 
@@ -78,7 +78,7 @@ where id = (select id from auth.users where email = 'pupmeow.team@gmail.com');
 
 ### First week (recommended)
 
-- [ ] Load test on Vercel URL: `PEAK_CONCURRENCY=500 BASE_URL=https://your-site.vercel.app npm run load-test`  
+- [ ] Load test on Vercel URL: `PEAK_CONCURRENCY=500 BASE_URL=https://pupmeow.vercel.app npm run load-test`  
 - [ ] Optional Vercel env: `NEXT_PUBLIC_INSTAGRAM_URL=https://www.instagram.com/pupmeow.in` (already default in code).  
 - [ ] Watch Supabase (errors, DB size, Realtime) and Vercel after soft launch.  
 - [ ] Git remote (optional): `git remote set-url origin https://github.com/Pragylucky/PupMeow.git`
@@ -109,7 +109,7 @@ where id = (select id from auth.users where email = 'pupmeow.team@gmail.com');
 1. Sign in on the live site with **Google** as `pupmeow.team@gmail.com`.  
 2. Finish onboarding.  
 3. Run admin SQL above on **production** database.  
-4. Open **https://pupmeow.in/admin** (or avatar → Moderation).
+4. Open **https://pupmeow.vercel.app/admin** (or avatar → Moderation).
 
 ---
 

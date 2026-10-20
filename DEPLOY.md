@@ -53,7 +53,7 @@ git push -u origin main
 | `NEXT_PUBLIC_SUPABASE_URL` | Same Supabase project |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same service role (secret) |
-| `NEXT_PUBLIC_SITE_URL` | `https://pupmeow.in` (or your domain) |
+| `NEXT_PUBLIC_SITE_URL` | `https://pupmeow.vercel.app` (update when you add a custom domain) |
 | `AI_PROVIDER` | `google` (or leave empty if only the Gemini key is set) |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini key from [Google AI Studio](https://aistudio.google.com/apikey) — **exact name** (not `NEXT_PUBLIC_`) |
 | `OPENAI_API_KEY` | If using OpenAI instead |
@@ -63,10 +63,16 @@ git push -u origin main
 1. In Vercel, env vars must be enabled for **Production** (and **Preview** if you test preview URLs).
 2. Do **not** set `AI_ENABLED=false`.
 3. After adding keys, **Redeploy** (env changes do not apply to old deployments).
-4. Open `https://YOUR-DOMAIN/api/ai/status` — should show `"assistant": true`. If not, fix the vars above.
+4. Open `https://pupmeow.vercel.app/api/ai/status` — should show `"assistant": true`. If not, fix the vars above.
 
 5. **Deploy**. Region: **Mumbai (bom1)** if available.
-6. Add **custom domain** in Vercel → point DNS at your registrar.
+6. Add **custom domain** in Vercel when ready → point DNS at your registrar, then update `NEXT_PUBLIC_SITE_URL`, Supabase Auth URLs, Google OAuth origins, and `LIVE_SITE_URL` in `src/lib/constants.ts`.
+
+---
+
+## Canonical URL today
+
+Production host: **https://pupmeow.vercel.app** (until a private domain is connected).
 
 ---
 
@@ -74,8 +80,8 @@ git push -u origin main
 
 **Authentication → URL configuration**
 
-- **Site URL:** `https://pupmeow.in` (your live domain)
-- **Redirect URLs:** `https://pupmeow.in/**` and `https://*-your-vercel-team.vercel.app/**` (preview deploys only — use your Vercel team slug, not `*.vercel.app`)
+- **Site URL:** `https://pupmeow.vercel.app`
+- **Redirect URLs:** `https://pupmeow.vercel.app/**` and `https://*-pragy-luckys-projects.vercel.app/**` (preview deploys; adjust team slug if yours differs)
 
 Keep `http://localhost:3000/**` for local dev.
 
@@ -87,7 +93,7 @@ Keep `http://localhost:3000/**` for local dev.
 
 Google Cloud → your OAuth client:
 
-- **Authorised JavaScript origins:** `https://pupmeow.in` (and `http://localhost:3000` for dev)
+- **Authorised JavaScript origins:** `https://pupmeow.vercel.app` (and `http://localhost:3000` for dev)
 - **Redirect URI:** unchanged — `https://<project-ref>.supabase.co/auth/v1/callback`
 
 Publish the OAuth consent screen before public launch.

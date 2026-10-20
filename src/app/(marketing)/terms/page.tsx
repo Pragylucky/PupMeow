@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CONTACT_EMAIL, contactMailto } from "@/lib/constants";
+import { CONTACT_EMAIL, LIVE_SITE_HOST, contactMailto } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "Terms of Service", description: "The rules for using Pupmeow." };
 
@@ -11,7 +11,7 @@ export default function TermsPage() {
       <p className="updated">Last updated: 20 October 2026 · <strong>Draft for review</strong> (not legal advice — have a lawyer sign off before a big launch.)</p>
       <p>
         Welcome to Pupmeow (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;Pupmeow&rdquo;). By creating an account or using{" "}
-        <Link href="/">pupmeow.in</Link> and related services you agree to these Terms of Service (&ldquo;Terms&rdquo;). If you don&apos;t agree, please don&apos;t use Pupmeow.
+        <Link href="/">{LIVE_SITE_HOST}</Link> and related services you agree to these Terms of Service (&ldquo;Terms&rdquo;). If you don&apos;t agree, please don&apos;t use Pupmeow.
       </p>
 
       <h2>1. Who can use Pupmeow</h2>

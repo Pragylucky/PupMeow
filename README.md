@@ -7,7 +7,7 @@
 
 <div align="center">
 
-<a href="https://pupmeow.in"><img src="./docs/assets/readme-hero.svg" alt="Pupmeow: pet neighbours, from Dwarka to Noida" width="100%" /></a>
+<a href="https://pupmeow.vercel.app"><img src="./docs/assets/readme-hero.svg" alt="Pupmeow: pet neighbours, from Dwarka to Noida" width="100%" /></a>
 
 <br/>
 
@@ -20,18 +20,18 @@ Playdates in your own park. Every vaccine date in one place. And Kaia, a friendl
 
 <br/>
 
-[![Website](https://img.shields.io/website?url=https%3A%2F%2Fpupmeow.in&label=pupmeow.in&style=for-the-badge&color=0e7c72)](https://pupmeow.in)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fpupmeow.vercel.app&label=pupmeow.vercel.app&style=for-the-badge&color=0e7c72)](https://pupmeow.vercel.app)
 [![Instagram @pupmeow.in](https://img.shields.io/badge/Instagram-@pupmeow.in-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/pupmeow.in)
 [![Next.js 15](https://img.shields.io/badge/Next.js-15-1a2233?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-[![Made in Delhi NCR](https://img.shields.io/badge/Made%20in-Delhi%20NCR-f6b21b?style=for-the-badge)](https://pupmeow.in)
+[![Made in Delhi NCR](https://img.shields.io/badge/Made%20in-Delhi%20NCR-f6b21b?style=for-the-badge)](https://pupmeow.vercel.app)
 
 ![good boys](https://img.shields.io/badge/good%20boys-100%25-f6b21b?style=flat-square)
 ![good girls](https://img.shields.io/badge/good%20girls-100%25-7a5af5?style=flat-square)
 ![price of any pet](https://img.shields.io/badge/price%20of%20any%20pet-%E2%82%B90-0e7c72?style=flat-square)
 ![treats](https://img.shields.io/badge/treats-%E2%88%9E-c32f3a?style=flat-square)
 
-**[🌐 Open Pupmeow](https://pupmeow.in)** &nbsp;·&nbsp; **[🚨 Lost pets](https://pupmeow.in/lost)** &nbsp;·&nbsp; **[💛 Adopt](https://pupmeow.in/adopt)** &nbsp;·&nbsp; **[✉️ Say hi](mailto:pupmeow.team@gmail.com)**
+**[🌐 Open Pupmeow](https://pupmeow.vercel.app)** &nbsp;·&nbsp; **[🚨 Lost pets](https://pupmeow.vercel.app/lost)** &nbsp;·&nbsp; **[💛 Adopt](https://pupmeow.vercel.app/adopt)** &nbsp;·&nbsp; **[✉️ Say hi](mailto:pupmeow.team@gmail.com)**
 
 <br/>
 
@@ -157,7 +157,7 @@ Then run the SQL files in `supabase/migrations/` **in filename order** (Supabase
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key (row-level security protects the data) |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Secret.** Server only, never in the browser |
-| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` or `https://pupmeow.in` |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` or `https://pupmeow.vercel.app` |
 | `NEXT_PUBLIC_INSTAGRAM_URL` | Optional; defaults to [instagram.com/pupmeow.in](https://www.instagram.com/pupmeow.in) (header & footer in the app) |
 | `AI_PROVIDER` | `google` or `openai`. Leave empty to hide Kaia |
 | `GOOGLE_GENERATIVE_AI_API_KEY` / `OPENAI_API_KEY` | Only when AI is on |
@@ -172,7 +172,7 @@ Then run the SQL files in `supabase/migrations/` **in filename order** (Supabase
 <br/>
 
 1. **Supabase → Authentication → Providers:** **Google on**, **Email off** (matches the app).
-2. **URL configuration:** Site URL `https://pupmeow.in` (or `http://localhost:3000` locally). Redirect URLs: `http://localhost:3000/**`, `https://pupmeow.in/**`.
+2. **URL configuration:** Site URL `https://pupmeow.vercel.app` (or `http://localhost:3000` locally). Redirect URLs: `http://localhost:3000/**`, `https://pupmeow.vercel.app/**`.
 3. **Google Cloud:** web OAuth client → redirect `https://<project-ref>.supabase.co/auth/v1/callback` → paste client ID/secret into Supabase → Google. **Publish** the consent screen before public launch.
 
 </details>
@@ -181,6 +181,8 @@ Then run the SQL files in `supabase/migrations/` **in filename order** (Supabase
 <summary><b>☁️ Put it online</b></summary>
 
 <br/>
+
+**Live URL (for now):** [pupmeow.vercel.app](https://pupmeow.vercel.app) — set `NEXT_PUBLIC_SITE_URL` to `https://pupmeow.vercel.app` on Vercel (and in Supabase Auth URLs). When you add a custom domain, update that env var and `LIVE_SITE_URL` in `src/lib/constants.ts`.
 
 Import the repo into **[Vercel](https://vercel.com)**, add the same environment variables, pick the **Mumbai (bom1)** region, and run the migrations on your production database. The full checklist is in **[DEPLOY.md](./DEPLOY.md)**.
 
@@ -270,7 +272,7 @@ Yes.
 
 **No buying or selling animals, ever.**
 
-[Terms](https://pupmeow.in/terms) · [Privacy](https://pupmeow.in/privacy) · [Community rules](https://pupmeow.in/guidelines) · [Instagram](https://www.instagram.com/pupmeow.in)
+[Terms](https://pupmeow.vercel.app/terms) · [Privacy](https://pupmeow.vercel.app/privacy) · [Community rules](https://pupmeow.vercel.app/guidelines) · [Instagram](https://www.instagram.com/pupmeow.in)
 
 <sub>© Pupmeow · Made with 🐾 in Delhi NCR · If you scrolled this far, go give your pet a treat.</sub>
 
