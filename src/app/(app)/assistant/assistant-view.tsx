@@ -25,7 +25,7 @@ export async function AssistantView({ conversationId }: { conversationId: string
           </p>
           {needsKeyFix && (
             <p className="mx-auto mt-4 max-w-md text-sm font-semibold text-ink/70">
-              On Vercel: edit <code className="rounded bg-white/80 px-1">GOOGLE_GENERATIVE_AI_API_KEY</code> → paste an <strong>AIzaSy</strong> key from Google AI Studio → Redeploy.
+              On Vercel: edit <code className="rounded bg-white/80 px-1">GOOGLE_GENERATIVE_AI_API_KEY</code> → paste your key from Google AI Studio (Copy key) → Redeploy.
             </p>
           )}
         </section>

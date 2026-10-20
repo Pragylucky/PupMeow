@@ -28,11 +28,19 @@ export function resolveGoogleGenerativeAiKey(): string | undefined {
     if (value) found.push(value);
   }
   if (!found.length) return undefined;
-  const preferred = found.find((k) => k.startsWith("AIza")) ?? found[0];
+  const preferred = found.find((k) => isValidGoogleGenerativeAiKey(k)) ?? found[0];
   if (!normalizeApiKey(trimEnv("GOOGLE_GENERATIVE_AI_API_KEY"))) {
     process.env.GOOGLE_GENERATIVE_AI_API_KEY = preferred;
   }
   return preferred;
+}
+
+/** Google AI Studio keys: classic `AIza…` or newer `AQ.…` (both from aistudio.google.com). */
+export function isValidGoogleGenerativeAiKey(key: string): boolean {
+  const k = key.trim();
+  if (k.startsWith("AIza") && k.length >= 20) return true;
+  if (k.startsWith("AQ.") && k.length >= 30) return true;
+  return false;
 }
 
 function normalizeProviderName(raw: string): string {
@@ -55,7 +63,7 @@ export function isAiEnabled(): boolean {
   const name = getAiProviderName();
   if (name === "google") {
     const key = resolveGoogleGenerativeAiKey();
-    if (!key?.startsWith("AIza")) return false;
+    if (!key || !isValidGoogleGenerativeAiKey(key)) return false;
   }
   return name !== null;
 }
@@ -87,12 +95,8 @@ export function getAiDailyLimit(): number {
   return Math.min(n, 30);
 }
 
-function geminiKeyFormatHint(key: string): string {
-  if (key.startsWith("AIza")) return "";
-  if (key.startsWith("AQ.")) {
-    return "This looks like a Google Cloud access token (starts with AQ.), not an AI Studio API key. Create a key at https://aistudio.google.com/apikey (starts with AIzaSy), set GOOGLE_GENERATIVE_AI_API_KEY in Vercel, delete wrong GEMINI_API_KEY if any, then Redeploy.";
-  }
-  return "Gemini key must come from Google AI Studio and start with AIzaSy. Replace GOOGLE_GENERATIVE_AI_API_KEY in Vercel (Production), remove duplicate AI env vars with wrong values, then Redeploy.";
+function geminiKeyFormatHint(): string {
+  return "Add a Gemini API key from https://aistudio.google.com/apikey as GOOGLE_GENERATIVE_AI_API_KEY on Vercel (Production), set AI_PROVIDER=google, then Redeploy.";
 }
 
 /** For ops / Vercel debugging — never includes secrets. */
@@ -101,11 +105,11 @@ export function getAiConfigStatus() {
   const openaiKey = trimEnv("OPENAI_API_KEY");
   const providerRaw = trimEnv("AI_PROVIDER");
   const provider = getAiProviderName();
-  const googleKeyFormatOk = Boolean(googleKey?.startsWith("AIza"));
+  const googleKeyFormatOk = Boolean(googleKey && isValidGoogleGenerativeAiKey(googleKey));
   return {
     assistant: isAiAssistantEnabled(),
     provider,
-    hint: googleKey && !googleKeyFormatOk ? geminiKeyFormatHint(googleKey) : undefined,
+    hint: googleKey && !googleKeyFormatOk ? geminiKeyFormatHint() : undefined,
     checks: {
       aiEnabledFlag: envFlag("AI_ENABLED", true),
       providerEnv: providerRaw || (googleKey ? "(auto: gemini key present)" : ""),

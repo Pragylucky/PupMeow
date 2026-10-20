@@ -3,7 +3,7 @@ export function userFacingAiError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err ?? "");
   const lower = msg.toLowerCase();
   if (lower.includes("api key not valid") || lower.includes("api_key_invalid")) {
-    return "The Gemini API key on the server is invalid. In Vercel, use a key from Google AI Studio (starts with AIza) named GOOGLE_GENERATIVE_AI_API_KEY, then redeploy.";
+    return "The Gemini API key on the server is invalid. In Vercel, paste your key from Google AI Studio into GOOGLE_GENERATIVE_AI_API_KEY, then redeploy.";
   }
   if (lower.includes("permission") && lower.includes("api")) {
     return "Gemini API access is blocked for this key. In Google AI Studio, create a new key with no HTTP referrer restriction (server use).";
