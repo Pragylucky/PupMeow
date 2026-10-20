@@ -9,7 +9,6 @@ test("landing page loads", async ({ page }) => {
 test("login page loads", async ({ page }) => {
   await page.goto("/login");
   await expect(page.getByRole("button", { name: /Continue with Google/i })).toBeVisible();
-  await expect(page.getByLabel("Email")).toBeVisible();
 });
 
 test("public lost & found page renders without login", async ({ page }) => {

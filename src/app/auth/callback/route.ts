@@ -3,7 +3,7 @@ import { createRouteHandlerClient, redirectWithSessionCookies } from "@/lib/supa
 import { resolvePostSignInPath } from "@/lib/auth/post-sign-in";
 import { safeNext } from "@/lib/redirect";
 
-const LOGIN_ERROR = "That sign-in link has expired or was opened in a different browser. Enter the 6-digit code from the email instead, or ask for a new one.";
+const LOGIN_ERROR = "That sign-in link has expired or was opened in a different browser. Please try Continue with Google again.";
 
 /** Google OAuth and email magic-link (PKCE) callback. */
 export async function GET(request: NextRequest) {
