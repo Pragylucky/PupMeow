@@ -32,6 +32,13 @@ describe("ai config cost toggles", async () => {
     expect(mod.getAiProviderName()).toBe("google");
   });
 
+  it("accepts new AI Studio keys that start with AQ.", () => {
+    vi.stubEnv("AI_PROVIDER", "google");
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "AQ.TestKeyForUnitTestsOnlyNotARealGeminiKeyAtAll");
+    expect(mod.isAiAssistantEnabled()).toBe(true);
+    expect(mod.getAiConfigStatus().checks.googleKeyFormatOk).toBe(true);
+  });
+
   it("respects AI_MODERATION_LLM=false", () => {
     vi.stubEnv("AI_PROVIDER", "google");
     vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "AIzaSyTestKeyForUnitTestsOnly");
