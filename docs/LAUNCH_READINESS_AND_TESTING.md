@@ -194,6 +194,7 @@ The load script models **50–100 simultaneous HTTP requests**, mostly anonymous
 | Suite | Location | Count / scope |
 |-------|----------|----------------|
 | Unit | `tests/unit/*.test.ts` | Validations, utils, AI config, actions |
+| Coverage report | [TEST_COVERAGE_REPORT.md](./TEST_COVERAGE_REPORT.md) | Full matrix + `npm run test:coverage` |
 | E2E smoke | `tests/e2e/smoke.spec.ts` | Public pages + auth redirect |
 | Load | `scripts/load-test-1000.mts` | HTTP waves 50 → peak |
 | DB load | `scripts/load-test-db-only.mts` | Parallel PostgREST reads |

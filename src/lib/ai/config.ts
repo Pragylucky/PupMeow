@@ -7,10 +7,38 @@ function envFlag(name: string, defaultOn = true): boolean {
   return v === "1" || v === "true" || v === "yes" || v === "on";
 }
 
+function trimEnv(name: string): string {
+  return (process.env[name] ?? "").trim();
+}
+
+/** @ai-sdk/google reads GOOGLE_GENERATIVE_AI_API_KEY — accept common Vercel / copy-paste names. */
+export function resolveGoogleGenerativeAiKey(): string | undefined {
+  const names = ["GOOGLE_GENERATIVE_AI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"] as const;
+  for (const name of names) {
+    const value = trimEnv(name);
+    if (value) {
+      if (!trimEnv("GOOGLE_GENERATIVE_AI_API_KEY")) {
+        process.env.GOOGLE_GENERATIVE_AI_API_KEY = value;
+      }
+      return value;
+    }
+  }
+  return undefined;
+}
+
+function normalizeProviderName(raw: string): string {
+  const p = raw.trim().toLowerCase();
+  if (p === "gemini" || p === "google-gemini" || p === "google_gemini") return "google";
+  return p;
+}
+
 export function getAiProviderName(): AiProviderName | null {
-  const p = (process.env.AI_PROVIDER ?? "").trim().toLowerCase();
-  if (p === "google" && process.env.GOOGLE_GENERATIVE_AI_API_KEY) return "google";
-  if (p === "openai" && process.env.OPENAI_API_KEY) return "openai";
+  const googleKey = resolveGoogleGenerativeAiKey();
+  const configured = normalizeProviderName(process.env.AI_PROVIDER ?? "");
+  const useGoogle = configured === "google" || (!configured && Boolean(googleKey));
+
+  if (useGoogle && googleKey) return "google";
+  if (configured === "openai" && trimEnv("OPENAI_API_KEY")) return "openai";
   return null;
 }
 
@@ -38,4 +66,22 @@ export function getAiDailyLimit(): number {
   const n = Number.parseInt(process.env.AI_DAILY_LIMIT ?? "30", 10);
   if (!Number.isFinite(n) || n < 1) return 30;
   return Math.min(n, 30);
+}
+
+/** For ops / Vercel debugging — never includes secrets. */
+export function getAiConfigStatus() {
+  const googleKey = resolveGoogleGenerativeAiKey();
+  const openaiKey = trimEnv("OPENAI_API_KEY");
+  const providerRaw = trimEnv("AI_PROVIDER");
+  const provider = getAiProviderName();
+  return {
+    assistant: isAiAssistantEnabled(),
+    provider,
+    checks: {
+      aiEnabledFlag: envFlag("AI_ENABLED", true),
+      providerEnv: providerRaw || (googleKey ? "(auto: gemini key present)" : ""),
+      googleKey: Boolean(googleKey),
+      openaiKey: Boolean(openaiKey),
+    },
+  };
 }

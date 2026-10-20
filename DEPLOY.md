@@ -54,12 +54,19 @@ git push -u origin main
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same service role (secret) |
 | `NEXT_PUBLIC_SITE_URL` | `https://pupmeow.in` (or your domain) |
-| `AI_PROVIDER` | `google` or `openai` (optional) |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | If using Gemini (optional) |
-| `OPENAI_API_KEY` | If using OpenAI (optional) |
+| `AI_PROVIDER` | `google` (or leave empty if only the Gemini key is set) |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini key from [Google AI Studio](https://aistudio.google.com/apikey) — **exact name** (not `NEXT_PUBLIC_`) |
+| `OPENAI_API_KEY` | If using OpenAI instead |
 
-4. **Deploy**. Region: **Mumbai (bom1)** if available.
-5. Add **custom domain** in Vercel → point DNS at your registrar.
+**Kaia still says “coming soon”?**
+
+1. In Vercel, env vars must be enabled for **Production** (and **Preview** if you test preview URLs).
+2. Do **not** set `AI_ENABLED=false`.
+3. After adding keys, **Redeploy** (env changes do not apply to old deployments).
+4. Open `https://YOUR-DOMAIN/api/ai/status` — should show `"assistant": true`. If not, fix the vars above.
+
+5. **Deploy**. Region: **Mumbai (bom1)** if available.
+6. Add **custom domain** in Vercel → point DNS at your registrar.
 
 ---
 

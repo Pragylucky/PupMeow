@@ -14,7 +14,22 @@ describe("ai config cost toggles", async () => {
   it("treats missing AI keys as disabled", () => {
     vi.stubEnv("AI_PROVIDER", "google");
     vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
+    vi.stubEnv("GEMINI_API_KEY", "");
     expect(mod.isAiEnabled()).toBe(false);
+  });
+
+  it("enables google when only GEMINI_API_KEY is set", () => {
+    vi.stubEnv("AI_PROVIDER", "");
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
+    vi.stubEnv("GEMINI_API_KEY", "test-key");
+    expect(mod.isAiEnabled()).toBe(true);
+    expect(mod.getAiProviderName()).toBe("google");
+  });
+
+  it("accepts AI_PROVIDER=gemini", () => {
+    vi.stubEnv("AI_PROVIDER", "gemini");
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "test-key");
+    expect(mod.getAiProviderName()).toBe("google");
   });
 
   it("respects AI_MODERATION_LLM=false", () => {
