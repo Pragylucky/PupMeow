@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-label="Pupmeow  Delhi NCR pet community">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e7c72"/>
+      <stop offset="55%" stop-color="#0a6b63"/>
+      <stop offset="100%" stop-color="#085a53"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" opacity="0.12"/>
+    </pattern>
+    <g id="paw">
+      <ellipse cx="0" cy="8" rx="5" ry="4.2" fill="#fff1cc" opacity="0.85"/>
+      <circle cx="-7" cy="-2" r="3.2" fill="#fff1cc" opacity="0.85"/>
+      <circle cx="-2" cy="-6" r="3.4" fill="#fff1cc" opacity="0.85"/>
+      <circle cx="4" cy="-6" r="3.4" fill="#fff1cc" opacity="0.85"/>
+      <circle cx="9" cy="-2" r="3.2" fill="#fff1cc" opacity="0.85"/>
+    </g>
+    <g id="mark" transform="scale(1.35)">
+      <rect width="120" height="120" rx="30" fill="#0e7c72"/>
+      <path d="M42 39 q-26 -6 -26 30 q1 15 12 13 q10 -18 14 -43 z" fill="#d99a0f"/>
+      <path d="M76 40 l15 -19 l6 29 z" fill="#7a5af5"/>
+      <path d="M60 34 A34 34 0 0 0 60 102 Z" fill="#f6b21b"/>
+      <path d="M60 34 A34 34 0 0 1 60 102 Z" fill="#7a5af5"/>
+      <circle cx="47" cy="64" r="4.5" fill="#1a2233"/>
+      <circle cx="48.5" cy="62.5" r="1.4" fill="#fff"/>
+      <path d="M68 64 q5 -6 10 0" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <path d="M53 76 h14 l-7 8 z" fill="#1a2233"/>
+      <path d="M60 84 v4 m0 0 q-5 5 -10 1 m10 -1 q5 5 10 1" stroke="#1a2233" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M78 80 h12 M78 86 h11" stroke="#ffffffaa" stroke-width="2" stroke-linecap="round"/>
+    </g>
+  </defs>
+
+  <rect width="1200" height="420" rx="28" fill="url(#bg)"/>
+  <rect width="1200" height="420" rx="28" fill="url(#dots)"/>
+  <rect width="1200" height="200" rx="28" fill="url(#shine)"/>
+
+  <!-- floating paws -->
+  <g opacity="0.55">
+    <g transform="translate(120 90) rotate(-18)">
+      <use href="#paw"/>
+      <animateTransform attributeName="transform" type="translate" values="0,0; 8,-12; 0,0" dur="5s" repeatCount="indefinite" additive="sum"/>
+    </g>
+    <g transform="translate(1040 320) rotate(12)">
+      <use href="#paw"/>
+      <animateTransform attributeName="transform" type="translate" values="0,0; -10,-12; 0,0" dur="4.2s" repeatCount="indefinite" additive="sum"/>
+    </g>
+    <g transform="translate(980 70) scale(0.85) rotate(8)">
+      <use href="#paw"/>
+      <animateTransform attributeName="transform" type="translate" values="0,0; 10,12; 0,0" dur="6s" repeatCount="indefinite" additive="sum"/>
+    </g>
+  </g>
+
+  <!-- sparkles -->
+  <g fill="#fff1cc" filter="url(#soft)">
+    <circle cx="200" cy="120" r="3"><animate attributeName="opacity" values="0.2;1;0.2" dur="2.4s" repeatCount="indefinite"/></circle>
+    <circle cx="1010" cy="140" r="2.5"><animate attributeName="opacity" values="0.3;0.9;0.3" dur="3s" repeatCount="indefinite"/></circle>
+    <circle cx="560" cy="60" r="2"><animate attributeName="opacity" values="0.2;0.8;0.2" dur="2.8s" repeatCount="indefinite"/></circle>
+  </g>
+
+  <!-- dog (brown) -->
+  <g transform="translate(200 248) scale(1.05)">
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-12; 0,0" dur="3.4s" repeatCount="indefinite" additive="sum"/>
+    <path d="M39 44 Q18 44 20 71 Q22 83 31 79 Q36 62 42 50 Z" fill="#4a2c17"/>
+    <path d="M81 44 Q102 44 100 71 Q98 83 89 79 Q84 62 78 50 Z" fill="#4a2c17"/>
+    <path d="M33 121 V64 Q33 30 60 30 Q87 30 87 64 V121 Z" fill="#7a4b2a"/>
+    <ellipse cx="60" cy="71" rx="16" ry="12" fill="#efd2a8"/>
+    <circle cx="48.5" cy="56" r="3.6" fill="#1a2233"/><circle cx="49.6" cy="54.8" r="1.2" fill="#fff"/>
+    <circle cx="71.5" cy="56" r="3.6" fill="#1a2233"/><circle cx="72.6" cy="54.8" r="1.2" fill="#fff"/>
+    <ellipse cx="60" cy="65.5" rx="5.6" ry="4.1" fill="#1a2233"/>
+    <path d="M52.5 73 Q60 80 67.5 73" stroke="#1a2233" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="48" cy="119" rx="8" ry="4.4" fill="#fff8e6"/>
+    <ellipse cx="72" cy="119" rx="8" ry="4.4" fill="#fff8e6"/>
+  </g>
+
+  <!-- cat (violet) -->
+  <g transform="translate(920 255) scale(0.92)">
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-12; 0,0" dur="3.8s" repeatCount="indefinite" additive="sum"/>
+    <path d="M36 56 L40 22 L58 40 Z" fill="#7a5af5"/>
+    <path d="M84 56 L80 22 L62 40 Z" fill="#7a5af5"/>
+    <path d="M40.5 44 L42.5 29 L51 38 Z" fill="#f7c6d6"/>
+    <path d="M79.5 44 L77.5 29 L69 38 Z" fill="#f7c6d6"/>
+    <path d="M36 121 V54 Q36 38 52 38 H68 Q84 38 84 54 V121 Z" fill="#7a5af5"/>
+    <path d="M45 60 Q50 55 55 60" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M65 60 Q70 55 75 60" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M56.5 66.5 H63.5 L60 70.5 Z" fill="#f7c6d6"/>
+    <path d="M60 70.5 V72.5 M60 72.5 Q56.5 76 53 73.5 M60 72.5 Q63.5 76 67 73.5" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="49" cy="119" rx="7.5" ry="4.2" fill="#3a3f4b"/>
+    <ellipse cx="71" cy="119" rx="7.5" ry="4.2" fill="#3a3f4b"/>
+  </g>
+
+  <!-- center mark -->
+  <g transform="translate(528 118)">
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="2.8s" repeatCount="indefinite"/>
+      <use href="#mark"/>
+    </g>
+  </g>
+
+  <!-- wordmark -->
+  <text x="600" y="295" text-anchor="middle" font-family="ui-rounded, 'SF Pro Rounded', 'Nunito', system-ui, sans-serif" font-size="72" font-weight="800" fill="#ffffff" letter-spacing="-1">pupmeow</text>
+  <text x="600" y="338" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="22" font-weight="700" fill="#dcf2ef" letter-spacing="0.12em">DELHI NCR · DOGS &amp; CATS · FREE FOREVER</text>
+
+  <!-- pill chips -->
+  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="800">
+    <rect x="318" y="362" width="118" height="34" rx="17" fill="#f6b21b"/>
+    <text x="377" y="384" text-anchor="middle" fill="#2b1d00">Lost &amp; Found</text>
+    <rect x="448" y="362" width="108" height="34" rx="17" fill="#fff1cc"/>
+    <text x="502" y="384" text-anchor="middle" fill="#2b1d00">Adoption</text>
+    <rect x="568" y="362" width="98" height="34" rx="17" fill="#7a5af5"/>
+    <text x="617" y="384" text-anchor="middle" fill="#fff">Playdates</text>
+    <rect x="678" y="362" width="72" height="34" rx="17" fill="#ffffff" opacity="0.95"/>
+    <text x="714" y="384" text-anchor="middle" fill="#0e7c72">Kaia AI</text>
+    <rect x="762" y="362" width="120" height="34" rx="17" fill="#c32f3a"/>
+    <text x="822" y="384" text-anchor="middle" fill="#fff">No sales, ever</text>
+  </g>
+</svg>
