@@ -40,6 +40,8 @@ export function createRouteHandlerClient(request: NextRequest) {
 
 export function redirectWithSessionCookies(from: NextResponse, url: string | URL) {
   const redirect = NextResponse.redirect(url);
-  from.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+  from.cookies.getAll().forEach(({ name, value, ...options }) => {
+    redirect.cookies.set({ name, value, ...options });
+  });
   return redirect;
 }
