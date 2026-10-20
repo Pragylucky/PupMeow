@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.tools/
+package-lock.json
+tsconfig.tsbuildinfo
+*.docx
+src/app/fonts/
+playwright-report/
+test-results/
+coverage/

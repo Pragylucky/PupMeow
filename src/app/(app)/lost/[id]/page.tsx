@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, ExternalLink, MapPin, Printer } from "lucide-react";
 import { getUser } from "@/lib/auth";
-import { isAiEnabled } from "@/lib/ai/config";
+import { isAiLostMatchingEnabled } from "@/lib/ai/config";
 import { PhotoGallery } from "@/components/features/upload/lightbox";
 import { ContactButton } from "@/components/features/listings/contact-button";
 import { ShareButtons } from "@/components/features/listings/share-buttons";
@@ -158,7 +158,7 @@ export default async function LostDetailPage({ params }: { params: Promise<{ id:
           </div>
         </section>
 
-        {user && !reunited && isAiEnabled() && <PossibleMatches id={item.id} type={item.type} />}
+        {user && !reunited && isAiLostMatchingEnabled() && <PossibleMatches id={item.id} type={item.type} />}
 
         {item.author && (
           <div className="flex items-center gap-3 text-sm">

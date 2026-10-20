@@ -7,6 +7,7 @@ import { uuidSchema, zodFieldErrors } from "@/lib/validations/common";
 import { isOwnUpload } from "@/lib/storage-paths";
 import { friendlyError } from "@/lib/utils";
 import { moderateText, blockedMessage, flagForReview } from "@/lib/ai/moderation";
+import { isAiLostMatchingEnabled } from "@/lib/ai/config";
 import { buildLostFoundEmbedding, toPgVector } from "@/lib/ai/embeddings";
 import { createAdminClient, hasServiceRole } from "@/lib/supabase/admin";
 import type { ActionResult } from "@/types/models";
@@ -60,7 +61,7 @@ export async function createLostFound(_prev: ActionResult<string> | null, formDa
   if (mod.verdict === "flag") await flagForReview("lost_found", data.id, mod);
 
   // AI smart matching: embed this post, then notify owners of similar open LOST posts.
-  if (hasServiceRole()) {
+  if (hasServiceRole() && isAiLostMatchingEnabled()) {
     try {
       const emb = await buildLostFoundEmbedding({ species: v.species, breed: v.breed, color: v.color, gender: v.gender, description: v.description, photoUrl: v.photo_urls[0] });
       if (emb) {

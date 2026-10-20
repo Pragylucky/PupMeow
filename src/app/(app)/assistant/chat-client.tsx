@@ -11,7 +11,6 @@ import { useToast } from "@/components/ui/toast";
 import { Markdown } from "@/components/features/ai/markdown";
 import { KaiaAvatar } from "@/components/features/ai/kaia-avatar";
 import { detectEmergency } from "@/lib/ai/emergency";
-import { AI_DAILY_LIMIT } from "@/lib/constants";
 import { cn, timeAgo } from "@/lib/utils";
 import { deleteConversation } from "./actions";
 import type { AiConversationRow, PetRow } from "@/types/database";
@@ -34,8 +33,8 @@ export function withEmergencyFlags(list: Msg[]): Msg[] {
   return list.map((m, i) => (m.role === "assistant" && i > 0 && list[i - 1].role === "user" && detectEmergency(list[i - 1].content) ? { ...m, emergency: true } : m));
 }
 
-export function ChatClient({ conversationId, conversations, initialMessages, pets, initialPetId, remaining: initialRemaining, firstName }: {
-  conversationId: string | null; conversations: AiConversationRow[]; initialMessages: Msg[]; pets: Pick<PetRow, "id" | "name" | "species">[]; initialPetId: string | null; remaining: number; firstName: string;
+export function ChatClient({ conversationId, conversations, initialMessages, pets, initialPetId, dailyLimit, remaining: initialRemaining, firstName }: {
+  conversationId: string | null; conversations: AiConversationRow[]; initialMessages: Msg[]; pets: Pick<PetRow, "id" | "name" | "species">[]; initialPetId: string | null; dailyLimit: number; remaining: number; firstName: string;
 }) {
   const [messages, setMessages] = useState<Msg[]>(withEmergencyFlags(initialMessages));
   const [input, setInput] = useState("");
@@ -202,7 +201,7 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
             />
             <Button type="submit" size="icon" loading={busy} disabled={!input.trim()} aria-label="Send">{!busy && <Send className="h-[1.1rem] w-[1.1rem]" />}</Button>
           </form>
-          <p className="mt-2 text-center text-xs font-semibold text-muted">Kaia is an AI, not a vet. Suggestions aren&apos;t a substitute for a vet · {remaining} of {AI_DAILY_LIMIT} messages left today</p>
+          <p className="mt-2 text-center text-xs font-semibold text-muted">Kaia is an AI, not a vet. Suggestions aren&apos;t a substitute for a vet · {remaining} of {dailyLimit} messages left today</p>
         </div>
       </div>
 

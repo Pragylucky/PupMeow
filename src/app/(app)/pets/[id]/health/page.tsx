@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { isAiEnabled } from "@/lib/ai/config";
+import { isAiAssistantEnabled } from "@/lib/ai/config";
 import { HealthDashboard } from "@/components/features/pets/health-dashboard";
 import { WithRail } from "@/components/layout/page-layout";
 import { Steps, TipCard } from "@/components/brand/bits";
@@ -41,7 +41,7 @@ export default async function HealthPage({ params, searchParams }: { params: Pro
           <p className="text-muted">{[p.breed ?? (p.species === "dog" ? "Dog" : "Cat"), formatAge(p.birthday)].filter(Boolean).join(" · ")}</p>
         </div>
       </div>
-      <HealthDashboard pet={p} records={(records ?? []) as HealthRecordRow[]} userId={profile.id} aiEnabled={isAiEnabled()} disclaimer={AI_DISCLAIMER} initialTab={initialTab} />
+      <HealthDashboard pet={p} records={(records ?? []) as HealthRecordRow[]} userId={profile.id} aiEnabled={isAiAssistantEnabled()} disclaimer={AI_DISCLAIMER} initialTab={initialTab} />
     </WithRail>
   );
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireProfile } from "@/lib/auth";
-import { isAiEnabled } from "@/lib/ai/config";
+import { isAiAssistantEnabled } from "@/lib/ai/config";
 import { FormPage } from "@/components/layout/page-layout";
 import { TipCard } from "@/components/brand/bits";
 import { PetForm } from "@/components/features/pets/pet-form";
@@ -23,7 +23,7 @@ export default async function NewPetPage() {
         </TipCard>
       }
     >
-      <PetForm userId={profile.id} aiEnabled={isAiEnabled()} />
+      <PetForm userId={profile.id} aiEnabled={isAiAssistantEnabled()} />
     </FormPage>
   );
 }

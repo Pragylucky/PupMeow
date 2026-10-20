@@ -20,6 +20,9 @@
 # production
 /build
 
+# local tooling (e.g. downloaded gh binary)
+.tools/
+
 # misc
 .DS_Store
 .claude/
