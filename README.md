@@ -54,7 +54,7 @@ flowchart LR
 |-----|------------|
 | [DEPLOY.md](./DEPLOY.md) | GitHub → Vercel → go live |
 | [docs/LAUNCH_HANDOFF.md](./docs/LAUNCH_HANDOFF.md) | Full launch summary |
-| [docs/Pupmeow-Launch-Handoff.pdf](./docs/Pupmeow-Launch-Handoff.pdf) | Same handoff as PDF |
+| `python3 scripts/generate-launch-handoff-pdf.py` | Local PDF from handoff MD (not in git) |
 | [docs/LAUNCH_READINESS_AND_TESTING.md](./docs/LAUNCH_READINESS_AND_TESTING.md) | Tests, load checks, QA |
 | [docs/STRESS_TEST_1000_FOR_LAUNCH.md](./docs/STRESS_TEST_1000_FOR_LAUNCH.md) | Big-spike expectations |
 | [SECURITY.md](./SECURITY.md) | RLS, contact privacy |
