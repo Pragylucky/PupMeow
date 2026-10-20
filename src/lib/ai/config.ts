@@ -82,27 +82,36 @@ export function getAiDailyLimit(): number {
   return Math.min(n, 30);
 }
 
+function geminiKeyFormatHint(key: string): string {
+  if (key.startsWith("AIza")) return "";
+  if (key.startsWith("AQ.")) {
+    return "This looks like a Google Cloud access token (starts with AQ.), not an AI Studio API key. Create a key at https://aistudio.google.com/apikey (starts with AIzaSy), set GOOGLE_GENERATIVE_AI_API_KEY in Vercel, delete wrong GEMINI_API_KEY if any, then Redeploy.";
+  }
+  return "Gemini key must come from Google AI Studio and start with AIzaSy. Replace GOOGLE_GENERATIVE_AI_API_KEY in Vercel (Production), remove duplicate AI env vars with wrong values, then Redeploy.";
+}
+
 /** For ops / Vercel debugging — never includes secrets. */
 export function getAiConfigStatus() {
   const googleKey = resolveGoogleGenerativeAiKey();
   const openaiKey = trimEnv("OPENAI_API_KEY");
   const providerRaw = trimEnv("AI_PROVIDER");
   const provider = getAiProviderName();
-  const googleKeyFormatOk = !googleKey || googleKey.startsWith("AIza");
+  const googleKeyFormatOk = Boolean(googleKey?.startsWith("AIza"));
   return {
     assistant: isAiAssistantEnabled(),
     provider,
-    hint:
-      googleKey && !googleKeyFormatOk
-        ? "Gemini key must come from Google AI Studio and start with AIza (replace the value in Vercel, then redeploy)."
-        : undefined,
+    hint: googleKey && !googleKeyFormatOk ? geminiKeyFormatHint(googleKey) : undefined,
     checks: {
       aiEnabledFlag: envFlag("AI_ENABLED", true),
       providerEnv: providerRaw || (googleKey ? "(auto: gemini key present)" : ""),
       googleKey: Boolean(googleKey),
-      /** AI Studio keys start with AIza — other shapes usually fail or hang. */
       googleKeyFormatOk,
       openaiKey: Boolean(openaiKey),
+      envVarsPresent: {
+        GOOGLE_GENERATIVE_AI_API_KEY: Boolean(normalizeApiKey(trimEnv("GOOGLE_GENERATIVE_AI_API_KEY"))),
+        GEMINI_API_KEY: Boolean(normalizeApiKey(trimEnv("GEMINI_API_KEY"))),
+        GOOGLE_API_KEY: Boolean(normalizeApiKey(trimEnv("GOOGLE_API_KEY"))),
+      },
     },
   };
 }
