@@ -68,7 +68,7 @@ None of that is “the app exploded and lost data” — it’s **capacity and s
 
 1. **Push code + deploy on Vercel** (not only laptop).  
 2. **Google OAuth** consent screen **Published**.  
-3. Supabase: **Google on**, **Email off**; correct **redirect URLs** for `pupmeow.in`.  
+3. Supabase: **Google on**, **Email off**; correct **redirect URLs** for `pupmeow.vercel.app`.  
 4. Run **SQL migration** `20261011001500_admin_audit_sightings.sql` on production.  
 5. **Admin** for `pupmeow.team@gmail.com` (SQL in DEPLOY.md).  
 6. **15-minute phone test** on live site: sign in, post lost pet, map, safety sheet, WhatsApp, calendar reminder.

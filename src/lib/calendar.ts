@@ -1,3 +1,5 @@
+import { LIVE_SITE_HOST } from "@/lib/constants";
+
 /** Calendar helpers: Google Calendar links and .ics files (Apple Calendar, Outlook, any phone). */
 export interface CalendarEvent {
   title: string;
@@ -36,7 +38,7 @@ function esc(s: string) {
   return s.replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
 }
 
-export function icsContent(e: CalendarEvent, uid = `${Date.now()}@pupmeow.in`) {
+export function icsContent(e: CalendarEvent, uid = `${Date.now()}@${LIVE_SITE_HOST}`) {
   const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Pupmeow//Reminders//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT", `UID:${uid}`, `DTSTAMP:${utcStamp(new Date())}`];
   if (isDateOnly(e.start)) {
     lines.push(`DTSTART;VALUE=DATE:${ymd(e.start)}`, `DTEND;VALUE=DATE:${ymd(nextDay(e.start))}`);

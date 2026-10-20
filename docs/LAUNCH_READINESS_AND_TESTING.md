@@ -213,7 +213,7 @@ npm run test:e2e         # browser smoke (after playwright install)
 npm run load-test        # default peak 1000; set PEAK_CONCURRENCY=100 for launch check
 ```
 
-**Admin URL:** `https://pupmeow.in/admin` (after Google sign-in + `role = admin` in `profiles`).
+**Admin URL:** `https://pupmeow.vercel.app/admin` (after Google sign-in + `role = admin` in `profiles`).
 
 ---
 
