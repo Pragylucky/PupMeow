@@ -19,7 +19,8 @@
     "preflight": "npm run typecheck && npm run lint && npm run build",
     "load-test": "tsx scripts/load-test-1000.mts",
     "load-test:100": "PEAK_CONCURRENCY=100 tsx scripts/load-test-1000.mts",
-    "load-test:db": "tsx scripts/load-test-db-only.mts"
+    "load-test:db": "tsx scripts/load-test-db-only.mts",
+    "readme:hero-gif": "tsx scripts/generate-readme-hero-gif.mts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.93",
@@ -48,6 +49,8 @@
     "dotenv": "^18.0.7",
     "eslint": "^9",
     "eslint-config-next": "15.5.27",
+    "gifenc": "^1.0.3",
+    "pngjs": "^7.0.0",
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",

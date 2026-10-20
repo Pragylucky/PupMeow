@@ -1,6 +1,6 @@
 <div align="center">
 
-[![Pupmeow — animated hero banner](./docs/assets/readme-hero.svg)](https://pupmeow.in)
+[![Pupmeow — animated hero banner](./docs/assets/readme-hero.gif)](https://pupmeow.in)
 
 <img src="./docs/assets/readme-mark.svg" width="72" alt="Pupmeow logo" />
 
@@ -45,7 +45,7 @@ flowchart LR
 | 🆓 | **Always free** — no listings with prices or fees |
 | 🔐 | **Privacy-first contact** — Call / WhatsApp only after sign-in + safety sheet |
 | 📱 | **PWA** — install to home screen, dark mode, offline fallback |
-| 🛡️ | **Moderation** — reports, blocks, `/admin` for the team |
+| 🛡️ | **Moderation** — report & block; community guidelines enforced |
 
 <details>
 <summary><strong>📚 Docs & handoff</strong></summary>
@@ -93,7 +93,7 @@ flowchart LR
 - Optional AI assistant (daily cap, emergency banner)
 
 **Safety**
-- Report, block, admin queue + ban audit log
+- Report & block; moderation for harmful content
 
 </td>
 </tr>
@@ -153,7 +153,7 @@ Never commit `.env.local`.
 - **Site URL:** `https://pupmeow.in`
 - **Redirect URLs:** `https://pupmeow.in/**` and preview URLs per [DEPLOY.md](./DEPLOY.md)
 - **Realtime:** `notifications` in `supabase_realtime`
-- **Latest migration:** `20261011001500_admin_audit_sightings.sql`
+- Run all files in `supabase/migrations/` in order on production
 
 </details>
 
@@ -163,20 +163,6 @@ Never commit `.env.local`.
 1. [Google Cloud Console](https://console.cloud.google.com) → consent screen → **Publish** before public launch.
 2. Web client → origins: `http://localhost:3000`, `https://pupmeow.in` · redirect: Supabase callback.
 3. Client ID + secret → Supabase → Authentication → Google.
-
-</details>
-
-<details>
-<summary><strong>👑 Admin</strong></summary>
-
-After Google sign-in:
-
-```sql
-update public.profiles set role = 'admin'
-where id = (select id from auth.users where email = 'you@example.com');
-```
-
-Open **`/admin`**. Role lives in `profiles.role`, not the Supabase dashboard.
 
 </details>
 
@@ -208,6 +194,7 @@ Open **`/admin`**. Role lives in `profiles.role`, not the Supabase dashboard.
 | `npm run load-test:100` | 50 + 100 concurrent HTTP |
 | `npm run seed` / `npm run remove-seed` | Demo data / wipe `@seed.pupmeow.test` |
 | `python3 scripts/generate-launch-handoff-pdf.py` | Regenerate launch PDF |
+| `npx tsx scripts/generate-readme-hero-gif.mts` | Regenerate README hero GIF |
 
 ---
 
@@ -218,7 +205,6 @@ Open **`/admin`**. Role lives in `profiles.role`, not the Supabase dashboard.
 - [ ] Lost post → share → safety sheet → WhatsApp
 - [ ] Second account: “I saw” → owner notification
 - [ ] Pet health → **Add to calendar**
-- [ ] `/admin` after SQL + migration
 
 Full checklist → [docs/LAUNCH_READINESS_AND_TESTING.md](./docs/LAUNCH_READINESS_AND_TESTING.md)
 
@@ -227,12 +213,12 @@ Full checklist → [docs/LAUNCH_READINESS_AND_TESTING.md](./docs/LAUNCH_READINES
 ## Project structure
 
 ```
-src/app/              Routes (feed, lost, adopt, match, pets, admin, marketing…)
+src/app/              Routes (feed, lost, adopt, match, pets, marketing…)
 src/components/       UI, features, layout, brand (LogoMark, PetArt, stamps)
 src/lib/              Supabase, actions, AI, cache, validations
 supabase/migrations/  SQL — run in order
 tests/                Vitest + Playwright
-docs/assets/          README hero & logo SVGs (animated)
+docs/assets/          README hero GIF + brand SVGs
 ```
 
 ---

@@ -1,6 +1,6 @@
 # Deploy Pupmeow (GitHub → Vercel)
 
-Do this on your **personal laptop** after login works locally. For a printable checklist, open **Pupmeow-Upload-Guide.docx** in the project root.
+Do this on your **personal laptop** after login works locally.
 
 ---
 
