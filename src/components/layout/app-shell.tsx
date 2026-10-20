@@ -27,7 +27,13 @@ export function AppShell({
           </main>
         </div>
       </div>
-      {profile && <BottomNav username={profile.username} />}
+      {profile && (
+        <BottomNav
+          username={profile.username}
+          avatarUrl={profile.avatar_url}
+          displayName={profile.display_name ?? profile.username}
+        />
+      )}
       {profile && aiEnabled && <AssistantFab />}
     </CreateSheetProvider>
   );
