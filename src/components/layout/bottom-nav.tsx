@@ -1,0 +1,52 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { MOBILE_NAV, isActive } from "./nav-config";
+import { useCreateSheet } from "./create-sheet";
+
+export function BottomNav({ username }: { username: string | null }) {
+  const pathname = usePathname();
+  const { open } = useCreateSheet();
+  return (
+    <nav aria-label="Main" className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 pb-safe backdrop-blur md:hidden">
+      <ul className="mx-auto grid max-w-md grid-cols-5 px-1 pt-1.5">
+        {MOBILE_NAV.map((item) => {
+          if (item.href === "#create") {
+            return (
+              <li key="create" className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={open}
+                  aria-label="Create"
+                  aria-haspopup="dialog"
+                  className="-mt-5 flex h-14 w-14 items-center justify-center rounded-full bg-strong text-on-strong shadow-[var(--shadow-lift)] ring-4 ring-background active:scale-95"
+                >
+                  <Plus className="h-7 w-7" strokeWidth={2.75} />
+                </button>
+              </li>
+            );
+          }
+          const href = item.href === "/me" ? (username ? `/u/${username}` : "/settings") : item.href;
+          const active = isActive(pathname, item.href);
+          return (
+            <li key={item.href}>
+              <Link
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={cn("flex flex-col items-center gap-0.5 py-1 text-[0.72rem] font-extrabold", active ? "text-text" : "text-muted")}
+              >
+                <span className={cn("flex h-8 w-12 items-center justify-center rounded-full transition-colors", active && "bg-cream text-ink")}>
+                  <item.icon className="h-[1.3rem] w-[1.3rem]" strokeWidth={active ? 2.5 : 2} aria-hidden />
+                </span>
+                <span className="truncate">{item.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}

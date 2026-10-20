@@ -1,0 +1,289 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * Pupmeow design tokens.
+ * Section colours: Lost = poster red, Adopt = marigold, Playdates = violet, Care = teal, Kaia = cream.
+ * "strong" is the main action colour: ink in light mode, cream in dark mode.
+ */
+:root {
+  --pm-primary: #0e7c72;
+  --pm-primary-strong: #0a5f57;
+  --pm-primary-soft: #dcf2ef;
+  --pm-on-primary: #ffffff;
+  --pm-secondary: #f6b21b;
+  --pm-secondary-strong: #d99a0f;
+  --pm-secondary-soft: #fff1cc;
+  --pm-on-secondary: #2b1d00;
+  --pm-accent: #e5486a;
+  --pm-accent-soft: #fde4ea;
+  --pm-background: #f5f7fb;
+  --pm-surface: #ffffff;
+  --pm-surface-2: #eef1f7;
+  --pm-border: #e1e6ef;
+  --pm-text: #1a2233;
+  --pm-muted: #566174;
+  --pm-strong: #1a2233;
+  --pm-on-strong: #ffffff;
+  --pm-success: #1f7a45;
+  --pm-success-soft: #dff3e6;
+  --pm-warning: #8a5a00;
+  --pm-warning-soft: #fff1d6;
+  --pm-danger: #c32f3a;
+  --pm-danger-strong: #a3222c;
+  --pm-danger-soft: #fde3e5;
+  --pm-dog: #f6b21b;
+  --pm-dog-ink: #2b1d00;
+  --pm-cat: #7a5af5;
+  --pm-cat-strong: #6243e0;
+  --pm-cat-soft: #ece7ff;
+  --pm-cat-ink: #ffffff;
+  --pm-whatsapp: #25d366;
+  --pm-whatsapp-strong: #1ebe5a;
+  --pm-on-whatsapp: #0b2b17;
+  --pm-cream: #fff1cc;
+  --pm-paper: #fff8e6;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --pm-primary: #2fb3a5;
+    --pm-primary-strong: #5fd0c3;
+    --pm-primary-soft: #12332f;
+    --pm-on-primary: #04201c;
+    --pm-secondary-soft: #3a2c08;
+    --pm-accent: #ff6f8e;
+    --pm-accent-soft: #401a24;
+    --pm-background: #121826;
+    --pm-surface: #1b2334;
+    --pm-surface-2: #242e43;
+    --pm-border: #2e3a52;
+    --pm-text: #edf1f7;
+    --pm-muted: #a7b1c3;
+    --pm-strong: #fff1cc;
+    --pm-on-strong: #1a2233;
+    --pm-success: #4fd18a;
+    --pm-success-soft: #123322;
+    --pm-warning: #f5c157;
+    --pm-warning-soft: #3a2b0c;
+    --pm-danger-soft: #3d1619;
+    --pm-cat-soft: #2a2350;
+    --pm-paper: #2a2414;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --pm-primary: #2fb3a5;
+  --pm-primary-strong: #5fd0c3;
+  --pm-primary-soft: #12332f;
+  --pm-on-primary: #04201c;
+  --pm-secondary-soft: #3a2c08;
+  --pm-accent: #ff6f8e;
+  --pm-accent-soft: #401a24;
+  --pm-background: #121826;
+  --pm-surface: #1b2334;
+  --pm-surface-2: #242e43;
+  --pm-border: #2e3a52;
+  --pm-text: #edf1f7;
+  --pm-muted: #a7b1c3;
+  --pm-strong: #fff1cc;
+  --pm-on-strong: #1a2233;
+  --pm-success: #4fd18a;
+  --pm-success-soft: #123322;
+  --pm-warning: #f5c157;
+  --pm-warning-soft: #3a2b0c;
+  --pm-danger-soft: #3d1619;
+  --pm-cat-soft: #2a2350;
+  --pm-paper: #2a2414;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-primary: var(--pm-primary);
+  --color-primary-strong: var(--pm-primary-strong);
+  --color-primary-soft: var(--pm-primary-soft);
+  --color-on-primary: var(--pm-on-primary);
+  --color-secondary: var(--pm-secondary);
+  --color-secondary-strong: var(--pm-secondary-strong);
+  --color-secondary-soft: var(--pm-secondary-soft);
+  --color-on-secondary: var(--pm-on-secondary);
+  --color-accent: var(--pm-accent);
+  --color-accent-soft: var(--pm-accent-soft);
+  --color-background: var(--pm-background);
+  --color-surface: var(--pm-surface);
+  --color-surface-2: var(--pm-surface-2);
+  --color-border: var(--pm-border);
+  --color-text: var(--pm-text);
+  --color-muted: var(--pm-muted);
+  --color-strong: var(--pm-strong);
+  --color-on-strong: var(--pm-on-strong);
+  --color-success: var(--pm-success);
+  --color-success-soft: var(--pm-success-soft);
+  --color-warning: var(--pm-warning);
+  --color-warning-soft: var(--pm-warning-soft);
+  --color-danger: var(--pm-danger);
+  --color-danger-strong: var(--pm-danger-strong);
+  --color-danger-soft: var(--pm-danger-soft);
+  --color-dog: var(--pm-dog);
+  --color-dog-ink: var(--pm-dog-ink);
+  --color-cat: var(--pm-cat);
+  --color-cat-strong: var(--pm-cat-strong);
+  --color-cat-soft: var(--pm-cat-soft);
+  --color-cat-ink: var(--pm-cat-ink);
+  --color-whatsapp: var(--pm-whatsapp);
+  --color-whatsapp-strong: var(--pm-whatsapp-strong);
+  --color-on-whatsapp: var(--pm-on-whatsapp);
+  --color-cream: var(--pm-cream);
+  --color-paper: var(--pm-paper);
+  --color-ink: #1a2233;
+
+  --font-heading: var(--font-fredoka), "Trebuchet MS", system-ui, sans-serif;
+  --font-sans: var(--font-nunito), system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+
+  --shadow-soft: 0 1px 2px rgb(26 34 51 / 0.05), 0 6px 18px rgb(26 34 51 / 0.06);
+  --shadow-lift: 0 2px 6px rgb(26 34 51 / 0.08), 0 16px 40px rgb(26 34 51 / 0.14);
+  --shadow-card: 0 1px 0 rgb(26 34 51 / 0.04), 0 2px 10px rgb(26 34 51 / 0.05);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    background: var(--pm-background);
+    color: var(--pm-text);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+    line-height: 1.12;
+    letter-spacing: -0.012em;
+    font-weight: 600;
+  }
+  :focus-visible {
+    outline: 3px solid var(--pm-primary);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--pm-secondary-soft);
+    color: var(--pm-text);
+  }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  /* Photocopied-poster dot texture for Lost & Found blocks. */
+  .halftone {
+    background-image: radial-gradient(rgb(255 255 255 / 0.13) 1px, transparent 1.3px);
+    background-size: 7px 7px;
+  }
+  .halftone-dark {
+    background-image: radial-gradient(rgb(26 34 51 / 0.07) 1px, transparent 1.3px);
+    background-size: 7px 7px;
+  }
+  /* A strip of masking tape on the top edge of a card or photo. */
+  .tape {
+    position: relative;
+  }
+  .tape::before {
+    content: "";
+    position: absolute;
+    top: -9px;
+    left: 18px;
+    width: 64px;
+    height: 20px;
+    background: rgb(255 241 204 / 0.85);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+    transform: rotate(-4deg);
+    z-index: 2;
+    pointer-events: none;
+  }
+  .tape-right::before {
+    left: auto;
+    right: 18px;
+    transform: rotate(5deg);
+  }
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+}
+
+@keyframes pm-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+@keyframes pm-shimmer {
+  100% { transform: translateX(100%); }
+}
+@keyframes pm-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes pm-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pm-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pm-confetti {
+  0% { transform: translateY(-10px) rotate(0); opacity: 1; }
+  100% { transform: translateY(140px) rotate(540deg); opacity: 0; }
+}
+@keyframes pm-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-6deg); }
+  75% { transform: rotate(6deg); }
+}
+@keyframes pm-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; color: #000; }
+}
+
+/* Long-form text pages (legal, about) */
+.prose-pm h1 { font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+.prose-pm h2 { font-size: 1.45rem; font-weight: 600; margin-top: 2.25rem; margin-bottom: 0.6rem; }
+.prose-pm p, .prose-pm li { color: var(--pm-text); line-height: 1.75; max-width: 68ch; }
+.prose-pm p + p { margin-top: 0.85rem; }
+.prose-pm ul { list-style: disc; padding-left: 1.25rem; margin-top: 0.5rem; }
+.prose-pm li + li { margin-top: 0.4rem; }
+.prose-pm a { color: var(--pm-primary); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.prose-pm .updated { color: var(--pm-muted); font-size: 0.9rem; }
