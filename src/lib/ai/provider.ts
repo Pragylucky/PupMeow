@@ -5,9 +5,14 @@ import { getAiProviderName } from "./config";
 
 export const EMBEDDING_DIMENSIONS = 768;
 
-function googleChatModelId() {
+/** Default matches Google AI Studio for new API keys (2.x Flash is blocked for new users). */
+export function getGoogleChatModelId(): string {
   const fromEnv = (process.env.AI_MODEL ?? process.env.GOOGLE_GENERATIVE_AI_MODEL ?? "").trim();
-  return fromEnv || "gemini-2.5-flash";
+  return fromEnv || "gemini-3.8-flash";
+}
+
+function googleChatModelId() {
+  return getGoogleChatModelId();
 }
 
 /** Chat / vision / structured-output model for the configured provider. */

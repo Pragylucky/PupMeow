@@ -1,6 +1,11 @@
+function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err ?? "");
+}
+
 /** Turn provider / SDK errors into short user-facing copy (no secrets). */
 export function userFacingAiError(err: unknown): string {
-  const msg = err instanceof Error ? err.message : String(err ?? "");
+  const msg = errorMessage(err);
   const lower = msg.toLowerCase();
   if (lower.includes("api key not valid") || lower.includes("api_key_invalid")) {
     return "The Gemini API key on the server is invalid. In Vercel, paste your key from Google AI Studio into GOOGLE_GENERATIVE_AI_API_KEY, then redeploy.";
@@ -8,12 +13,20 @@ export function userFacingAiError(err: unknown): string {
   if (lower.includes("permission") && lower.includes("api")) {
     return "Gemini API access is blocked for this key. In Google AI Studio, create a new key with no HTTP referrer restriction (server use).";
   }
+  if (lower.includes("no longer available to new users") || lower.includes("use models/gemini-3.8-flash")) {
+    return "This Gemini key must use gemini-3.8-flash (not 2.5 Flash). Remove AI_MODEL on Vercel or set AI_MODEL=gemini-3.8-flash, then redeploy.";
+  }
+  if (lower.includes("quota") || lower.includes("rate limit") || lower.includes("resource_exhausted")) {
+    return "Gemini free-tier limit reached for today. Wait for the reset (see Google AI Studio usage) or enable billing on the key.";
+  }
   if (lower.includes("not found") && lower.includes("model")) {
-    return "The AI model name is outdated on the server. Pull the latest deploy or set AI_MODEL in Vercel.";
+    return "The AI model name is wrong for this key. Use gemini-3.8-flash for new Google AI Studio keys, or set AI_MODEL in Vercel.";
   }
   if (lower.includes("aborted") || lower.includes("timeout")) {
     return "Kaia timed out reaching Google. Try again in a moment, or check your network.";
   }
-  if (msg.length > 0 && msg.length < 200) return msg;
+  const firstLine = msg.split("\n")[0]?.trim() ?? "";
+  if (firstLine.length > 0 && firstLine.length <= 220) return firstLine;
+  if (firstLine.length > 220) return `${firstLine.slice(0, 217)}…`;
   return "Kaia couldn't reach Google right now. Please try again in a moment.";
 }
