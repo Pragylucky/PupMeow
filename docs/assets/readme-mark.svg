@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Pupmeow logo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#12a396"/>
+      <stop offset="100%" stop-color="#0e7c72"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="32" fill="url(#g)"/>
+  <g transform="translate(4 4)">
+    <animateTransform attributeName="transform" type="rotate" values="0 60 60; 3 60 60; 0 60 60; -3 60 60; 0 60 60" dur="4s" repeatCount="indefinite"/>
+    <path d="M42 39 q-26 -6 -26 30 q1 15 12 13 q10 -18 14 -43 z" fill="#d99a0f"/>
+    <path d="M76 40 l15 -19 l6 29 z" fill="#7a5af5"/>
+    <path d="M60 34 A34 34 0 0 0 60 102 Z" fill="#f6b21b"/>
+    <path d="M60 34 A34 34 0 0 1 60 102 Z" fill="#7a5af5"/>
+    <circle cx="47" cy="64" r="4.5" fill="#1a2233"/>
+    <circle cx="48.5" cy="62.5" r="1.4" fill="#fff"/>
+    <path d="M68 64 q5 -6 10 0" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <path d="M53 76 h14 l-7 8 z" fill="#1a2233"/>
+    <path d="M60 84 v4 m0 0 q-5 5 -10 1 m10 -1 q5 5 10 1" stroke="#1a2233" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M78 80 h12 M78 86 h11" stroke="#ffffffaa" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <circle cx="100" cy="28" r="4" fill="#fff1cc" opacity="0.9">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+</svg>
