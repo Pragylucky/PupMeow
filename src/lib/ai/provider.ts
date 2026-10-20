@@ -5,10 +5,15 @@ import { getAiProviderName } from "./config";
 
 export const EMBEDDING_DIMENSIONS = 768;
 
+function googleChatModelId() {
+  const fromEnv = (process.env.AI_MODEL ?? process.env.GOOGLE_GENERATIVE_AI_MODEL ?? "").trim();
+  return fromEnv || "gemini-3.8-flash";
+}
+
 /** Chat / vision / structured-output model for the configured provider. */
 export function getLanguageModel() {
   const provider = getAiProviderName();
-  if (provider === "google") return google("gemini-3.8-flash");
+  if (provider === "google") return google(googleChatModelId());
   if (provider === "openai") return openai("gpt-4o-mini");
   throw new Error("AI is not configured");
 }

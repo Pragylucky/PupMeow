@@ -4,6 +4,7 @@ import { aiGuard, sameOrigin } from "@/lib/ai/guard";
 import { getLanguageModel } from "@/lib/ai/provider";
 import { assistantSystemPrompt, petContextFor } from "@/lib/ai/prompts";
 import { detectEmergency } from "@/lib/ai/emergency";
+import { userFacingAiError } from "@/lib/ai/errors";
 import { chatRequestSchema } from "@/lib/validations/ai";
 import type { HealthRecordRow, PetRow } from "@/types/database";
 
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
         }
       } catch (err) {
         console.error("[ai/chat]", err);
-        const fallback = full ? "" : "Sorry, I couldn't answer just now. Please try again in a moment.";
+        const fallback = full ? "" : userFacingAiError(err);
         full += fallback;
         if (fallback) controller.enqueue(encoder.encode(fallback));
       } finally {

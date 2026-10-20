@@ -12,11 +12,23 @@ export async function aiGuard(kind: Kind) {
   const { data } = await supabase.auth.getUser();
   if (!data.user) return { error: NextResponse.json({ error: "Please sign in." }, { status: 401 }) };
   const { data: profile } = await supabase.from("profiles").select("is_banned, onboarded, area").eq("id", data.user.id).maybeSingle();
-  if (!profile || profile.is_banned || !profile.onboarded) return { error: NextResponse.json({ error: "Your account can't use AI right now." }, { status: 403 }) };
+  if (!profile) return { error: NextResponse.json({ error: "Complete sign-in and try again." }, { status: 403 }) };
+  if (profile.is_banned) return { error: NextResponse.json({ error: "Your account can't use Kaia right now." }, { status: 403 }) };
+  if (!profile.onboarded) return { error: NextResponse.json({ error: "Finish onboarding first, then ask Kaia." }, { status: 403 }) };
   const { data: remaining, error } = await supabase.rpc("consume_ai_message", { p_kind: kind, p_limit: getAiDailyLimit() });
   if (error) {
-    const msg = error.message.includes("RATE_LIMIT:") ? error.message.split("RATE_LIMIT:")[1].trim() : "Couldn't start AI right now.";
-    return { error: NextResponse.json({ error: msg }, { status: error.message.includes("RATE_LIMIT") ? 429 : 500 }) };
+    if (error.message.includes("RATE_LIMIT:")) {
+      const msg = error.message.split("RATE_LIMIT:")[1]?.trim() ?? "Daily Kaia limit reached.";
+      return { error: NextResponse.json({ error: msg }, { status: 429 }) };
+    }
+    console.error("[aiGuard] consume_ai_message", error.message, error.code);
+    const msg =
+      error.message.includes("does not exist") || error.code === "42883"
+        ? "Database is missing AI tables. Run Supabase migrations on this project."
+        : error.message.includes("Sign in")
+          ? error.message
+          : "Couldn't start Kaia. Try again in a minute.";
+    return { error: NextResponse.json({ error: msg }, { status: 500 }) };
   }
   return { supabase, userId: data.user.id, area: profile.area as string | null, remaining: remaining as number };
 }
