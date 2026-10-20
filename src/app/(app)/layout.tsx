@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
-import { isAiAssistantEnabled } from "@/lib/ai/config";
+import { isKaiaListedInApp } from "@/lib/ai/config";
 import { getCurrentProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -21,7 +21,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <AppShell profile={profile} unread={unread} aiEnabled={isAiAssistantEnabled()}>
+    <AppShell profile={profile} unread={unread} aiEnabled={isKaiaListedInApp()}>
       {children}
     </AppShell>
   );
