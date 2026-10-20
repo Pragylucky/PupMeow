@@ -153,7 +153,7 @@ export default async function LandingPage() {
           <h2 id="how" className="text-[2.2rem] font-bold">Three steps to join the pack</h2>
           <ol className="mt-8 grid gap-4 sm:grid-cols-3">
             {[
-              ["Sign up in seconds", "Continue with Google, or get a sign-in code by email. No passwords."],
+              ["Sign up in seconds", "Continue with Google. No passwords."],
               ["Add your pets", "A profile for each dog or cat, with birthday and vaccine reminders."],
               ["Pick your area", "See nearby posts, lost pets and adoptions first."],
             ].map(([t, d], i) => (
