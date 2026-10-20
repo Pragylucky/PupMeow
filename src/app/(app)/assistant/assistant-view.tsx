@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { isAiEnabled } from "@/lib/ai/config";
-import { AI_DAILY_LIMIT, AI_DISCLAIMER } from "@/lib/constants";
+import { getAiDailyLimit, isAiAssistantEnabled } from "@/lib/ai/config";
+import { AI_DISCLAIMER } from "@/lib/constants";
 import { EmptyState } from "@/components/ui/empty-state";
 import { KaiaAvatar } from "@/components/features/ai/kaia-avatar";
 import { ChatClient } from "./chat-client";
@@ -10,7 +10,8 @@ import type { AiConversationRow, AiMessageRow, PetRow } from "@/types/database";
 
 export async function AssistantView({ conversationId }: { conversationId: string | null }) {
   const profile = await requireProfile(conversationId ? `/assistant/${conversationId}` : "/assistant");
-  if (!isAiEnabled()) {
+  const dailyLimit = getAiDailyLimit();
+  if (!isAiAssistantEnabled()) {
     return (
       <div className="mx-auto max-w-2xl">
         <section className="rounded-[var(--radius-xl)] bg-cream p-8 text-center text-ink">
@@ -51,7 +52,8 @@ export async function AssistantView({ conversationId }: { conversationId: string
         initialMessages={messages.map((m) => ({ id: m.id, role: m.role, content: m.content }))}
         pets={(pets ?? []) as Pick<PetRow, "id" | "name" | "species">[]}
         initialPetId={current?.pet_id ?? null}
-        remaining={Math.max(0, AI_DAILY_LIMIT - used)}
+        dailyLimit={dailyLimit}
+        remaining={Math.max(0, dailyLimit - used)}
         firstName={(profile.display_name ?? profile.username ?? "there").split(" ")[0]}
       />
     </div>

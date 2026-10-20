@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireProfile, getPrivateProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { isAiEnabled } from "@/lib/ai/config";
+import { isAiAssistantEnabled } from "@/lib/ai/config";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ButtonLink } from "@/components/ui/button";
 import { FormPage } from "@/components/layout/page-layout";
@@ -34,7 +34,7 @@ export default async function NewMatchPage({ searchParams }: { searchParams: Pro
         </TipCard>
       }
     >
-      <MatchProfileForm userId={profile.id} pets={list} existing={(profiles ?? []) as MatchProfileRow[]} initialPetId={sp.pet} defaultArea={priv?.home_area ?? profile.area ?? ""} aiEnabled={isAiEnabled()} hasWhatsapp={Boolean(priv?.whatsapp)} />
+      <MatchProfileForm userId={profile.id} pets={list} existing={(profiles ?? []) as MatchProfileRow[]} initialPetId={sp.pet} defaultArea={priv?.home_area ?? profile.area ?? ""} aiEnabled={isAiAssistantEnabled()} hasWhatsapp={Boolean(priv?.whatsapp)} />
     </FormPage>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { isAiEnabled } from "@/lib/ai/config";
+import { isAiAssistantEnabled } from "@/lib/ai/config";
 import { FormPage } from "@/components/layout/page-layout";
 import { TipCard } from "@/components/brand/bits";
 import { CreatePostForm } from "./create-post-form";
@@ -28,7 +28,7 @@ export default async function NewPostPage({ searchParams }: { searchParams: Prom
         </TipCard>
       }
     >
-      <CreatePostForm profile={profile} pets={(pets ?? []) as Pick<PetRow, "id" | "name" | "species" | "photo_url">[]} aiEnabled={isAiEnabled()} initialCaption={initialCaption} />
+      <CreatePostForm profile={profile} pets={(pets ?? []) as Pick<PetRow, "id" | "name" | "species" | "photo_url">[]} aiEnabled={isAiAssistantEnabled()} initialCaption={initialCaption} />
     </FormPage>
   );
 }

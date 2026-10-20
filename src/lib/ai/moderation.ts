@@ -1,7 +1,7 @@
 import "server-only";
 import { generateText, Output } from "ai";
 import { getLanguageModel } from "./provider";
-import { isAiEnabled } from "./config";
+import { isAiModerationLlmEnabled } from "./config";
 import { MODERATION_PROMPT } from "./prompts";
 import { moderationResultSchema, type ModerationResult } from "@/lib/validations/ai";
 import { SALE_PATTERN } from "@/lib/validations/listings";
@@ -25,7 +25,7 @@ export function heuristicModeration(text: string, kind: "post" | "comment" | "li
 
 export async function moderateText(text: string, kind: "post" | "comment" | "listing" | "profile"): Promise<ModerationResult> {
   const quick = heuristicModeration(text, kind);
-  if (quick.verdict === "block" || !isAiEnabled() || text.trim().length < 3) return quick;
+  if (quick.verdict === "block" || !isAiModerationLlmEnabled() || text.trim().length < 40) return quick;
   try {
     const { output } = await generateText({
       model: getLanguageModel(),

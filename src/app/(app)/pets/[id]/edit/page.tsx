@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { isAiEnabled } from "@/lib/ai/config";
+import { isAiAssistantEnabled } from "@/lib/ai/config";
 import { FormPage } from "@/components/layout/page-layout";
 import { PetForm } from "@/components/features/pets/pet-form";
 import { DeletePetButton } from "./delete-pet-button";
@@ -25,7 +25,7 @@ export default async function EditPetPage({ params }: { params: Promise<{ id: st
       back={<Link href={`/pet/${pet.id}`} className="inline-flex items-center gap-1 text-sm font-bold text-muted hover:text-text"><ChevronLeft className="h-4 w-4" aria-hidden /> {pet.name}</Link>}
       description={<span className="flex flex-wrap items-center gap-2">Changes show on {pet.name}&apos;s page right away. <DeletePetButton petId={pet.id} name={pet.name} /></span>}
     >
-      <PetForm userId={profile.id} pet={pet} aiEnabled={isAiEnabled()} />
+      <PetForm userId={profile.id} pet={pet} aiEnabled={isAiAssistantEnabled()} />
     </FormPage>
   );
 }

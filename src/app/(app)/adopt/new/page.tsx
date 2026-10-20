@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireProfile, getPrivateProfile } from "@/lib/auth";
-import { isAiEnabled } from "@/lib/ai/config";
+import { isAiAssistantEnabled } from "@/lib/ai/config";
 import { NO_SALES_NOTICE } from "@/lib/constants";
 import { FormPage } from "@/components/layout/page-layout";
 import { Steps, TipCard } from "@/components/brand/bits";
@@ -21,7 +21,7 @@ export default async function NewAdoptionPage() {
         </TipCard>
       }
     >
-      <AdoptionForm userId={profile.id} aiEnabled={isAiEnabled()} defaultArea={priv?.home_area ?? profile.area ?? ""} defaultPhone={priv?.whatsapp ?? ""} />
+      <AdoptionForm userId={profile.id} aiEnabled={isAiAssistantEnabled()} defaultArea={priv?.home_area ?? profile.area ?? ""} defaultPhone={priv?.whatsapp ?? ""} />
     </FormPage>
   );
 }

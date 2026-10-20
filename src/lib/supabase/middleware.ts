@@ -55,6 +55,11 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
+  // Public listing/share pages don't need Auth API calls — saves Supabase quota on traffic spikes.
+  const needsAuth =
+    isProtectedPath(pathname) || pathname === "/" || pathname === "/login";
+  if (!needsAuth) return response;
+
   // Validates the JWT with Supabase Auth and refreshes it when needed.
   const {
     data: { user },

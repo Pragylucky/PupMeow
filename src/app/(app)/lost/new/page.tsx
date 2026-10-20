@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { requireProfile, getPrivateProfile } from "@/lib/auth";
-import { isAiEnabled } from "@/lib/ai/config";
+import { isAiAssistantEnabled } from "@/lib/ai/config";
 import { FormPage } from "@/components/layout/page-layout";
 import { Steps, TipCard } from "@/components/brand/bits";
 import { createClient } from "@/lib/supabase/server";
@@ -39,7 +39,7 @@ export default async function NewLostPage({ searchParams }: { searchParams: Prom
         </>
       }
     >
-      <LostFoundForm userId={profile.id} aiEnabled={isAiEnabled()} defaultType={sp.type === "found" ? "found" : "lost"} defaultArea={priv?.home_area ?? profile.area ?? ""} defaultPhone={priv?.whatsapp ?? ""} prefill={prefill} />
+      <LostFoundForm userId={profile.id} aiEnabled={isAiAssistantEnabled()} defaultType={sp.type === "found" ? "found" : "lost"} defaultArea={priv?.home_area ?? profile.area ?? ""} defaultPhone={priv?.whatsapp ?? ""} prefill={prefill} />
     </FormPage>
   );
 }
