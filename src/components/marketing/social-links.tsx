@@ -1,4 +1,4 @@
-import { Instagram } from "lucide-react";
+import { InstagramIcon } from "@/components/brand/instagram-icon";
 import { cn } from "@/lib/utils";
 import { INSTAGRAM_URL } from "@/lib/constants";
 
@@ -14,7 +14,7 @@ export function InstagramIconLink({ className, iconClassName }: { className?: st
       aria-label="Pupmeow on Instagram"
       title="Pupmeow on Instagram"
     >
-      <Instagram className={cn("h-5 w-5", iconClassName)} aria-hidden />
+      <InstagramIcon className={cn("h-5 w-5", iconClassName)} />
     </a>
   );
 }
