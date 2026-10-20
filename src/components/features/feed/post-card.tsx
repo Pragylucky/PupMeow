@@ -18,7 +18,7 @@ import { RichText } from "./rich-text";
 import type { FeedPost } from "@/types/models";
 
 const TEXT_TONES = [
-  "bg-primary text-white [&_a]:text-cream",
+  "bg-primary text-on-primary [&_a]:text-cream",
   "bg-cat text-white [&_a]:text-cream",
   "bg-cream text-ink [&_a]:text-primary-strong",
   "bg-ink text-white [&_a]:text-secondary",

@@ -140,7 +140,7 @@ function statusFor(r: HealthRecordRow): { label: string; tone: string } {
     if (n <= 14) return { label: dueLabel(r.next_due_date).replace(/^due /, "Due "), tone: "bg-secondary text-ink" };
     return { label: "Planned", tone: "bg-cat-soft text-text" };
   }
-  return { label: "Done", tone: "bg-primary text-white" };
+  return { label: "Done", tone: "bg-primary text-on-primary" };
 }
 
 function OpenDocument({ path }: { path: string }) {

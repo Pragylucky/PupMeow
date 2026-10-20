@@ -14,7 +14,7 @@ export function PostGrid({ posts }: { posts: Pick<PostRow, "id" | "image_urls" |
             {p.image_urls[0] ? (
               <Image src={p.image_urls[0]} alt="" fill sizes="(max-width:768px) 33vw, 240px" className="object-cover" placeholder="blur" blurDataURL={BLUR_DATA_URL} />
             ) : (
-              <span className="flex h-full items-center bg-primary p-3 font-heading text-[0.95rem] font-semibold leading-snug text-white sm:text-lg">{truncate(p.caption, 90)}</span>
+              <span className="flex h-full items-center bg-primary p-3 font-heading text-[0.95rem] font-semibold leading-snug text-on-primary sm:text-lg">{truncate(p.caption, 90)}</span>
             )}
             {p.image_urls.length > 1 && <Images className="absolute right-1.5 top-1.5 h-4 w-4 text-white drop-shadow" aria-hidden />}
             <span className="absolute inset-0 hidden items-center justify-center gap-3 bg-text/45 text-sm font-bold text-white group-hover:flex">

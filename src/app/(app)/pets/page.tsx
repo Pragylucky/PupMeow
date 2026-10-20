@@ -14,7 +14,7 @@ import type { HealthRecordRow, PetRow } from "@/types/database";
 
 export const metadata: Metadata = { title: "My pets", robots: { index: false } };
 
-const TONES = ["bg-secondary text-ink", "bg-primary text-white", "bg-cat text-white", "bg-cream text-ink"];
+const TONES = ["bg-secondary text-ink", "bg-primary text-on-primary", "bg-cat text-white", "bg-cream text-ink"];
 
 export default async function MyPetsPage() {
   const profile = await requireProfile("/pets");

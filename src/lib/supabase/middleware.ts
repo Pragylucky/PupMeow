@@ -62,6 +62,11 @@ export async function updateSession(request: NextRequest) {
 
   const { search } = request.nextUrl;
 
+  // Home + login: skip auth entirely when there is no session cookie (most landing traffic).
+  if ((pathname === "/" || pathname === "/login") && !hasSupabaseAuthCookies(request)) {
+    return response;
+  }
+
   // Home + login: read session from cookies only (no Auth API round-trip). Avoids 5–30s hangs when
   // Supabase is paused, on bad Wi‑Fi, or the project URL/key is wrong.
   if (pathname === "/" || pathname === "/login") {
@@ -104,4 +109,8 @@ export async function updateSession(request: NextRequest) {
 function copyCookies(from: NextResponse, to: NextResponse) {
   from.cookies.getAll().forEach((c) => to.cookies.set(c));
   return to;
+}
+
+function hasSupabaseAuthCookies(request: NextRequest) {
+  return request.cookies.getAll().some((c) => c.name.includes("-auth-token") || (c.name.startsWith("sb-") && c.name.includes("auth")));
 }

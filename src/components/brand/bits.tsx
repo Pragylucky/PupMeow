@@ -54,7 +54,7 @@ export const SECTION_TONES = {
   lost: "bg-danger text-white",
   adopt: "bg-secondary text-ink",
   play: "bg-cat text-white",
-  care: "bg-primary text-white",
+  care: "bg-primary text-on-primary",
   kaia: "bg-cream text-ink",
   ink: "bg-ink text-white",
 } as const;

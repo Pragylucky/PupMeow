@@ -34,10 +34,10 @@ export function RequestForm({ toPetId, toPetName, lookingFor, myPets, species }:
   }
   if (sent) {
     return (
-      <section className="rounded-[var(--radius-lg)] bg-primary p-5 text-white">
+      <section className="rounded-[var(--radius-lg)] bg-primary p-5 text-on-primary">
         <PartyPopper className="h-7 w-7" aria-hidden />
         <p className="mt-2 font-heading text-xl font-semibold">Request sent!</p>
-        <p className="mt-1 text-white/90">You&apos;ll get a notification when {toPetName}&apos;s family replies. Contact is shared only if they say yes.</p>
+        <p className="mt-1 text-on-primary/90">You&apos;ll get a notification when {toPetName}&apos;s family replies. Contact is shared only if they say yes.</p>
         <ButtonLink href="/match/requests?tab=sent" variant="white" size="sm" className="mt-3">See my requests</ButtonLink>
       </section>
     );

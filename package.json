@@ -14,9 +14,11 @@
     "remove-seed": "tsx scripts/remove-seed.ts",
     "setup:storage": "tsx scripts/setup-storage.ts",
     "test": "vitest run",
+    "playwright:install": "NODE_OPTIONS='--use-system-ca' playwright install",
     "test:e2e": "playwright test",
     "preflight": "npm run typecheck && npm run lint && npm run build",
     "load-test": "tsx scripts/load-test-1000.mts",
+    "load-test:100": "PEAK_CONCURRENCY=100 tsx scripts/load-test-1000.mts",
     "load-test:db": "tsx scripts/load-test-db-only.mts"
   },
   "dependencies": {

@@ -32,7 +32,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
   const [{ posts, nextCursor, note }, lostRes, tagRes, petRes] = await Promise.all([
     fetchFeedPage({ userId: profile.id, tab, species, homeArea, city: profile.city }),
     supabase.from("lost_found").select(LOST_FOUND_COLUMNS).eq("status", "open").eq("is_hidden", false).in("species", speciesIn(species)).order("created_at", { ascending: false }).limit(20),
-    supabase.from("posts").select("hashtags").order("created_at", { ascending: false }).limit(200),
+    supabase.from("posts").select("hashtags").order("created_at", { ascending: false }).limit(48),
     supabase.from("pets").select("id, name").eq("owner_id", profile.id).order("created_at").limit(1),
   ]);
   const lostAll = (lostRes.data ?? []) as LostFoundRow[];

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, getPrivateProfile, getViewer } from "@/lib/auth";
 import { getSpeciesPref } from "@/lib/species-server";
 import { speciesIn } from "@/lib/species";
+import { getAdoptListCached } from "@/lib/cache/public-listings";
 import { ADOPTION_COLUMNS } from "@/lib/columns";
 import { NCR_AREAS } from "@/lib/constants";
 import { SpeciesToggle } from "@/components/features/species/species-toggle";
@@ -34,20 +35,31 @@ export default async function AdoptPage({ searchParams }: { searchParams: Promis
   const supabase = await createClient();
   const mine = Boolean(user && sp.mine === "1");
 
-  let q = supabase.from("adoptions").select(ADOPTION_COLUMNS).order("created_at", { ascending: false }).limit(60);
-  if (mine) q = q.eq("author_id", user!.id);
-  else q = q.eq("status", "available").in("species", speciesIn(species));
   const areaQ = sp.near === "1" && viewerArea ? shortArea(viewerArea) : sp.area;
-  if (areaQ) q = q.ilike("area", `%${areaQ.replace(/[%_,()]/g, "").slice(0, 60)}%`);
-  if (sp.gender === "male" || sp.gender === "female") q = q.eq("gender", sp.gender);
-  if (sp.vaccinated === "yes") q = q.eq("vaccinated", true);
-  if (sp.neutered === "yes") q = q.eq("neutered", true);
-  if (sp.age && AGE[sp.age]) q = q.gte("age_months", AGE[sp.age][0]).lte("age_months", AGE[sp.age][1]);
-  const [{ data }, { data: happy }] = await Promise.all([
-    q,
-    supabase.from("adoptions").select(ADOPTION_COLUMNS).eq("status", "adopted").in("species", speciesIn(species)).order("adopted_at", { ascending: false }).limit(6),
-  ]);
-  const items = (data ?? []) as AdoptionRow[];
+  const useListCache = !mine && !areaQ && !sp.gender && sp.vaccinated !== "yes" && sp.neutered !== "yes" && !sp.age;
+
+  let items: AdoptionRow[];
+  let happy: AdoptionRow[];
+  if (useListCache) {
+    const cached = await getAdoptListCached(species);
+    items = cached.items;
+    happy = cached.happy;
+  } else {
+    let q = supabase.from("adoptions").select(ADOPTION_COLUMNS).order("created_at", { ascending: false }).limit(60);
+    if (mine) q = q.eq("author_id", user!.id);
+    else q = q.eq("status", "available").in("species", speciesIn(species));
+    if (areaQ) q = q.ilike("area", `%${areaQ.replace(/[%_,()]/g, "").slice(0, 60)}%`);
+    if (sp.gender === "male" || sp.gender === "female") q = q.eq("gender", sp.gender);
+    if (sp.vaccinated === "yes") q = q.eq("vaccinated", true);
+    if (sp.neutered === "yes") q = q.eq("neutered", true);
+    if (sp.age && AGE[sp.age]) q = q.gte("age_months", AGE[sp.age][0]).lte("age_months", AGE[sp.age][1]);
+    const [{ data }, happyRes] = await Promise.all([
+      q,
+      supabase.from("adoptions").select(ADOPTION_COLUMNS).eq("status", "adopted").in("species", speciesIn(species)).order("adopted_at", { ascending: false }).limit(6),
+    ]);
+    items = (data ?? []) as AdoptionRow[];
+    happy = (happyRes.data ?? []) as AdoptionRow[];
+  }
   const tails = (happy ?? []) as AdoptionRow[];
 
   const toggle = (key: string, value: string) => {

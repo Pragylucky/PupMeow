@@ -19,7 +19,7 @@ Built with Next.js 15 (App Router, Server Components & Server Actions), TypeScri
 10. [Scripts & tests](#scripts--tests)
 11. [Known limitations & roadmap](#known-limitations--roadmap)
 
-Also see **DEPLOY.md** (GitHub → Vercel → go live), **Pupmeow-Upload-Guide.docx** (step-by-step handoff), **DECISIONS.md**, and **SECURITY.md**.
+Also see **DEPLOY.md** (GitHub → Vercel → go live), **docs/LAUNCH_READINESS_AND_TESTING.md** (test results, load tests, launch checklist), **Pupmeow-Upload-Guide.docx** (step-by-step handoff), **DECISIONS.md**, and **SECURITY.md**.
 
 ---
 
@@ -228,9 +228,27 @@ Use Chrome on Android or Safari on iPhone. Tick each:
 | `npm run setup:storage` | Create/update storage buckets via the API |
 | `npm run db:types` | Generate Supabase types (needs `SUPABASE_PROJECT_ID` + CLI login) |
 | `npm test` | Vitest unit tests (validation schemas, utilities, server actions with mocked Supabase) |
-| `npm run test:e2e` | Playwright smoke tests (landing, login, public lost page, auth redirect). First run `npx playwright install chromium`. Builds must exist (`npm run build`). Set `E2E_LOST_ID=<uuid>` to also test a lost detail page |
+| `npm run playwright:install` | Download Playwright browsers (uses macOS system CA store — fixes `UNABLE_TO_GET_ISSUER_CERT_LOCALLY`) |
+| `npm run test:e2e` | Playwright smoke tests (landing, login, public lost page, auth redirect). Run `npm run playwright:install` once. Builds must exist (`npm run build`). Set `E2E_LOST_ID=<uuid>` to also test a lost detail page |
+| `npm run load-test:100` | Simulate **50 + 100** concurrent HTTP requests against `npm start` (set `BASE_URL` for Vercel preview). See **docs/LAUNCH_READINESS_AND_TESTING.md** |
 
 Database security tests (optional, needs a local PostgreSQL 16 with pgvector) — see SECURITY.md.
+
+### Playwright TLS errors (`UNABLE_TO_GET_ISSUER_CERT_LOCALLY`)
+
+Node’s downloader does not always use the Mac Keychain. From the project root:
+
+```bash
+npm run playwright:install
+```
+
+Or one-off: `NODE_OPTIONS='--use-system-ca' npx playwright install`
+
+On a **corporate network** (SSL inspection), ask IT for the root CA `.pem` and run:
+
+`export NODE_EXTRA_CA_CERTS=/path/to/company-root.pem` then install again.
+
+**Workaround:** use your installed Chrome — in `playwright.config.ts` set `use: { channel: 'chrome', ...devices['Pixel 7'] }` and skip `playwright install` (Chrome must be installed).
 
 ## Known limitations & roadmap
 **Known limitations (v1)**

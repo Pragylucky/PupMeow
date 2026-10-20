@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getPrivateProfile, getViewer, getCurrentProfile } from "@/lib/auth";
 import { getSpeciesPref } from "@/lib/species-server";
 import { speciesIn } from "@/lib/species";
+import { getLostListCached } from "@/lib/cache/public-listings";
 import { LOST_FOUND_COLUMNS } from "@/lib/columns";
 import { NCR_AREAS } from "@/lib/constants";
 import { SpeciesToggle } from "@/components/features/species/species-toggle";
@@ -43,18 +44,38 @@ export default async function LostPage({ searchParams }: { searchParams: Promise
     if (sinceIso) q = q.gte("last_seen_date", sinceIso);
     return q;
   };
-  let list = base(tab === "mine").limit(60);
-  if (tab === "reunited") list = list.eq("status", "reunited").order("reunited_at", { ascending: false });
-  else if (tab === "mine") list = list.eq("author_id", user!.id).order("created_at", { ascending: false });
-  else list = list.eq("type", tab).eq("status", "open").order("created_at", { ascending: false });
-
-  const [{ data }, lostCount, foundCount, reunitedCount] = await Promise.all([
-    list,
+  const useListCache = !cleanArea && !sinceIso && tab !== "mine" && (tab === "lost" || tab === "found" || tab === "reunited");
+  const countsPromise = Promise.all([
     base().eq("type", "lost").eq("status", "open").limit(1),
     base().eq("type", "found").eq("status", "open").limit(1),
     base().eq("status", "reunited").limit(1),
   ]);
-  const items = (data ?? []) as LostFoundRow[];
+
+  let items: LostFoundRow[];
+  let lostCount;
+  let foundCount;
+  let reunitedCount;
+
+  if (useListCache) {
+    const [cached, counts] = await Promise.all([getLostListCached(tab as "lost" | "found" | "reunited", species), countsPromise]);
+    items = cached;
+    [lostCount, foundCount, reunitedCount] = counts;
+  } else {
+    let list = base(tab === "mine").limit(60);
+    if (tab === "reunited") list = list.eq("status", "reunited").order("reunited_at", { ascending: false });
+    else if (tab === "mine") list = list.eq("author_id", user!.id).order("created_at", { ascending: false });
+    else list = list.eq("type", tab).eq("status", "open").order("created_at", { ascending: false });
+    const [listRes, c1, c2, c3] = await Promise.all([
+      list,
+      base().eq("type", "lost").eq("status", "open").limit(1),
+      base().eq("type", "found").eq("status", "open").limit(1),
+      base().eq("status", "reunited").limit(1),
+    ]);
+    items = (listRes.data ?? []) as LostFoundRow[];
+    lostCount = c1;
+    foundCount = c2;
+    reunitedCount = c3;
+  }
   const qs = (t: string) => `/lost?${new URLSearchParams({ tab: t, ...(sp.area ? { area: sp.area } : {}), ...(sp.since ? { since: sp.since } : {}) })}`;
 
   return (

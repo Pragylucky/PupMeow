@@ -55,10 +55,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       {sp.welcome && <WelcomeToast path="/home" />}
       <div className="space-y-7">
         {/* Greeting */}
-        <section className="relative overflow-hidden rounded-[var(--radius-xl)] bg-primary px-5 pb-6 pt-6 text-white sm:px-7 sm:pt-7">
+        <section className="relative overflow-hidden rounded-[var(--radius-xl)] bg-primary px-5 pb-6 pt-6 text-on-primary sm:px-7 sm:pt-7">
           <Confetti />
           <div className="relative max-w-[34rem]">
-            <p className="text-[0.95rem] font-bold text-white/85">{greeting()}, {firstName} 👋</p>
+            <p className="text-[0.95rem] font-bold text-on-primary/85">{greeting()}, {firstName} 👋</p>
             <h1 className="mt-1 text-[2.1rem] font-semibold leading-[1.05] text-balance sm:text-[2.6rem]">
               {birthdayPet ? `${birthdayPet.name}'s birthday is coming up!` : d.pets.length ? `What are ${petNames(d.pets)} up to today?` : "Welcome to the pack!"}
             </h1>
@@ -69,7 +69,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             ) : (
-              <p className="mt-3 text-[1rem] font-semibold text-white/90">No lost pets reported near {hood} right now. A good day 🐾</p>
+              <p className="mt-3 text-[1rem] font-semibold text-on-primary/90">No lost pets reported near {hood} right now. A good day 🐾</p>
             )}
             <SpeciesToggle tone="onColor" className="mt-5" />
           </div>
@@ -123,7 +123,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <PetArt pet={{ species: "dog", look: "brown" }} className="h-20 w-20" />
             <div className="min-w-0 flex-1">
               <h2 className="text-[1.45rem] font-semibold">Add your dog or cat</h2>
-              <p className="text-[0.95rem] font-semibold text-ink/75">Get vaccine reminders, a lost-pet poster ready in one tap, and birthday wishes.</p>
+              <p className="text-[0.95rem] font-semibold text-ink/75">Get vaccine reminders and a lost-pet poster ready in one tap.</p>
             </div>
             <ButtonLink href="/pets/new"><Plus className="h-4 w-4" aria-hidden /> Add a pet</ButtonLink>
           </section>
@@ -255,7 +255,7 @@ function MyPetsCard({ pets, due }: { pets: import("@/types/database").PetRow[]; 
                       {overdue ? "Overdue" : `Due ${formatDate(next).replace(/ \d{4}$/, "")}`}
                     </span>
                   ) : (
-                    <span className="shrink-0 rounded-full bg-primary px-2.5 py-1 text-[0.75rem] font-extrabold text-white">All done</span>
+                    <span className="shrink-0 rounded-full bg-primary px-2.5 py-1 text-[0.75rem] font-extrabold text-on-primary">All done</span>
                   )}
                 </Link>
               </li>

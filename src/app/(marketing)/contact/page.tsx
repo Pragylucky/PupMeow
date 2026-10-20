@@ -22,7 +22,7 @@ export default function ContactPage() {
           <a href={contactMailto("Grievance — Pupmeow")}>{CONTACT_EMAIL}</a>
         </li>
         <li>
-          NGOs and shelters (verified badge):{" "}
+          NGOs and shelters:{" "}
           <a href={contactMailto("NGO / shelter partner — Pupmeow")}>{CONTACT_EMAIL}</a>
         </li>
       </ul>

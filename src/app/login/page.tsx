@@ -13,11 +13,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const next = safeNext(sp.next);
   return (
     <main id="main" className="grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
-      <section className="relative hidden overflow-hidden bg-primary p-10 text-white lg:flex lg:flex-col">
+      <section className="relative hidden overflow-hidden bg-primary p-10 text-on-primary lg:flex lg:flex-col">
         <Logo className="[&_span]:text-white [&_svg]:rounded-[9px] [&_svg]:ring-2 [&_svg]:ring-white/80" />
         <div className="mt-auto max-w-lg pb-56">
           <h1 className="text-[3.6rem] font-bold leading-[1.02]">Delhi&apos;s pet community.</h1>
-          <p className="mt-4 text-[1.1rem] font-semibold text-white/90">Lost-pet alerts for your area, free adoption, playdates and Kaia, for dog and cat families across Delhi NCR.</p>
+          <p className="mt-4 text-[1.1rem] font-semibold text-on-primary/90">Lost-pet alerts for your area, free adoption, playdates and Kaia, for dog and cat families across Delhi NCR.</p>
           <ul className="mt-6 space-y-3 font-bold">
             <li className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15"><MapPin className="h-5 w-5" aria-hidden /></span> Alerts when a pet goes missing near you</li>
             <li className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15"><HeartHandshake className="h-5 w-5" aria-hidden /></span> Free adoption. No buying or selling, ever</li>

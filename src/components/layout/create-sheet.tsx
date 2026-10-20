@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const CreateCtx = createContext<{ open: () => void } | null>(null);
 
 const ACTIONS = [
-  { href: "/post/new", title: "New post", desc: "Share a moment", icon: ImagePlus, tone: "bg-primary text-white" },
+  { href: "/post/new", title: "New post", desc: "Share a moment", icon: ImagePlus, tone: "bg-primary text-on-primary" },
   { href: "/lost/new", title: "Report lost or found", desc: "Alert people nearby", icon: MapPin, tone: "bg-danger text-white halftone" },
   { href: "/adopt/new", title: "Adoption listing", desc: "Free, never sold", icon: HeartHandshake, tone: "bg-secondary text-ink" },
   { href: "/pets/new", title: "Add a pet", desc: "Profile and vaccines", icon: PawPrint, tone: "bg-cat text-white" },

@@ -3,7 +3,7 @@ import { OnlyAt } from "@/components/layout/only-at";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, ExternalLink, MapPin, Printer } from "lucide-react";
-import { getViewer } from "@/lib/auth";
+import { getUser, getViewer } from "@/lib/auth";
 import { isAiLostMatchingEnabled } from "@/lib/ai/config";
 import { PhotoGallery } from "@/components/features/upload/lightbox";
 import { ContactButton } from "@/components/features/listings/contact-button";
@@ -31,8 +31,9 @@ export default async function LostDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const item = await getLostFound(id);
   if (!item) notFound();
-  const user = await getViewer();
-  const isOwner = user?.id === item.author_id;
+  const viewer = await getViewer();
+  const user = await getUser();
+  const isOwner = (user ?? viewer)?.id === item.author_id;
   const reunited = item.status === "reunited";
   const lost = item.type === "lost";
   const headline = lostHeadline(item);
@@ -44,7 +45,8 @@ export default async function LostDetailPage({ params }: { params: Promise<{ id:
   const place = [item.landmark, item.last_seen_area, item.city].filter(Boolean).join(", ");
   const mapsQuery = encodeURIComponent(place);
   const label = reunited ? "REUNITED" : lost ? "LOST" : "FOUND";
-  const tone = reunited ? "bg-primary text-white" : lost ? "bg-danger text-white halftone" : "bg-secondary text-ink";
+  const tone = reunited ? "bg-primary text-on-primary" : lost ? "bg-danger text-white halftone" : "bg-secondary text-ink";
+  const signedIn = Boolean(user);
 
   const actions = (
     <div className="space-y-4">
@@ -56,7 +58,7 @@ export default async function LostDetailPage({ params }: { params: Promise<{ id:
           <ContactButton
             kind="lost_found"
             id={item.id}
-            loggedIn={Boolean(user)}
+            loggedIn={signedIn}
             method={item.contact_method}
             message={msg}
             loginNext={`/lost/${item.id}`}
@@ -84,7 +86,9 @@ export default async function LostDetailPage({ params }: { params: Promise<{ id:
             <TipCard tone={lost ? "lost" : "adopt"} title={lost ? "If you spot this pet" : "Before you hand over"}>
               <Steps tone={lost ? "light" : "dark"} items={lost ? [
                 "Don't chase. Note the lane and the time.",
-                `Tap "I saw ${pronoun === "them" ? "it" : pronoun}" and send the spot to the owner.`,
+                signedIn
+                  ? `Tap "I saw ${pronoun === "them" ? "it" : pronoun}" to notify the owner in Pupmeow.`
+                  : `Sign in free, then tap "I saw ${pronoun === "them" ? "it" : pronoun}" to notify the owner.`,
                 "Offer water from a distance and stay nearby if you can.",
               ] : [
                 "Ask for a photo of the pet at home.",

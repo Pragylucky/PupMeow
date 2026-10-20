@@ -20,7 +20,7 @@ export function LostFoundCard({ item, viewerArea, className, size = "md" }: { it
   const found = item.type === "found";
   const label = reunited ? "HOME" : found ? "FOUND" : "LOST";
   const near = sameNeighbourhood(viewerArea, item.last_seen_area);
-  const tone = reunited ? "bg-primary text-white" : found ? "bg-secondary text-ink" : "bg-danger text-white";
+  const tone = reunited ? "bg-primary text-on-primary" : found ? "bg-secondary text-ink" : "bg-danger text-white";
   const extra = item.reward_text || item.color || item.landmark;
   return (
     <Link

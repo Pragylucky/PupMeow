@@ -18,7 +18,7 @@ export default async function NewPetPage() {
           <ul className="space-y-2 text-[0.95rem] font-semibold text-white/90">
             <li>Vaccine reminders you can add to your calendar.</li>
             <li>A lost-pet report filled in for you in one tap.</li>
-            <li>Birthday wishes from the neighbourhood 🎂</li>
+            <li>Tag posts with your pet&apos;s name for easy memories.</li>
           </ul>
         </TipCard>
       }
