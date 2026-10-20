@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Camera, HeartHandshake, MapPin, Plus, Sparkles, Users } from "lucide-react";
 import { requireProfile, getPrivateProfile } from "@/lib/auth";
 import { getSpeciesPref } from "@/lib/species-server";
-import { isAiAssistantEnabled } from "@/lib/ai/config";
+import { isKaiaListedInApp } from "@/lib/ai/config";
 import { loadHome } from "@/lib/home";
 import { WithRail } from "@/components/layout/page-layout";
 import { SpeciesToggle } from "@/components/features/species/species-toggle";
@@ -30,7 +30,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const d = await loadHome({ userId: profile.id, area, species });
   const firstName = (profile.display_name ?? profile.username ?? "friend").split(" ")[0];
   const hood = shortArea(area);
-  const aiOn = isAiAssistantEnabled();
+  const aiOn = isKaiaListedInApp();
   const next = d.due[0];
   const birthdayPet = d.pets.find((p) => birthdaySoon(p.birthday, 10));
 
