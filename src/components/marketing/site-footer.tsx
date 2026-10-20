@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
+import { InstagramIconLink } from "@/components/marketing/social-links";
 
 export function SiteFooter() {
   return (
@@ -8,6 +9,9 @@ export function SiteFooter() {
         <div>
           <Logo />
           <p className="mt-3 max-w-xs text-[0.95rem] text-muted">A friendly community for dog and cat families in Delhi NCR. Free to join. No buying or selling animals, ever.</p>
+          <div className="mt-3">
+            <InstagramIconLink className="h-11 w-11" iconClassName="h-[1.35rem] w-[1.35rem]" />
+          </div>
         </div>
         <nav aria-label="Explore">
           <h2 className="font-heading text-base font-semibold">Explore</h2>
@@ -52,7 +56,8 @@ export function MarketingHeader() {
           <Link href="/login?next=/assistant" className="rounded-full px-3 py-2 hover:bg-surface-2">Kaia</Link>
           <Link href="/#ngos" className="rounded-full px-3 py-2 hover:bg-surface-2">For NGOs</Link>
         </nav>
-        <nav aria-label="Account" className="flex items-center gap-2">
+        <nav aria-label="Account" className="flex items-center gap-1 sm:gap-2">
+          <InstagramIconLink className="h-10 w-10" />
           <Link href="/login" className="rounded-full px-4 py-2 text-sm font-bold hover:bg-surface-2">Log in</Link>
           <Link href="/login" className="rounded-full bg-strong px-4 py-2.5 text-sm font-bold text-on-strong hover:opacity-90">Join free</Link>
         </nav>

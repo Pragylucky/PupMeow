@@ -9,6 +9,16 @@ export function contactMailto(subject?: string) {
   return `mailto:${CONTACT_EMAIL}${q}`;
 }
 
+/** Official Instagram — override with NEXT_PUBLIC_INSTAGRAM_URL if the handle changes. */
+export const INSTAGRAM_URL = (
+  process.env.NEXT_PUBLIC_INSTAGRAM_URL ?? "https://www.instagram.com/pupmeow.in"
+).replace(/\/$/, "");
+
+export function instagramHandleFromUrl(url: string) {
+  const m = url.match(/instagram\.com\/([^/?#]+)/i);
+  return m?.[1] ? `@${m[1]}` : "Instagram";
+}
+
 export const DEFAULT_CITY = "Delhi NCR";
 export const CITIES = ["Delhi NCR"] as const;
 export const AI_DAILY_LIMIT = 30;
