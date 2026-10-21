@@ -47,11 +47,18 @@ describe("ai config cost toggles", async () => {
     expect(mod.isAiAssistantEnabled()).toBe(true);
   });
 
-  it("accepts AI_PROVIDER=xai when XAI_API_KEY is set", () => {
-    vi.stubEnv("AI_PROVIDER", "xai");
+  it("prefers groq in chat order when GROQ_API_KEY is set", () => {
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "AIzaSyTestKeyForUnitTestsOnly");
+    vi.stubEnv("GROQ_API_KEY", "gsk_test");
+    expect(mod.getKaiaChatProviderOrder()[0]).toBe("groq");
+    expect(mod.getKaiaChatProviderOrder()).toContain("google");
+  });
+
+  it("accepts AI_PROVIDER=groq when only groq key is set", () => {
+    vi.stubEnv("AI_PROVIDER", "groq");
     vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
-    vi.stubEnv("XAI_API_KEY", "xai-test-key");
-    expect(mod.getAiProviderName()).toBe("xai");
+    vi.stubEnv("GROQ_API_KEY", "gsk_test");
+    expect(mod.getAiProviderName()).toBe("groq");
     expect(mod.isAiEnabled()).toBe(true);
   });
 

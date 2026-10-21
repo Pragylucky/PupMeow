@@ -35,7 +35,7 @@ Everything below was decided without being able to ask. Each is easy to revisit.
 - **Auth callback**: `/auth/callback` is a Route Handler (server PKCE exchange + session cookies on redirect). Middleware skips `/auth/callback` and `/auth/confirm` so PKCE cookies are not touched before the code exchange. Post-login routing lives in `src/lib/auth/post-sign-in.ts`.
 
 ## AI
-- Defaults: Gemini `gemini-3.8-flash` / OpenAI `gpt-4o-mini` / xAI `grok-4-fast` (`AI_PROVIDER` + matching API key). New Gemini keys cannot use 2.x Flash. Chat fallbacks when Google is primary: Grok then OpenAI if keys exist. embeddings `gemini-embedding-001` / `text-embedding-3-small`, both at **768 dimensions** (matches `vector(768)`).
+- Kaia chat try order (default): **Groq** `llama-3.3-70b-versatile` → **Gemini** `gemini-3.8-flash` → OpenAI → xAI (`AI_CHAT_TRY_ORDER` override). Vision/moderation prefers Gemini when configured. embeddings `gemini-embedding-001` / `text-embedding-3-small`, both at **768 dimensions** (matches `vector(768)`).
 - **Image embedding**: the vision model describes the first photo; that description + structured fields (species, breed, colour, gender, notes) are embedded as text. This works with both providers and gives better matches than raw image vectors for "brown indie with white chest"-type descriptions. Switching provider later requires re-embedding (different vector spaces).
 - Moderation = fast regex heuristics (always on) + LLM classification when a key is set. AI failures fail open to heuristics so posting never breaks.
 - Emergency detection is keyword-based on both client (instant banner) and server.

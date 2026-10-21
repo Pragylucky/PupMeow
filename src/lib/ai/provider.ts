@@ -1,9 +1,17 @@
 import "server-only";
 import { google } from "@ai-sdk/google";
+import { groq } from "@ai-sdk/groq";
 import { openai } from "@ai-sdk/openai";
 import { xai } from "@ai-sdk/xai";
 import type { AiProviderName } from "./config";
-import { getAiProviderName, getEmbeddingProviderName, hasOpenAiKey, hasXaiKey } from "./config";
+import {
+  getAiProviderName,
+  getAuxiliaryLanguageProviderOrder,
+  getEmbeddingProviderName,
+  hasGroqKey,
+  hasOpenAiKey,
+  hasXaiKey,
+} from "./config";
 
 export const EMBEDDING_DIMENSIONS = 768;
 
@@ -21,6 +29,10 @@ function openAiChatModelId() {
   return (process.env.OPENAI_MODEL ?? process.env.AI_OPENAI_MODEL ?? "").trim() || "gpt-4o-mini";
 }
 
+export function getGroqChatModelId(): string {
+  return (process.env.GROQ_MODEL ?? process.env.AI_GROQ_MODEL ?? "").trim() || "llama-3.3-70b-versatile";
+}
+
 export function getXaiChatModelId(): string {
   return (process.env.XAI_MODEL ?? process.env.GROK_MODEL ?? process.env.AI_XAI_MODEL ?? "").trim() || "grok-4-fast";
 }
@@ -28,6 +40,11 @@ export function getXaiChatModelId(): string {
 export function getOpenAiChatModel() {
   if (!hasOpenAiKey()) return null;
   return openai(openAiChatModelId());
+}
+
+export function getGroqChatModel() {
+  if (!hasGroqKey()) return null;
+  return groq(getGroqChatModelId());
 }
 
 export function getXaiChatModel() {
@@ -40,6 +57,7 @@ export function getActiveChatModelId(): string {
   if (provider === "google") return getGoogleChatModelId();
   if (provider === "openai") return openAiChatModelId();
   if (provider === "xai") return getXaiChatModelId();
+  if (provider === "groq") return getGroqChatModelId();
   return "unknown";
 }
 
@@ -47,12 +65,14 @@ export function getChatModelForProvider(provider: AiProviderName) {
   if (provider === "google") return google(googleChatModelId());
   if (provider === "openai") return openai(openAiChatModelId());
   if (provider === "xai") return xai(getXaiChatModelId());
+  if (provider === "groq") return groq(getGroqChatModelId());
   throw new Error("AI is not configured");
 }
 
-/** Chat / vision / structured-output model for the configured provider. */
+/** Vision / moderation — prefers Gemini when configured. */
 export function getLanguageModel() {
-  const provider = getAiProviderName();
+  const order = getAuxiliaryLanguageProviderOrder();
+  const provider = order[0];
   if (!provider) throw new Error("AI is not configured");
   return getChatModelForProvider(provider);
 }

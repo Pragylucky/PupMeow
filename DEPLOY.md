@@ -63,11 +63,11 @@ git push -u origin main
 
 New Google AI Studio keys must use **`gemini-3.8-flash`** (the app default). **2.5 Flash is blocked** for those keys. Free tier can also hit **daily limits** or feel very slow.
 
-**Fastest fix (Grok):** [console.x.ai](https://console.x.ai) → API key → Vercel `XAI_API_KEY` + `AI_PROVIDER=xai` → redeploy. Default model: `grok-4-fast`.
+**Fastest fix (Groq):** [console.groq.com](https://console.groq.com) → API key → Vercel `GROQ_API_KEY` → redeploy. Kaia tries **Groq first**, then Gemini if Groq fails (keep `GOOGLE_GENERATIVE_AI_API_KEY` for backup). Check `/api/ai/status` → `chatTryOrder`.
 
-**Or fallbacks with Gemini primary:** keep `GOOGLE_GENERATIVE_AI_API_KEY`, add `XAI_API_KEY` (and/or `OPENAI_API_KEY`). Kaia tries Gemini, then **Grok**, then OpenAI. Set `AI_CHAT_FALLBACK=xai,openai` or `false` to control.
+Override order: `AI_CHAT_TRY_ORDER=groq,google` or `google,groq`.
 
-Lost-pet embeddings still need a **Gemini or OpenAI** key (`AI_EMBEDDING_PROVIDER`) if you use only Grok for chat.
+Lost-pet embeddings still need **Gemini or OpenAI** (`AI_EMBEDDING_PROVIDER`) if you drop Gemini entirely.
 
 Check: `https://pupmeow.vercel.app/api/ai/status?live=1` — look at `geminiError`, `geminiErrorDetail`, and `checks.openAiChatFallback`.
 
