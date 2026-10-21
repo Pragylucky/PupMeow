@@ -87,11 +87,7 @@ export function getKaiaChatProviderOrder(): AiProviderName[] {
     ? custom.split(/[,|]+/).map((p) => normalizeProviderName(p.trim())).filter(isAiProviderName)
     : DEFAULT_CHAT_TRY_ORDER;
 
-  const forced = normalizeProviderName(trimEnv("AI_PROVIDER"));
-  if (forced && isAiProviderName(forced) && hasProviderKey(forced) && !custom) {
-    const rest = list.filter((p) => p !== forced);
-    return [forced, ...rest].filter((p, i, arr) => hasProviderKey(p) && arr.indexOf(p) === i);
-  }
+  // Kaia chat order is AI_CHAT_TRY_ORDER (default groq → google). AI_PROVIDER does not reorder chat.
 
   const seen = new Set<AiProviderName>();
   return list.filter((p) => {
