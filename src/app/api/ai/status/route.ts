@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { generateText } from "ai";
 import { getAiConfigStatus, isAiAssistantEnabled } from "@/lib/ai/config";
 import { sanitizeAiErrorSnippet, userFacingAiError } from "@/lib/ai/errors";
-import { getGoogleChatModelId, getLanguageModel } from "@/lib/ai/provider";
+import { getActiveChatModelId, getLanguageModel } from "@/lib/ai/provider";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const body: Record<string, unknown> = {
     ...status,
-    chatModel: getGoogleChatModelId(),
+    chatModel: getActiveChatModelId(),
     deploySha: (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7) || undefined,
   };
 

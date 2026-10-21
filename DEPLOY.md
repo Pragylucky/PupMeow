@@ -63,7 +63,11 @@ git push -u origin main
 
 New Google AI Studio keys must use **`gemini-3.8-flash`** (the app default). **2.5 Flash is blocked** for those keys. Free tier can also hit **daily limits** or feel very slow.
 
-**Fastest fix:** add an [OpenAI API key](https://platform.openai.com/api-keys) on Vercel as `OPENAI_API_KEY`. With both keys set, Kaia **chat** tries Gemini first, then **falls back to `gpt-4o-mini`** if Gemini times out. Or set `AI_PROVIDER=openai` to use OpenAI only.
+**Fastest fix (Grok):** [console.x.ai](https://console.x.ai) → API key → Vercel `XAI_API_KEY` + `AI_PROVIDER=xai` → redeploy. Default model: `grok-4-fast`.
+
+**Or fallbacks with Gemini primary:** keep `GOOGLE_GENERATIVE_AI_API_KEY`, add `XAI_API_KEY` (and/or `OPENAI_API_KEY`). Kaia tries Gemini, then **Grok**, then OpenAI. Set `AI_CHAT_FALLBACK=xai,openai` or `false` to control.
+
+Lost-pet embeddings still need a **Gemini or OpenAI** key (`AI_EMBEDDING_PROVIDER`) if you use only Grok for chat.
 
 Check: `https://pupmeow.vercel.app/api/ai/status?live=1` — look at `geminiError`, `geminiErrorDetail`, and `checks.openAiChatFallback`.
 

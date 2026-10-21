@@ -1,5 +1,5 @@
 /** Safe to import anywhere: reads env only on the server, returns false in the browser. */
-export type AiProviderName = "google" | "openai";
+export type AiProviderName = "google" | "openai" | "xai";
 
 function envFlag(name: string, defaultOn = true): boolean {
   const v = (process.env[name] ?? "").trim().toLowerCase();
@@ -43,10 +43,47 @@ export function isValidGoogleGenerativeAiKey(key: string): boolean {
   return false;
 }
 
-function normalizeProviderName(raw: string): string {
+export function normalizeProviderName(raw: string): string {
   const p = raw.trim().toLowerCase();
   if (p === "gemini" || p === "google-gemini" || p === "google_gemini") return "google";
+  if (p === "grok" || p === "xai-grok") return "xai";
   return p;
+}
+
+export function hasXaiKey(): boolean {
+  return Boolean(trimEnv("XAI_API_KEY"));
+}
+
+export function hasProviderKey(provider: AiProviderName): boolean {
+  if (provider === "google") {
+    const k = resolveGoogleGenerativeAiKey();
+    return Boolean(k && isValidGoogleGenerativeAiKey(k));
+  }
+  if (provider === "openai") return hasOpenAiKey();
+  if (provider === "xai") return hasXaiKey();
+  return false;
+}
+
+const CHAT_FALLBACK_ORDER: AiProviderName[] = ["xai", "openai"];
+
+/** Extra chat providers to try after the primary fails (see AI_CHAT_FALLBACK). */
+export function getChatFallbackProviders(primary: AiProviderName): AiProviderName[] {
+  const v = trimEnv("AI_CHAT_FALLBACK").toLowerCase();
+  if (v === "false" || v === "0" || v === "off" || v === "no") return [];
+  if (primary !== "google") return [];
+
+  if (v === "true" || v === "1" || v === "on" || !v) {
+    return CHAT_FALLBACK_ORDER.filter((p) => hasProviderKey(p));
+  }
+
+  const picked: AiProviderName[] = [];
+  for (const part of v.split(/[,|]+/)) {
+    const name = normalizeProviderName(part.trim());
+    if (name === "google" || name === "openai" || name === "xai") {
+      picked.push(name);
+    }
+  }
+  return picked.filter((p) => p !== primary && hasProviderKey(p));
 }
 
 export function hasOpenAiKey(): boolean {
@@ -55,30 +92,47 @@ export function hasOpenAiKey(): boolean {
 
 /** When Google is primary, use OpenAI for Kaia chat if Gemini fails (needs OPENAI_API_KEY). */
 export function isOpenAiChatFallbackEnabled(): boolean {
-  if (!hasOpenAiKey()) return false;
-  const v = trimEnv("AI_CHAT_FALLBACK").toLowerCase();
-  if (v === "false" || v === "0" || v === "off" || v === "no") return false;
-  if (v === "openai" || v === "true" || v === "1" || v === "on") return true;
-  return getAiProviderName() === "google";
+  const primary = getAiProviderName();
+  return primary === "google" && getChatFallbackProviders(primary).includes("openai");
+}
+
+export function isXaiChatFallbackEnabled(): boolean {
+  const primary = getAiProviderName();
+  return primary === "google" && getChatFallbackProviders(primary).includes("xai");
 }
 
 export function getAiProviderName(): AiProviderName | null {
   const googleKey = resolveGoogleGenerativeAiKey();
+  const googleOk = Boolean(googleKey && isValidGoogleGenerativeAiKey(googleKey));
   const configured = normalizeProviderName(process.env.AI_PROVIDER ?? "");
-  const useGoogle = configured === "google" || (!configured && Boolean(googleKey));
 
-  if (useGoogle && googleKey) return "google";
-  if (configured === "openai" && trimEnv("OPENAI_API_KEY")) return "openai";
+  if (configured === "xai" && hasXaiKey()) return "xai";
+  if (configured === "openai" && hasOpenAiKey()) return "openai";
+  if (configured === "google" && googleOk) return "google";
+
+  if (!configured) {
+    if (googleOk) return "google";
+    if (hasXaiKey()) return "xai";
+    if (hasOpenAiKey()) return "openai";
+  }
   return null;
 }
 
 export function isAiEnabled(): boolean {
   const name = getAiProviderName();
-  if (name === "google") {
-    const key = resolveGoogleGenerativeAiKey();
-    if (!key || !isValidGoogleGenerativeAiKey(key)) return false;
+  if (!name) return false;
+  return hasProviderKey(name);
+}
+
+/** Embeddings for lost-pet matching — can differ from Kaia chat provider. */
+export function getEmbeddingProviderName(): AiProviderName | null {
+  const forced = normalizeProviderName(trimEnv("AI_EMBEDDING_PROVIDER"));
+  if (forced === "google" || forced === "openai") {
+    return hasProviderKey(forced) ? forced : null;
   }
-  return name !== null;
+  if (hasProviderKey("google")) return "google";
+  if (hasProviderKey("openai")) return "openai";
+  return null;
 }
 
 /** Kaia chat / vision / write / health — set AI_ENABLED=false to hide without removing keys. */
@@ -98,7 +152,7 @@ export function isAiModerationLlmEnabled(): boolean {
 
 /** Lost & found vision + embeddings (expensive). Heuristic moderation still applies. */
 export function isAiLostMatchingEnabled(): boolean {
-  return isAiEnabled() && envFlag("AI_LOST_MATCHING", true);
+  return isAiEnabled() && envFlag("AI_LOST_MATCHING", true) && getEmbeddingProviderName() !== null;
 }
 
 /** Per-user daily Kaia budget (server). DB function must allow the same cap. */
@@ -129,11 +183,14 @@ export function getAiConfigStatus() {
       googleKey: Boolean(googleKey),
       googleKeyFormatOk,
       openaiKey: Boolean(openaiKey),
+      xaiKey: hasXaiKey(),
       openAiChatFallback: isOpenAiChatFallbackEnabled(),
+      xaiChatFallback: isXaiChatFallbackEnabled(),
       envVarsPresent: {
         GOOGLE_GENERATIVE_AI_API_KEY: Boolean(normalizeApiKey(trimEnv("GOOGLE_GENERATIVE_AI_API_KEY"))),
         GEMINI_API_KEY: Boolean(normalizeApiKey(trimEnv("GEMINI_API_KEY"))),
         GOOGLE_API_KEY: Boolean(normalizeApiKey(trimEnv("GOOGLE_API_KEY"))),
+        XAI_API_KEY: hasXaiKey(),
       },
     },
   };
