@@ -56,7 +56,16 @@ git push -u origin main
 | `NEXT_PUBLIC_SITE_URL` | `https://pupmeow.vercel.app` (update when you add a custom domain) |
 | `AI_PROVIDER` | `google` (or leave empty if only the Gemini key is set) |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini key from [Google AI Studio](https://aistudio.google.com/apikey) — **exact name** (not `NEXT_PUBLIC_`) |
-| `OPENAI_API_KEY` | If using OpenAI instead |
+| `OPENAI_API_KEY` | Optional — see **Kaia slow / not working** below |
+| `AI_CHAT_FALLBACK` | Optional — `false` to disable OpenAI fallback when both keys are set |
+
+**Kaia slow / not working (Gemini)**
+
+New Google AI Studio keys must use **`gemini-3.8-flash`** (the app default). **2.5 Flash is blocked** for those keys. Free tier can also hit **daily limits** or feel very slow.
+
+**Fastest fix:** add an [OpenAI API key](https://platform.openai.com/api-keys) on Vercel as `OPENAI_API_KEY`. With both keys set, Kaia **chat** tries Gemini first, then **falls back to `gpt-4o-mini`** if Gemini times out. Or set `AI_PROVIDER=openai` to use OpenAI only.
+
+Check: `https://pupmeow.vercel.app/api/ai/status?live=1` — look at `geminiError`, `geminiErrorDetail`, and `checks.openAiChatFallback`.
 
 **Kaia still says “coming soon”?**
 
