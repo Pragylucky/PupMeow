@@ -170,6 +170,14 @@ export function isAiLostMatchingEnabled(): boolean {
   return isAiEnabled() && envFlag("AI_LOST_MATCHING", true) && getEmbeddingProviderName() !== null;
 }
 
+/** Parallel Groq+Gemini race for fastest first token (losers aborted — one answer only). */
+export function isChatRaceEnabled(providerCount: number): boolean {
+  if (providerCount < 2) return false;
+  const v = trimEnv("AI_CHAT_RACE").toLowerCase();
+  if (v === "false" || v === "0" || v === "off" || v === "no") return false;
+  return true;
+}
+
 /** Per-user daily Kaia budget (server). DB function must allow the same cap. */
 export function getAiDailyLimit(): number {
   const n = Number.parseInt(process.env.AI_DAILY_LIMIT ?? "30", 10);
@@ -193,6 +201,7 @@ export function getAiConfigStatus() {
     assistant: isAiAssistantEnabled(),
     provider,
     chatTryOrder,
+    chatRace: isChatRaceEnabled(chatTryOrder.length),
     hint: googleKey && !googleKeyFormatOk ? geminiKeyFormatHint() : undefined,
     checks: {
       aiEnabledFlag: envFlag("AI_ENABLED", true),
