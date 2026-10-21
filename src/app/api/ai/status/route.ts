@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { generateText } from "ai";
-import type { AiProviderName } from "@/lib/ai/config";
 import { getAiConfigStatus, getKaiaChatProviderOrder, isAiAssistantEnabled } from "@/lib/ai/config";
 import { sanitizeAiErrorSnippet, userFacingAiError } from "@/lib/ai/errors";
 import { getActiveChatModelId, getChatModelForProvider } from "@/lib/ai/provider";
