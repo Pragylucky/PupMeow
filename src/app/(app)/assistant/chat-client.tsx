@@ -103,6 +103,10 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
         acc += decoder.decode(value, { stream: true });
         setMessages((m) => m.map((x) => (x.id === botId ? { ...x, content: acc } : x)));
       }
+      acc += decoder.decode();
+      if (acc.trim()) {
+        setMessages((m) => m.map((x) => (x.id === botId ? { ...x, content: acc } : x)));
+      }
       if (newId && newId !== convId) {
         setConvId(newId);
         window.history.replaceState(null, "", `/assistant/${newId}`);
