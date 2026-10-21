@@ -45,7 +45,13 @@ export function userFacingAiError(err: unknown): string {
     return "The AI model name is wrong for this key. Use gemini-3.8-flash for new Google AI Studio keys, or set AI_MODEL in Vercel.";
   }
   if (lower.includes("aborted") || lower.includes("timeout")) {
-    return "Kaia timed out reaching Google. Try again in a moment, or check your network.";
+    return "Kaia timed out. Try again in a moment.";
+  }
+  if (lower.includes("empty response")) {
+    return "Kaia didn't get a reply from the AI. Try again in a few seconds.";
+  }
+  if (lower.includes("invalid api key") || lower.includes("invalid_api_key")) {
+    return "The Groq or Gemini API key on the server is invalid. Check keys on Vercel and redeploy.";
   }
   const firstLine = msg.split("\n")[0]?.trim() ?? "";
   if (firstLine.length > 0 && firstLine.length <= 220) return firstLine;
