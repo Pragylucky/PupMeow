@@ -23,7 +23,8 @@ export async function GET(request: Request) {
         model: getLanguageModel(),
         prompt: "Reply with exactly: ok",
         maxOutputTokens: 8,
-        abortSignal: AbortSignal.timeout(45_000),
+        maxRetries: 1,
+        abortSignal: AbortSignal.timeout(28_000),
       });
       body.geminiLive = true;
       body.geminiSample = text.trim().slice(0, 20);

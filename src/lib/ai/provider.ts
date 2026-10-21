@@ -1,7 +1,7 @@
 import "server-only";
 import { google } from "@ai-sdk/google";
 import { openai } from "@ai-sdk/openai";
-import { getAiProviderName } from "./config";
+import { getAiProviderName, hasOpenAiKey } from "./config";
 
 export const EMBEDDING_DIMENSIONS = 768;
 
@@ -16,10 +16,19 @@ function googleChatModelId() {
 }
 
 /** Chat / vision / structured-output model for the configured provider. */
+function openAiChatModelId() {
+  return (process.env.OPENAI_MODEL ?? process.env.AI_OPENAI_MODEL ?? "").trim() || "gpt-4o-mini";
+}
+
+export function getOpenAiChatModel() {
+  if (!hasOpenAiKey()) return null;
+  return openai(openAiChatModelId());
+}
+
 export function getLanguageModel() {
   const provider = getAiProviderName();
   if (provider === "google") return google(googleChatModelId());
-  if (provider === "openai") return openai("gpt-4o-mini");
+  if (provider === "openai") return openai(openAiChatModelId());
   throw new Error("AI is not configured");
 }
 

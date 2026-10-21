@@ -49,6 +49,19 @@ function normalizeProviderName(raw: string): string {
   return p;
 }
 
+export function hasOpenAiKey(): boolean {
+  return Boolean(trimEnv("OPENAI_API_KEY"));
+}
+
+/** When Google is primary, use OpenAI for Kaia chat if Gemini fails (needs OPENAI_API_KEY). */
+export function isOpenAiChatFallbackEnabled(): boolean {
+  if (!hasOpenAiKey()) return false;
+  const v = trimEnv("AI_CHAT_FALLBACK").toLowerCase();
+  if (v === "false" || v === "0" || v === "off" || v === "no") return false;
+  if (v === "openai" || v === "true" || v === "1" || v === "on") return true;
+  return getAiProviderName() === "google";
+}
+
 export function getAiProviderName(): AiProviderName | null {
   const googleKey = resolveGoogleGenerativeAiKey();
   const configured = normalizeProviderName(process.env.AI_PROVIDER ?? "");
@@ -116,6 +129,7 @@ export function getAiConfigStatus() {
       googleKey: Boolean(googleKey),
       googleKeyFormatOk,
       openaiKey: Boolean(openaiKey),
+      openAiChatFallback: isOpenAiChatFallbackEnabled(),
       envVarsPresent: {
         GOOGLE_GENERATIVE_AI_API_KEY: Boolean(normalizeApiKey(trimEnv("GOOGLE_GENERATIVE_AI_API_KEY"))),
         GEMINI_API_KEY: Boolean(normalizeApiKey(trimEnv("GEMINI_API_KEY"))),
