@@ -13,7 +13,8 @@ import { PetImage } from "@/components/brand/pet-image";
 import { REPORT_REASONS } from "@/lib/constants";
 import { cn, displayName, formatDate, sinceLabel } from "@/lib/utils";
 import { moderationPreviewImage } from "@/lib/moderation/visibility";
-import { ReportActions, ReportRowActions, BanButton } from "./admin-client";
+import { ReportActions, BanButton } from "./admin-client";
+import { ReportQueueRow } from "./report-queue-row";
 import type { ProfileRow, ReportRow, ReportTarget } from "@/types/database";
 import type { MiniProfile } from "@/types/models";
 
@@ -174,45 +175,21 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
               {rows.map((g) => {
                 const r = g[0];
                 const p = map.get(r.target_id);
-                const active = activeReportId === r.id;
+                const kind = KIND[r.target_type];
                 const reasons = [...new Set(g.map((x) => REASON[x.reason] ?? x.reason))];
                 return (
-                  <li key={r.id} className={cn("border-b border-border last:border-0", active && "bg-cream/60")}>
-                    <div className="grid items-center gap-3 px-4 py-3.5 lg:grid-cols-[minmax(0,1fr)_120px_72px_64px_auto]">
-                    <Link href={href({ report: r.id })} scroll={false} className={cn("flex min-w-0 items-center gap-3 hover:opacity-90", active && "text-ink")}>
-                      <span className="flex min-w-0 flex-1 items-center gap-3">
-                        <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[0.7rem] bg-surface-2">
-                          {moderationPreviewImage(p) ? (
-                            <PetImage src={moderationPreviewImage(p)!} alt="" species="dog" sizes="48px" />
-                          ) : p?.hidden ? (
-                            <EyeOff className="h-5 w-5 text-muted" aria-hidden />
-                          ) : (
-                            <span className="text-xs font-extrabold text-muted">{KIND[r.target_type].label}</span>
-                          )}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate font-bold">{p?.title ?? "Deleted content"}</span>
-                          <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[0.8rem]">
-                            <span className={cn("rounded-full px-2 py-0.5 font-extrabold", KIND[r.target_type].tone)}>{KIND[r.target_type].label}</span>
-                            {r.owner && <span className="truncate text-muted">@{r.owner.username}</span>}
-                            {p?.hidden && <Badge tone="ink" className="px-2 py-0.5">Hidden</Badge>}
-                          </span>
-                        </span>
-                      </span>
-                    </Link>
-                      <span className="text-[0.9rem] font-semibold lg:block"><span className="lg:hidden text-muted">Reason: </span>{reasons.join(", ")}</span>
-                      <span className="font-heading text-lg font-semibold"><span className="text-sm font-sans font-bold text-muted lg:hidden">Reports: </span>{g.length}</span>
-                      <span className="text-sm font-semibold text-muted">{sinceLabel(r.created_at)}</span>
-                      <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-                        <ReportRowActions
-                          targetType={r.target_type}
-                          targetId={r.target_id}
-                          hidden={p?.hidden ?? false}
-                          contentExists={Boolean(p)}
-                        />
-                      </div>
-                    </div>
-                  </li>
+                  <ReportQueueRow
+                    key={r.id}
+                    href={href({ report: r.id })}
+                    active={activeReportId === r.id}
+                    reasons={reasons}
+                    reportCount={g.length}
+                    createdAt={r.created_at}
+                    ownerUsername={r.owner?.username}
+                    targetType={r.target_type}
+                    targetId={r.target_id}
+                    preview={p ? { title: p.title, hidden: p.hidden, image: p.image, kindLabel: kind.label, kindTone: kind.tone } : undefined}
+                  />
                 );
               })}
             </ul>
