@@ -218,7 +218,7 @@ async function streamRace(
           maxRetries: 0,
           signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
         });
-        if (!isLikelyTruncatedReply(final)) {
+        if (!isLikelyTruncatedReply(final, finishReason)) {
           full = final;
           flushReplyToClient(buffered.join(""), final, onChunk);
         }
