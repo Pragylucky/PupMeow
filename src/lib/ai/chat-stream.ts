@@ -6,7 +6,8 @@ import { buildChatModelChain } from "./chat-fallback";
 import { flattenAiErrorMessage } from "./errors";
 
 const CHAT_MAX_RETRIES = 1;
-const CHAT_TIMEOUT_MS = 22_000;
+/** Match /api/ai/chat maxDuration — short timeouts were cutting replies mid-sentence. */
+const CHAT_TIMEOUT_MS = 55_000;
 
 export type ChatStreamParams = {
   system: string;
@@ -25,16 +26,18 @@ async function drainTextStream(
     full += chunk;
     onChunk(chunk);
   }
-  if (!full.trim()) {
-    try {
-      const rest = await result.text;
-      if (rest?.trim()) {
-        full = rest;
-        onChunk(rest);
-      }
-    } catch {
-      /* ignore */
+  try {
+    const complete = await result.text;
+    if (complete.length > full.length) {
+      const extra = complete.slice(full.length);
+      full = complete;
+      onChunk(extra);
+    } else if (!full.trim() && complete.trim()) {
+      full = complete;
+      onChunk(complete);
     }
+  } catch {
+    /* stream may already be closed */
   }
   return full;
 }
@@ -46,6 +49,7 @@ async function streamOne(
   onChunk: (chunk: string) => void,
   opts: { maxRetries: number; signal: AbortSignal },
 ): Promise<{ full: string; provider: AiProviderName } | null> {
+  const buffered: string[] = [];
   const result = streamText({
     model,
     system: params.system,
@@ -55,9 +59,17 @@ async function streamOne(
     maxRetries: opts.maxRetries,
     abortSignal: opts.signal,
   });
-  const full = await drainTextStream(result, onChunk);
-  if (!full.trim()) return null;
-  return { full, provider };
+  try {
+    const full = await drainTextStream(result, (c) => buffered.push(c));
+    if (!full.trim()) return null;
+    for (const c of buffered) onChunk(c);
+    return { full, provider };
+  } catch (err) {
+    if (buffered.length) {
+      console.warn("[ai/chat] dropped partial stream from", provider, flattenAiErrorMessage(err));
+    }
+    throw err;
+  }
 }
 
 async function streamSequential(
@@ -94,7 +106,6 @@ async function streamRace(
   const controllers = chain.map(() => new AbortController());
   let winner: AiProviderName | null = null;
   let full = "";
-  const errors: unknown[] = [];
 
   const claim = (provider: AiProviderName): boolean => {
     if (winner !== null) return winner === provider;
@@ -108,7 +119,7 @@ async function streamRace(
 
   const run = async (idx: number) => {
     const { model, provider } = chain[idx]!;
-    let local = "";
+    const buffered: string[] = [];
     try {
       const result = streamText({
         model,
@@ -122,28 +133,31 @@ async function streamRace(
           AbortSignal.timeout(CHAT_TIMEOUT_MS),
         ]),
       });
+      let local = "";
       for await (const chunk of result.textStream) {
         if (!chunk) continue;
         if (!claim(provider)) break;
         local += chunk;
-        full += chunk;
-        onChunk(chunk);
+        buffered.push(chunk);
       }
-      if (winner === provider && !local.trim()) {
+      if (winner === provider) {
         try {
-          const rest = await result.text;
-          if (rest?.trim()) {
-            local = rest;
-            full += rest;
-            onChunk(rest);
+          const complete = await result.text;
+          if (complete.length > local.length) {
+            const extra = complete.slice(local.length);
+            local = complete;
+            buffered.push(extra);
           }
         } catch {
           /* ignore */
         }
       }
+      if (winner === provider && local.trim()) {
+        full = local;
+        for (const c of buffered) onChunk(c);
+      }
     } catch (err) {
       if (controllers[idx]?.signal.aborted && winner && winner !== provider) return;
-      errors.push(err);
       if (!winner) {
         console.warn("[ai/chat] race candidate failed", provider, flattenAiErrorMessage(err));
       }
@@ -158,7 +172,7 @@ async function streamRace(
   return streamSequential(chain, params, onChunk);
 }
 
-/** Stream Kaia reply — parallel race when multiple keys are set, else single provider. */
+/** Stream Kaia reply — sequential by default; optional parallel race via AI_CHAT_RACE=true. */
 export async function streamChatToWriter(
   params: ChatStreamParams,
   onChunk: (chunk: string) => void,

@@ -65,7 +65,7 @@ New Google AI Studio keys must use **`gemini-3.8-flash`** (the app default). **2
 
 **Fastest fix (Groq):** [console.groq.com](https://console.groq.com) → API key → Vercel `GROQ_API_KEY` → redeploy. Kaia tries **Groq first**, then Gemini if Groq fails (keep `GOOGLE_GENERATIVE_AI_API_KEY` for backup). Check `/api/ai/status` → `chatTryOrder`.
 
-Override order: `AI_CHAT_TRY_ORDER=groq,google`. With **both** keys set, Kaia **races** them in parallel (first stream wins; others cancelled) — set `AI_CHAT_RACE=false` for sequential fallback only.
+Override order: `AI_CHAT_TRY_ORDER=groq,google`. With **both** keys set, Kaia tries **Groq first**, then Gemini if needed (sequential). Optional `AI_CHAT_RACE=true` for parallel race (not recommended for v1).
 
 Lost-pet embeddings still need **Gemini or OpenAI** (`AI_EMBEDDING_PROVIDER`) if you drop Gemini entirely.
 
