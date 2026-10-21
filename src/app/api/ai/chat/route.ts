@@ -3,7 +3,7 @@ import { aiGuard, sameOrigin } from "@/lib/ai/guard";
 import { streamChatToWriter } from "@/lib/ai/chat-stream";
 import { assistantSystemPrompt, petContextFor } from "@/lib/ai/prompts";
 import { detectEmergency } from "@/lib/ai/emergency";
-import { userFacingAiError } from "@/lib/ai/errors";
+import { KAIA_UNABLE_TO_REPLY, userFacingKaiaChatError } from "@/lib/ai/kaia-messages";
 import { chatRequestSchema } from "@/lib/validations/ai";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { HealthRecordRow, PetRow } from "@/types/database";
@@ -87,10 +87,14 @@ export async function POST(req: NextRequest) {
         console.info("[ai/chat] replied via", out.provider);
       } catch (err) {
         console.error("[ai/chat]", err);
-        const fallback = userFacingAiError(err);
+        const fallback = userFacingKaiaChatError(err);
         full = fallback;
         controller.enqueue(encoder.encode(fallback));
       } finally {
+        if (!full.trim()) {
+          full = KAIA_UNABLE_TO_REPLY;
+          controller.enqueue(encoder.encode(full));
+        }
         if (full.trim()) {
           await supabase.from("ai_messages").insert({ conversation_id: convId, user_id: userId, role: "assistant", content: full.slice(0, 12000) });
           await supabase.from("ai_conversations").update({ pet_id: petId ?? null }).eq("id", convId);
@@ -103,7 +107,8 @@ export async function POST(req: NextRequest) {
   return new Response(stream, {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "no-store",
+      "Cache-Control": "no-store, no-transform",
+      "X-Accel-Buffering": "no",
       "X-Conversation-Id": convId,
       "X-PM-Emergency": emergency ? "1" : "0",
       "X-AI-Remaining": String(remaining),

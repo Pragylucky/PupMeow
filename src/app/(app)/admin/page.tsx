@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { X } from "lucide-react";
+import { EyeOff, X } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { MINI_PROFILE, PROFILE_PUBLIC, LOST_FOUND_COLUMNS, ADOPTION_COLUMNS } from "@/lib/columns";
@@ -12,6 +12,7 @@ import { FilterChip } from "@/components/ui/chip";
 import { PetImage } from "@/components/brand/pet-image";
 import { REPORT_REASONS } from "@/lib/constants";
 import { cn, displayName, formatDate, sinceLabel } from "@/lib/utils";
+import { moderationPreviewImage } from "@/lib/moderation/visibility";
 import { ReportActions, BanButton } from "./admin-client";
 import type { ProfileRow, ReportRow, ReportTarget } from "@/types/database";
 import type { MiniProfile } from "@/types/models";
@@ -178,8 +179,14 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
                   <li key={r.id} className="border-b border-border last:border-0">
                     <Link href={href({ report: r.id })} scroll={false} className={cn("grid items-center gap-3 px-4 py-3.5 hover:bg-surface-2 md:grid-cols-[minmax(0,1fr)_140px_90px_80px]", active && "bg-cream text-ink hover:bg-cream")}>
                       <span className="flex min-w-0 items-center gap-3">
-                        <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[0.7rem] bg-surface-2">
-                          {p?.image ? <PetImage src={p.image} alt="" species="dog" sizes="48px" /> : <span className="flex h-full items-center justify-center text-xs font-extrabold text-muted">{KIND[r.target_type].label}</span>}
+                        <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[0.7rem] bg-surface-2">
+                          {moderationPreviewImage(p) ? (
+                            <PetImage src={moderationPreviewImage(p)!} alt="" species="dog" sizes="48px" />
+                          ) : p?.hidden ? (
+                            <EyeOff className="h-5 w-5 text-muted" aria-hidden />
+                          ) : (
+                            <span className="text-xs font-extrabold text-muted">{KIND[r.target_type].label}</span>
+                          )}
                         </span>
                         <span className="min-w-0">
                           <span className="block truncate font-bold">{p?.title ?? "Deleted content"}</span>
@@ -219,14 +226,26 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
                 <Link href={href({})} scroll={false} className="rounded-full p-2 text-muted hover:bg-surface-2" aria-label="Close details"><X className="h-5 w-5" /></Link>
               </div>
               {p ? (
-                <Link href={p.href} target="_blank" className="mt-4 block overflow-hidden rounded-[var(--radius-md)] border-2 border-border hover:border-text">
-                  {p.image && <span className="relative block aspect-[16/9]"><PetImage src={p.image} alt="" species="dog" sizes="380px" /></span>}
-                  <span className="block p-3">
-                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-extrabold", KIND[r.target_type].tone)}>{p.kind}</span>
+                <div className="mt-4 overflow-hidden rounded-[var(--radius-md)] border-2 border-border">
+                  {p.hidden && (
+                    <p className="flex items-center gap-2 bg-warning-soft px-3 py-2 text-sm font-semibold text-warning">
+                      <EyeOff className="h-4 w-4 shrink-0" aria-hidden /> Hidden for review — photos withheld here. Public cannot see this listing.
+                    </p>
+                  )}
+                  {moderationPreviewImage(p) ? (
+                    <Link href={p.href} target="_blank" className="block hover:opacity-95">
+                      <span className="relative block aspect-[16/9]"><PetImage src={moderationPreviewImage(p)!} alt="" species="dog" sizes="380px" /></span>
+                    </Link>
+                  ) : null}
+                  <div className="p-3">
+                    {!p.hidden && (
+                      <Link href={p.href} target="_blank" className="text-sm font-bold text-primary underline">Open on Pupmeow</Link>
+                    )}
+                    <span className={cn("mt-2 inline-block rounded-full px-2 py-0.5 text-xs font-extrabold", KIND[r.target_type].tone)}>{p.kind}</span>
                     <span className="mt-2 block whitespace-pre-line text-[0.92rem]">{highlight(p.text)}</span>
-                  </span>
-                </Link>
-              ) : <p className="mt-3 text-sm text-muted">The content was deleted.</p>}
+                  </div>
+                </div>
+              ) : <p className="mt-3 text-sm text-muted">The content was removed. Reports stay in the queue until you resolve or dismiss them.</p>}
               <h3 className="mt-5 font-heading text-lg font-semibold">Why people reported it</h3>
               <ul className="mt-2 space-y-1.5 text-[0.92rem]">
                 {[...counts.entries()].map(([k, n]) => <li key={k} className="flex gap-2"><span className="w-7 shrink-0 font-extrabold">{n}×</span><span>{k}</span></li>)}
@@ -245,7 +264,7 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
               )}
             </section>
             <section className="rounded-[var(--radius-lg)] bg-surface p-4 shadow-[var(--shadow-card)]">
-              <ReportActions reportIds={current.map((x) => x.id)} status={r.status} targetType={r.target_type} targetId={r.target_id} hidden={p?.hidden ?? false} ownerId={r.owner?.id ?? null} ownerBanned={r.owner?.is_banned ?? false} />
+              <ReportActions reportIds={current.map((x) => x.id)} status={r.status} targetType={r.target_type} targetId={r.target_id} hidden={p?.hidden ?? false} contentExists={Boolean(p)} ownerId={r.owner?.id ?? null} ownerBanned={r.owner?.is_banned ?? false} />
             </section>
           </aside>
         );

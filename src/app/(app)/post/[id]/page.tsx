@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
+import { canViewHiddenContent } from "@/lib/moderation/visibility";
 import { createClient } from "@/lib/supabase/server";
 import { POST_WITH_RELATIONS, MINI_PROFILE } from "@/lib/columns";
 import { withLikes } from "@/lib/feed";
@@ -23,6 +24,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   const supabase = await createClient();
   const { data } = await supabase.from("posts").select(POST_WITH_RELATIONS).eq("id", id).maybeSingle();
   if (!data) notFound();
+  if (!canViewHiddenContent({ is_hidden: data.is_hidden, author_id: data.author_id }, profile)) notFound();
   const [post] = await withLikes(supabase, profile.id, [data as Omit<FeedPost, "liked_by_me">]);
   const { data: comments } = await supabase
     .from("comments")

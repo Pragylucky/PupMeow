@@ -24,7 +24,40 @@ export async function adminSetHidden(targetType: string, targetId: string, hidde
   const { error } = await ctx.supabase.rpc("admin_set_hidden", { p_target_type: t.data, p_target_id: id.data, p_hidden: hidden });
   if (error) return { ok: false, error: friendlyError(error) };
   revalidatePath("/admin");
-  return { ok: true, message: hidden ? "Content hidden" : "Content restored" };
+  revalidatePath("/feed");
+  revalidatePath("/lost");
+  revalidatePath("/adopt");
+  revalidatePath("/match");
+  if (t.data === "post") revalidatePath(`/post/${id.data}`);
+  if (t.data === "lost_found") revalidatePath(`/lost/${id.data}`);
+  if (t.data === "adoption") revalidatePath(`/adopt/${id.data}`);
+  return { ok: true, message: hidden ? "Hidden for review (off the app)" : "Content restored" };
+}
+
+export async function adminDeleteTarget(targetType: string, targetId: string, reason: string): Promise<ActionResult> {
+  const ctx = await adminCtx();
+  if ("error" in ctx) return { ok: false, error: ctx.error };
+  const t = targetSchema.safeParse(targetType);
+  const id = z.uuid().safeParse(targetId);
+  const r = (reason ?? "").trim();
+  if (!t.success || !id.success) return { ok: false, error: "Invalid target" };
+  if (t.data === "profile") return { ok: false, error: "Use ban for user profiles." };
+  if (r.length < 3) return { ok: false, error: "Please add a short reason for removal (audit log)." };
+  const { error } = await ctx.supabase.rpc("admin_delete_target", {
+    p_target_type: t.data,
+    p_target_id: id.data,
+    p_reason: r,
+  });
+  if (error) return { ok: false, error: friendlyError(error) };
+  revalidatePath("/admin");
+  revalidatePath("/feed");
+  revalidatePath("/lost");
+  revalidatePath("/adopt");
+  revalidatePath("/match");
+  if (t.data === "post") revalidatePath(`/post/${id.data}`);
+  if (t.data === "lost_found") revalidatePath(`/lost/${id.data}`);
+  if (t.data === "adoption") revalidatePath(`/adopt/${id.data}`);
+  return { ok: true, message: "Content removed permanently" };
 }
 
 export async function adminSetBan(userId: string, banned: boolean, reason?: string): Promise<ActionResult> {

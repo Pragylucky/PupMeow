@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/toast";
 import { Markdown } from "@/components/features/ai/markdown";
 import { KaiaAvatar } from "@/components/features/ai/kaia-avatar";
 import { detectEmergency } from "@/lib/ai/emergency";
+import { KAIA_REPLY_TIMEOUT, KAIA_UNABLE_TO_REPLY, userFacingKaiaChatError } from "@/lib/ai/kaia-messages";
 import { cn, timeAgo } from "@/lib/utils";
 import { deleteConversation } from "./actions";
 import type { AiConversationRow, PetRow } from "@/types/database";
@@ -27,6 +28,8 @@ const STARTERS = [
 ];
 
 const VET_SEARCH = "https://www.google.com/maps/search/?api=1&query=24+hour+veterinary+hospital+near+me";
+/** If Kaia hasn't sent a real reply by then, show a friendly timeout message. */
+const KAIA_CLIENT_WAIT_MS = 20_000;
 
 /** Marks Kaia replies that follow an emergency-sounding message (for saved chats). */
 export function withEmergencyFlags(list: Msg[]): Msg[] {
@@ -72,23 +75,33 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
     setMessages((m) => [...m, userMsg, { id: botId, role: "assistant", content: "", emergency }]);
     setInput("");
     setBusy(true);
+    const abort = new AbortController();
+    let timedOut = false;
+    let receivedAnyText = false;
+    const waitTimer = window.setTimeout(() => {
+      if (!receivedAnyText) {
+        timedOut = true;
+        abort.abort();
+      }
+    }, KAIA_CLIENT_WAIT_MS);
     try {
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversationId: convId, petId: petId || null, message }),
+        signal: abort.signal,
       });
       if (!res.ok || !res.body) {
         const raw = await res.text().catch(() => "");
-        let message = "Kaia is unavailable right now.";
+        let errText = "";
         try {
           const j = JSON.parse(raw) as { error?: string };
-          if (j.error) message = j.error;
+          if (j.error) errText = j.error;
         } catch {
-          if (raw && raw.length < 280 && !raw.includes("<!DOCTYPE")) message = raw;
+          if (raw && raw.length < 280 && !raw.includes("<!DOCTYPE")) errText = raw;
         }
-        throw new Error(message);
+        throw new Error(errText || KAIA_UNABLE_TO_REPLY);
       }
       const newId = res.headers.get("X-Conversation-Id");
       const left = Number(res.headers.get("X-AI-Remaining"));
@@ -101,20 +114,24 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
         const { value, done } = await reader.read();
         if (done) break;
         acc += decoder.decode(value, { stream: true });
+        if (acc.trim()) receivedAnyText = true;
         setMessages((m) => m.map((x) => (x.id === botId ? { ...x, content: acc } : x)));
       }
       acc += decoder.decode();
-      if (acc.trim()) {
-        setMessages((m) => m.map((x) => (x.id === botId ? { ...x, content: acc } : x)));
-      }
+      const finalText = acc.trim() ? acc : KAIA_UNABLE_TO_REPLY;
+      setMessages((m) => m.map((x) => (x.id === botId ? { ...x, content: finalText } : x)));
       if (newId && newId !== convId) {
         setConvId(newId);
         window.history.replaceState(null, "", `/assistant/${newId}`);
         router.refresh();
       }
     } catch (e) {
-      setMessages((m) => m.map((x) => (x.id === botId ? { ...x, content: e instanceof Error ? e.message : "Something went wrong." } : x)));
+      const friendly = timedOut
+        ? KAIA_REPLY_TIMEOUT
+        : userFacingKaiaChatError(e);
+      setMessages((m) => m.map((x) => (x.id === botId ? { ...x, content: friendly } : x)));
     } finally {
+      window.clearTimeout(waitTimer);
       setBusy(false);
     }
   };

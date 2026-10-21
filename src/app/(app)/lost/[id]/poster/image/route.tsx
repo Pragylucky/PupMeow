@@ -11,7 +11,7 @@ export const runtime = "nodejs";
 /** 1080×1350 poster image for WhatsApp status, society groups and Instagram. */
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const item = await getLostFound((await params).id, true);
-  if (!item) return new Response("Not found", { status: 404 });
+  if (!item || item.is_hidden) return new Response("Not found", { status: 404 });
   const url = `${env.siteUrl}/lost/${item.id}`;
   const [qr, photo, fonts] = await Promise.all([
     QRCode.toDataURL(url, { margin: 1, width: 400, color: { dark: "#1a2233", light: "#ffffff" } }),

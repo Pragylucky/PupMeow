@@ -23,7 +23,16 @@ function inline(text: string, keyBase: string) {
     } else out.push(<em key={`${keyBase}-i${i++}`}>{tok.slice(1, -1)}</em>);
     last = m.index + tok.length;
   }
-  if (last < text.length) out.push(<Fragment key={`${keyBase}-end`}>{text.slice(last)}</Fragment>);
+  if (last < text.length) {
+    const tail = text.slice(last);
+    const openBold = tail.indexOf("**");
+    if (openBold >= 0 && tail.indexOf("**", openBold + 2) < 0) {
+      if (openBold > 0) out.push(<Fragment key={`${keyBase}-pre`}>{tail.slice(0, openBold)}</Fragment>);
+      out.push(<strong key={`${keyBase}-open`}>{tail.slice(openBold + 2)}</strong>);
+    } else {
+      out.push(<Fragment key={`${keyBase}-end`}>{tail}</Fragment>);
+    }
+  }
   return out;
 }
 

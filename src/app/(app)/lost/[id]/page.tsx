@@ -3,7 +3,8 @@ import { OnlyAt } from "@/components/layout/only-at";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, ExternalLink, MapPin, Printer } from "lucide-react";
-import { getUser, getViewer } from "@/lib/auth";
+import { getCurrentProfile, getUser, getViewer } from "@/lib/auth";
+import { canViewHiddenContent } from "@/lib/moderation/visibility";
 import { isAiLostMatchingEnabled } from "@/lib/ai/config";
 import { PhotoGallery } from "@/components/features/upload/lightbox";
 import { ContactButton } from "@/components/features/listings/contact-button";
@@ -33,6 +34,8 @@ export default async function LostDetailPage({ params }: { params: Promise<{ id:
   if (!item) notFound();
   const viewer = await getViewer();
   const user = await getUser();
+  const profile = await getCurrentProfile();
+  if (!canViewHiddenContent(item, profile)) notFound();
   const isOwner = (user ?? viewer)?.id === item.author_id;
   const reunited = item.status === "reunited";
   const lost = item.type === "lost";
