@@ -84,8 +84,8 @@ export async function POST(req: NextRequest) {
           },
         );
         full = out.full;
-        if (out.provider === "openai") {
-          console.info("[ai/chat] used OpenAI fallback");
+        if (out.provider !== "google") {
+          console.info("[ai/chat] used fallback provider", out.provider);
         }
       } catch (err) {
         console.error("[ai/chat]", err);

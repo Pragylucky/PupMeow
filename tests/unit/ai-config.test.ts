@@ -47,6 +47,14 @@ describe("ai config cost toggles", async () => {
     expect(mod.isAiAssistantEnabled()).toBe(true);
   });
 
+  it("accepts AI_PROVIDER=xai when XAI_API_KEY is set", () => {
+    vi.stubEnv("AI_PROVIDER", "xai");
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
+    vi.stubEnv("XAI_API_KEY", "xai-test-key");
+    expect(mod.getAiProviderName()).toBe("xai");
+    expect(mod.isAiEnabled()).toBe(true);
+  });
+
   it("clamps AI_DAILY_LIMIT", () => {
     vi.stubEnv("AI_DAILY_LIMIT", "99");
     expect(mod.getAiDailyLimit()).toBe(30);

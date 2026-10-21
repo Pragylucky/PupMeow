@@ -1,7 +1,7 @@
 import "server-only";
 import { embed, generateText, Output } from "ai";
 import { embeddingProviderOptions, getEmbeddingModel, getLanguageModel } from "./provider";
-import { isAiEnabled } from "./config";
+import { getEmbeddingProviderName, isAiEnabled } from "./config";
 import { VISION_PROMPT } from "./prompts";
 import { petVisionResultSchema, type PetVisionResult } from "@/lib/validations/ai";
 import { env } from "@/lib/env";
@@ -43,10 +43,14 @@ export async function describePetPhoto(imageUrl: string): Promise<PetVisionResul
 }
 
 export async function embedText(text: string): Promise<number[]> {
+  const embedProvider = getEmbeddingProviderName();
   const { embedding } = await embed({
     model: getEmbeddingModel(),
     value: text.slice(0, 2000),
-    providerOptions: embeddingProviderOptions,
+    providerOptions:
+      embedProvider === "openai"
+        ? { openai: embeddingProviderOptions.openai }
+        : { google: embeddingProviderOptions.google },
     abortSignal: AbortSignal.timeout(10000),
     maxRetries: 1,
   });

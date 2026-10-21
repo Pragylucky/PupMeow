@@ -1,8 +1,8 @@
 import "server-only";
 import { streamText } from "ai";
-import { getAiProviderName, isOpenAiChatFallbackEnabled } from "./config";
+import type { AiProviderName } from "./config";
+import { buildChatModelChain } from "./chat-fallback";
 import { flattenAiErrorMessage } from "./errors";
-import { getLanguageModel, getOpenAiChatModel } from "./provider";
 
 const CHAT_MAX_RETRIES = 1;
 const CHAT_TIMEOUT_MS = 28_000;
@@ -14,20 +14,12 @@ export type ChatStreamParams = {
   temperature?: number;
 };
 
-/** Stream Kaia reply; optional OpenAI fallback when Gemini is slow or down. */
+/** Stream Kaia reply; tries Gemini then Grok/OpenAI fallbacks when configured. */
 export async function streamChatToWriter(
   params: ChatStreamParams,
   onChunk: (chunk: string) => void,
-): Promise<{ full: string; provider: "google" | "openai" }> {
-  const chain: { model: ReturnType<typeof getLanguageModel>; provider: "google" | "openai" }[] = [];
-  const primary = getAiProviderName();
-  if (!primary) throw new Error("AI is not configured");
-  chain.push({ model: getLanguageModel(), provider: primary });
-
-  const fallback = getOpenAiChatModel();
-  if (fallback && primary === "google" && isOpenAiChatFallbackEnabled()) {
-    chain.push({ model: fallback, provider: "openai" });
-  }
+): Promise<{ full: string; provider: AiProviderName }> {
+  const chain = buildChatModelChain();
 
   let lastErr: unknown;
   for (let i = 0; i < chain.length; i++) {
