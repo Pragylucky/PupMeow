@@ -55,30 +55,46 @@ export function ReportActions({
   const [deleteReason, setDeleteReason] = useState("");
   const label = targetType === "post" ? "post" : targetType === "comment" ? "comment" : targetType === "lost_found" ? "report" : targetType === "adoption" ? "listing" : targetType === "match_profile" ? "profile" : "profile";
   const canModerateContent = targetType !== "profile" && contentExists;
+  const isProfileReport = targetType === "profile";
 
   return (
     <div className="space-y-3">
-      {!contentExists && targetType !== "profile" && (
-        <p className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-2 text-sm font-semibold text-muted">This content was removed. Resolve or dismiss the reports below.</p>
+      <div>
+        <h3 className="font-heading text-lg font-semibold">Hide or delete</h3>
+        <p className="mt-0.5 text-sm text-muted">
+          {isProfileReport ? "Profile reports: restrict or ban the user below." : "Hide removes it from the app for review. Delete removes it permanently."}
+        </p>
+      </div>
+      {!contentExists && !isProfileReport && (
+        <p className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-2 text-sm font-semibold text-muted">This content was already deleted. Resolve or dismiss the reports below.</p>
       )}
       {canModerateContent && (
-        <div className="space-y-2">
-          <p className="text-xs font-extrabold uppercase tracking-wider text-muted">Content</p>
-          <div className="flex flex-wrap gap-2">
-            {hidden ? (
-              <Button variant="outline" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, false))}>
-                <Eye className="h-4 w-4" aria-hidden /> Restore {label}
-              </Button>
-            ) : (
-              <Button variant="soft" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, true))}>
-                <EyeOff className="h-4 w-4" aria-hidden /> Hide for review
-              </Button>
-            )}
-            <Button variant="danger" disabled={pending} onClick={() => { setDeleteReason(""); setDeleteOpen(true); }}>
-              <Trash2 className="h-4 w-4" aria-hidden /> Remove permanently
+        <div className="flex flex-wrap gap-2">
+          {hidden ? (
+            <Button variant="outline" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, false))}>
+              <Eye className="h-4 w-4" aria-hidden /> Unhide {label}
             </Button>
-          </div>
-          <p className="text-xs text-muted"><strong>Hide for review</strong> takes it off the app but keeps it for moderators. <strong>Remove</strong> deletes it for everyone.</p>
+          ) : (
+            <Button variant="soft" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, true))}>
+              <EyeOff className="h-4 w-4" aria-hidden /> Hide
+            </Button>
+          )}
+          <Button variant="danger" disabled={pending} onClick={() => { setDeleteReason(""); setDeleteOpen(true); }}>
+            <Trash2 className="h-4 w-4" aria-hidden /> Delete
+          </Button>
+        </div>
+      )}
+      {isProfileReport && contentExists && ownerId && (
+        <div className="flex flex-wrap gap-2">
+          {hidden ? (
+            <Button variant="outline" disabled={pending} onClick={() => run(() => adminSetHidden("profile", targetId, false))}>
+              <Eye className="h-4 w-4" aria-hidden /> Unrestrict user
+            </Button>
+          ) : (
+            <Button variant="soft" disabled={pending} onClick={() => run(() => adminSetHidden("profile", targetId, true))}>
+              <EyeOff className="h-4 w-4" aria-hidden /> Hide profile (ban)
+            </Button>
+          )}
         </div>
       )}
       {ownerId && <BanButton userId={ownerId} banned={ownerBanned} big />}
@@ -94,9 +110,9 @@ export function ReportActions({
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         destructive
-        title={`Remove this ${label} permanently?`}
-        description="This cannot be undone. Photos and text will be deleted from Pupmeow. Open reports for this item will be marked resolved."
-        confirmLabel="Remove permanently"
+        title={`Delete this ${label}?`}
+        description="This cannot be undone. Photos and text will be removed from Pupmeow. Open reports for this item will be marked resolved."
+        confirmLabel="Delete permanently"
         loading={pending}
         confirmDisabled={deleteReason.trim().length < 3}
         onConfirm={() => {
@@ -119,6 +135,58 @@ export function ReportActions({
         />
       </ConfirmDialog>
     </div>
+  );
+}
+
+/** Compact Hide / Delete on each queue row (desktop). */
+export function ReportRowActions(props: {
+  targetType: ReportTarget;
+  targetId: string;
+  hidden: boolean;
+  contentExists: boolean;
+}) {
+  const { targetType, targetId, hidden, contentExists } = props;
+  const { pending, run } = useRun();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
+  if (targetType === "profile" || !contentExists) return null;
+
+  return (
+    <>
+      <div className="flex shrink-0 flex-col gap-1.5 sm:flex-row sm:items-center">
+        {hidden ? (
+          <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, false))}>Unhide</Button>
+        ) : (
+          <Button size="sm" variant="soft" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, true))}>Hide</Button>
+        )}
+        <Button size="sm" variant="danger" disabled={pending} onClick={() => { setDeleteReason(""); setDeleteOpen(true); }}>Delete</Button>
+      </div>
+      <ConfirmDialog
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        destructive
+        title="Delete this content?"
+        description="Permanent. Open reports for this item will be marked resolved."
+        confirmLabel="Delete"
+        loading={pending}
+        confirmDisabled={deleteReason.trim().length < 3}
+        onConfirm={() => {
+          const reason = deleteReason.trim();
+          setDeleteOpen(false);
+          run(() => adminDeleteTarget(targetType, targetId, reason));
+        }}
+      >
+        <Textarea
+          label="Reason (audit log)"
+          name="delete_reason_row"
+          value={deleteReason}
+          onChange={(e) => setDeleteReason(e.target.value)}
+          rows={2}
+          maxLength={500}
+          placeholder="Short reason…"
+        />
+      </ConfirmDialog>
+    </>
   );
 }
 

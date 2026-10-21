@@ -48,7 +48,13 @@ export async function adminDeleteTarget(targetType: string, targetId: string, re
     p_target_id: id.data,
     p_reason: r,
   });
-  if (error) return { ok: false, error: friendlyError(error) };
+  if (error) {
+    const msg = friendlyError(error);
+    if (msg.toLowerCase().includes("admin_delete_target") || msg.toLowerCase().includes("could not find the function")) {
+      return { ok: false, error: "Delete is not set up on the database yet. Run migration 20261021000000_admin_delete_content.sql in Supabase." };
+    }
+    return { ok: false, error: msg };
+  }
   revalidatePath("/admin");
   revalidatePath("/feed");
   revalidatePath("/lost");
@@ -57,7 +63,7 @@ export async function adminDeleteTarget(targetType: string, targetId: string, re
   if (t.data === "post") revalidatePath(`/post/${id.data}`);
   if (t.data === "lost_found") revalidatePath(`/lost/${id.data}`);
   if (t.data === "adoption") revalidatePath(`/adopt/${id.data}`);
-  return { ok: true, message: "Content removed permanently" };
+  return { ok: true, message: "Content deleted" };
 }
 
 export async function adminSetBan(userId: string, banned: boolean, reason?: string): Promise<ActionResult> {

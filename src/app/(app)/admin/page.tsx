@@ -13,7 +13,7 @@ import { PetImage } from "@/components/brand/pet-image";
 import { REPORT_REASONS } from "@/lib/constants";
 import { cn, displayName, formatDate, sinceLabel } from "@/lib/utils";
 import { moderationPreviewImage } from "@/lib/moderation/visibility";
-import { ReportActions, BanButton } from "./admin-client";
+import { ReportActions, ReportRowActions, BanButton } from "./admin-client";
 import type { ProfileRow, ReportRow, ReportTarget } from "@/types/database";
 import type { MiniProfile } from "@/types/models";
 
@@ -146,11 +146,12 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
   const groups = new Map<string, Report[]>();
   for (const r of raw) groups.set(`${r.target_type}:${r.target_id}`, [...(groups.get(`${r.target_type}:${r.target_id}`) ?? []), r]);
   const rows = [...groups.values()];
-  const current = rows.find((g) => g.some((r) => r.id === selected)) ?? null;
+  const current = rows.find((g) => g.some((r) => r.id === selected)) ?? rows[0] ?? null;
   const href = (p: Record<string, string>) => `/admin?${new URLSearchParams({ tab: "reports", status, type: type.value, ...p })}`;
+  const activeReportId = current?.[0]?.id;
 
   return (
-    <div className={cn("grid gap-5", current && "xl:grid-cols-[minmax(0,1fr)_380px]")}>
+    <div className={cn("grid gap-5", rows.length > 0 && "lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)]")}>
       <section className="min-w-0 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <nav aria-label="Report type" className="no-scrollbar flex gap-2 overflow-x-auto">
@@ -166,19 +167,20 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
           <EmptyState tone="card" art="paw" title="Queue is clear" description="Nothing to review here. Good job, team." />
         ) : (
           <div className="overflow-hidden rounded-[var(--radius-lg)] bg-surface shadow-[var(--shadow-card)]">
-            <div className="hidden grid-cols-[minmax(0,1fr)_140px_90px_80px] gap-3 border-b border-border px-4 py-3 text-xs font-extrabold uppercase tracking-wider text-muted md:grid">
-              <span>Reported item</span><span>Reason</span><span>Reporters</span><span>Age</span>
+            <div className="hidden grid-cols-[minmax(0,1fr)_120px_72px_64px_auto] gap-3 border-b border-border px-4 py-3 text-xs font-extrabold uppercase tracking-wider text-muted lg:grid">
+              <span>Reported item</span><span>Reason</span><span>Reports</span><span>Age</span><span className="text-right">Actions</span>
             </div>
             <ul>
               {rows.map((g) => {
                 const r = g[0];
                 const p = map.get(r.target_id);
-                const active = current?.[0].id === r.id;
+                const active = activeReportId === r.id;
                 const reasons = [...new Set(g.map((x) => REASON[x.reason] ?? x.reason))];
                 return (
-                  <li key={r.id} className="border-b border-border last:border-0">
-                    <Link href={href({ report: r.id })} scroll={false} className={cn("grid items-center gap-3 px-4 py-3.5 hover:bg-surface-2 md:grid-cols-[minmax(0,1fr)_140px_90px_80px]", active && "bg-cream text-ink hover:bg-cream")}>
-                      <span className="flex min-w-0 items-center gap-3">
+                  <li key={r.id} className={cn("border-b border-border last:border-0", active && "bg-cream/60")}>
+                    <div className="grid items-center gap-3 px-4 py-3.5 lg:grid-cols-[minmax(0,1fr)_120px_72px_64px_auto]">
+                    <Link href={href({ report: r.id })} scroll={false} className={cn("flex min-w-0 items-center gap-3 hover:opacity-90", active && "text-ink")}>
+                      <span className="flex min-w-0 flex-1 items-center gap-3">
                         <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[0.7rem] bg-surface-2">
                           {moderationPreviewImage(p) ? (
                             <PetImage src={moderationPreviewImage(p)!} alt="" species="dog" sizes="48px" />
@@ -197,10 +199,19 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
                           </span>
                         </span>
                       </span>
-                      <span className="text-[0.9rem] font-semibold md:block"><span className="md:hidden">Reason: </span>{reasons.join(", ")}</span>
-                      <span className="font-heading text-lg font-semibold"><span className="text-sm font-sans font-bold text-muted md:hidden">Reporters: </span>{g.length}</span>
-                      <span className="text-sm font-semibold text-muted">{sinceLabel(r.created_at)}</span>
                     </Link>
+                      <span className="text-[0.9rem] font-semibold lg:block"><span className="lg:hidden text-muted">Reason: </span>{reasons.join(", ")}</span>
+                      <span className="font-heading text-lg font-semibold"><span className="text-sm font-sans font-bold text-muted lg:hidden">Reports: </span>{g.length}</span>
+                      <span className="text-sm font-semibold text-muted">{sinceLabel(r.created_at)}</span>
+                      <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+                        <ReportRowActions
+                          targetType={r.target_type}
+                          targetId={r.target_id}
+                          hidden={p?.hidden ?? false}
+                          contentExists={Boolean(p)}
+                        />
+                      </div>
+                    </div>
                   </li>
                 );
               })}
@@ -209,13 +220,13 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
         )}
       </section>
 
-      {current && (() => {
+      {current ? (() => {
         const r = current[0];
         const p = map.get(r.target_id);
         const counts = new Map<string, number>();
         for (const x of current) counts.set(REASON[x.reason] ?? x.reason, (counts.get(REASON[x.reason] ?? x.reason) ?? 0) + 1);
         return (
-          <aside aria-label="Report details" className="space-y-4 xl:sticky xl:top-[5.5rem] xl:self-start">
+          <aside aria-label="Report details" className="space-y-4 lg:sticky lg:top-[5.5rem] lg:self-start">
             <section className="rounded-[var(--radius-lg)] bg-surface p-5 shadow-[var(--shadow-card)]">
               <div className="flex items-start justify-between gap-2">
                 <div>
@@ -268,7 +279,7 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
             </section>
           </aside>
         );
-      })()}
+      })() : null}
     </div>
   );
 }
