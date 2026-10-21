@@ -84,9 +84,7 @@ export async function POST(req: NextRequest) {
           },
         );
         full = out.full;
-        if (out.provider !== "google") {
-          console.info("[ai/chat] used fallback provider", out.provider);
-        }
+        console.info("[ai/chat] replied via", out.provider);
       } catch (err) {
         console.error("[ai/chat]", err);
         const fallback = userFacingAiError(err);

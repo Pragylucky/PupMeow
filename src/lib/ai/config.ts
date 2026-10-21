@@ -1,5 +1,5 @@
 /** Safe to import anywhere: reads env only on the server, returns false in the browser. */
-export type AiProviderName = "google" | "openai" | "xai";
+export type AiProviderName = "google" | "openai" | "xai" | "groq";
 
 function envFlag(name: string, defaultOn = true): boolean {
   const v = (process.env[name] ?? "").trim().toLowerCase();
@@ -50,8 +50,20 @@ export function normalizeProviderName(raw: string): string {
   return p;
 }
 
+function isAiProviderName(name: string): name is AiProviderName {
+  return name === "google" || name === "openai" || name === "xai" || name === "groq";
+}
+
+export function hasGroqKey(): boolean {
+  return Boolean(trimEnv("GROQ_API_KEY"));
+}
+
 export function hasXaiKey(): boolean {
   return Boolean(trimEnv("XAI_API_KEY"));
+}
+
+export function hasOpenAiKey(): boolean {
+  return Boolean(trimEnv("OPENAI_API_KEY"));
 }
 
 export function hasProviderKey(provider: AiProviderName): boolean {
@@ -61,67 +73,59 @@ export function hasProviderKey(provider: AiProviderName): boolean {
   }
   if (provider === "openai") return hasOpenAiKey();
   if (provider === "xai") return hasXaiKey();
+  if (provider === "groq") return hasGroqKey();
   return false;
 }
 
-const CHAT_FALLBACK_ORDER: AiProviderName[] = ["xai", "openai"];
+/** Default Kaia chat order: Groq first (fast), then Gemini, then others. Override with AI_CHAT_TRY_ORDER. */
+const DEFAULT_CHAT_TRY_ORDER: AiProviderName[] = ["groq", "google", "openai", "xai"];
 
-/** Extra chat providers to try after the primary fails (see AI_CHAT_FALLBACK). */
+/** Providers to try for Kaia chat, in order, until one responds. */
+export function getKaiaChatProviderOrder(): AiProviderName[] {
+  const custom = trimEnv("AI_CHAT_TRY_ORDER");
+  const list = custom
+    ? custom.split(/[,|]+/).map((p) => normalizeProviderName(p.trim())).filter(isAiProviderName)
+    : DEFAULT_CHAT_TRY_ORDER;
+
+  const forced = normalizeProviderName(trimEnv("AI_PROVIDER"));
+  if (forced && isAiProviderName(forced) && hasProviderKey(forced) && !custom) {
+    const rest = list.filter((p) => p !== forced);
+    return [forced, ...rest].filter((p, i, arr) => hasProviderKey(p) && arr.indexOf(p) === i);
+  }
+
+  const seen = new Set<AiProviderName>();
+  return list.filter((p) => {
+    if (!hasProviderKey(p) || seen.has(p)) return false;
+    seen.add(p);
+    return true;
+  });
+}
+
+/** Extra chat providers to try after the primary fails (legacy; chat uses getKaiaChatProviderOrder). */
 export function getChatFallbackProviders(primary: AiProviderName): AiProviderName[] {
-  const v = trimEnv("AI_CHAT_FALLBACK").toLowerCase();
-  if (v === "false" || v === "0" || v === "off" || v === "no") return [];
-  if (primary !== "google") return [];
-
-  if (v === "true" || v === "1" || v === "on" || !v) {
-    return CHAT_FALLBACK_ORDER.filter((p) => hasProviderKey(p));
-  }
-
-  const picked: AiProviderName[] = [];
-  for (const part of v.split(/[,|]+/)) {
-    const name = normalizeProviderName(part.trim());
-    if (name === "google" || name === "openai" || name === "xai") {
-      picked.push(name);
-    }
-  }
-  return picked.filter((p) => p !== primary && hasProviderKey(p));
+  return getKaiaChatProviderOrder().filter((p) => p !== primary);
 }
 
-export function hasOpenAiKey(): boolean {
-  return Boolean(trimEnv("OPENAI_API_KEY"));
-}
-
-/** When Google is primary, use OpenAI for Kaia chat if Gemini fails (needs OPENAI_API_KEY). */
 export function isOpenAiChatFallbackEnabled(): boolean {
-  const primary = getAiProviderName();
-  return primary === "google" && getChatFallbackProviders(primary).includes("openai");
+  return getKaiaChatProviderOrder().includes("openai");
+}
+
+export function isGroqChatFallbackEnabled(): boolean {
+  return getKaiaChatProviderOrder().includes("groq");
 }
 
 export function isXaiChatFallbackEnabled(): boolean {
-  const primary = getAiProviderName();
-  return primary === "google" && getChatFallbackProviders(primary).includes("xai");
+  return getKaiaChatProviderOrder().includes("xai");
 }
 
+/** Primary provider label for ops (first in Kaia try order, or AI_PROVIDER). */
 export function getAiProviderName(): AiProviderName | null {
-  const googleKey = resolveGoogleGenerativeAiKey();
-  const googleOk = Boolean(googleKey && isValidGoogleGenerativeAiKey(googleKey));
-  const configured = normalizeProviderName(process.env.AI_PROVIDER ?? "");
-
-  if (configured === "xai" && hasXaiKey()) return "xai";
-  if (configured === "openai" && hasOpenAiKey()) return "openai";
-  if (configured === "google" && googleOk) return "google";
-
-  if (!configured) {
-    if (googleOk) return "google";
-    if (hasXaiKey()) return "xai";
-    if (hasOpenAiKey()) return "openai";
-  }
-  return null;
+  const order = getKaiaChatProviderOrder();
+  return order[0] ?? null;
 }
 
 export function isAiEnabled(): boolean {
-  const name = getAiProviderName();
-  if (!name) return false;
-  return hasProviderKey(name);
+  return getKaiaChatProviderOrder().length > 0;
 }
 
 /** Embeddings for lost-pet matching — can differ from Kaia chat provider. */
@@ -133,6 +137,17 @@ export function getEmbeddingProviderName(): AiProviderName | null {
   if (hasProviderKey("google")) return "google";
   if (hasProviderKey("openai")) return "openai";
   return null;
+}
+
+/** Vision / moderation / structured output — prefer Gemini when available. */
+export function getAuxiliaryLanguageProviderOrder(): AiProviderName[] {
+  const order: AiProviderName[] = ["google", "groq", "openai", "xai"];
+  const seen = new Set<AiProviderName>();
+  return order.filter((p) => {
+    if (!hasProviderKey(p) || seen.has(p)) return false;
+    seen.add(p);
+    return true;
+  });
 }
 
 /** Kaia chat / vision / write / health — set AI_ENABLED=false to hide without removing keys. */
@@ -172,24 +187,29 @@ export function getAiConfigStatus() {
   const openaiKey = trimEnv("OPENAI_API_KEY");
   const providerRaw = trimEnv("AI_PROVIDER");
   const provider = getAiProviderName();
+  const chatTryOrder = getKaiaChatProviderOrder();
   const googleKeyFormatOk = Boolean(googleKey && isValidGoogleGenerativeAiKey(googleKey));
   return {
     assistant: isAiAssistantEnabled(),
     provider,
+    chatTryOrder,
     hint: googleKey && !googleKeyFormatOk ? geminiKeyFormatHint() : undefined,
     checks: {
       aiEnabledFlag: envFlag("AI_ENABLED", true),
-      providerEnv: providerRaw || (googleKey ? "(auto: gemini key present)" : ""),
+      providerEnv: providerRaw || (chatTryOrder.length ? `(chat order: ${chatTryOrder.join(" → ")})` : ""),
       googleKey: Boolean(googleKey),
       googleKeyFormatOk,
+      groqKey: hasGroqKey(),
       openaiKey: Boolean(openaiKey),
       xaiKey: hasXaiKey(),
+      groqInChatOrder: isGroqChatFallbackEnabled(),
       openAiChatFallback: isOpenAiChatFallbackEnabled(),
       xaiChatFallback: isXaiChatFallbackEnabled(),
       envVarsPresent: {
         GOOGLE_GENERATIVE_AI_API_KEY: Boolean(normalizeApiKey(trimEnv("GOOGLE_GENERATIVE_AI_API_KEY"))),
         GEMINI_API_KEY: Boolean(normalizeApiKey(trimEnv("GEMINI_API_KEY"))),
         GOOGLE_API_KEY: Boolean(normalizeApiKey(trimEnv("GOOGLE_API_KEY"))),
+        GROQ_API_KEY: hasGroqKey(),
         XAI_API_KEY: hasXaiKey(),
       },
     },
