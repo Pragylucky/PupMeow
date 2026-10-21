@@ -152,7 +152,7 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
   const activeReportId = current?.[0]?.id;
 
   return (
-    <div className={cn("grid gap-5", rows.length > 0 && "lg:grid-cols-[minmax(0,1fr)_minmax(280px,380px)]")}>
+    <div className={cn("grid gap-5", rows.length > 0 && "xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)]")}>
       <section className="min-w-0 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <nav aria-label="Report type" className="no-scrollbar flex gap-2 overflow-x-auto">
@@ -168,8 +168,8 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
           <EmptyState tone="card" art="paw" title="Queue is clear" description="Nothing to review here. Good job, team." />
         ) : (
           <div className="overflow-hidden rounded-[var(--radius-lg)] bg-surface shadow-[var(--shadow-card)]">
-            <div className="hidden grid-cols-[minmax(0,1fr)_120px_72px_64px_auto] gap-3 border-b border-border px-4 py-3 text-xs font-extrabold uppercase tracking-wider text-muted lg:grid">
-              <span>Reported item</span><span>Reason</span><span>Reports</span><span>Age</span><span className="text-right">Actions</span>
+            <div className="hidden grid-cols-[minmax(0,1fr)_minmax(7rem,9rem)_3.5rem_4rem_minmax(10.5rem,auto)] gap-4 border-b border-border px-4 py-3 text-xs font-extrabold uppercase tracking-wider text-muted lg:grid">
+              <span>Reported item</span><span>Reason</span><span className="text-center">#</span><span className="text-right">Age</span><span className="text-right">Actions</span>
             </div>
             <ul>
               {rows.map((g) => {
@@ -203,7 +203,7 @@ async function ReportsQueue({ status, type, selected, supabase }: { status: stri
         const counts = new Map<string, number>();
         for (const x of current) counts.set(REASON[x.reason] ?? x.reason, (counts.get(REASON[x.reason] ?? x.reason) ?? 0) + 1);
         return (
-          <aside aria-label="Report details" className="space-y-4 lg:sticky lg:top-[5.5rem] lg:self-start">
+          <aside aria-label="Report details" className="max-h-[calc(100dvh-7rem)] space-y-4 overflow-y-auto lg:sticky lg:top-[5.5rem] lg:self-start">
             <section className="rounded-[var(--radius-lg)] bg-surface p-5 shadow-[var(--shadow-card)]">
               <div className="flex items-start justify-between gap-2">
                 <div>

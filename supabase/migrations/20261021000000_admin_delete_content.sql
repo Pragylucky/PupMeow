@@ -12,19 +12,23 @@ begin
     when 'match_profile' then update public.pet_match_profiles set is_hidden = p_hidden where id = p_target_id;
     when 'profile' then update public.profiles set is_banned = p_hidden where id = p_target_id and role <> 'admin';
   end case;
-  insert into public.admin_audit_log (admin_id, action, target_type, target_id, details)
-  values (
-    auth.uid(),
-    case
-      when p_target_type = 'profile' and p_hidden then 'hide_profile'
-      when p_target_type = 'profile' and not p_hidden then 'restore_profile'
-      when p_hidden then 'hide_content'
-      else 'restore_content'
-    end,
-    p_target_type::text,
-    p_target_id,
-    null
-  );
+  begin
+    insert into public.admin_audit_log (admin_id, action, target_type, target_id, details)
+    values (
+      auth.uid(),
+      case
+        when p_target_type = 'profile' and p_hidden then 'hide_profile'
+        when p_target_type = 'profile' and not p_hidden then 'restore_profile'
+        when p_hidden then 'hide_content'
+        else 'restore_content'
+      end,
+      p_target_type::text,
+      p_target_id,
+      null
+    );
+  exception when others then
+    null;
+  end;
 end; $$;
 
 create or replace function public.admin_delete_target(

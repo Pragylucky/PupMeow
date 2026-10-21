@@ -153,13 +153,13 @@ export function ReportRowActions(props: {
 
   return (
     <>
-      <div className="flex shrink-0 flex-col gap-1.5 sm:flex-row sm:items-center">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {hidden ? (
-          <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, false))}>Unhide</Button>
+          <Button size="sm" variant="outline" disabled={pending} className="min-w-[5.5rem]" onClick={() => run(() => adminSetHidden(targetType, targetId, false))}>Unhide</Button>
         ) : (
-          <Button size="sm" variant="soft" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, true))}>Hide</Button>
+          <Button size="sm" variant="soft" disabled={pending} className="min-w-[5.5rem]" onClick={() => run(() => adminSetHidden(targetType, targetId, true))}>Hide</Button>
         )}
-        <Button size="sm" variant="danger" disabled={pending} onClick={() => { setDeleteReason(""); setDeleteOpen(true); }}>Delete</Button>
+        <Button size="sm" variant="danger" disabled={pending} className="min-w-[5.5rem]" onClick={() => { setDeleteReason(""); setDeleteOpen(true); }}>Delete</Button>
       </div>
       <ConfirmDialog
         open={deleteOpen}
