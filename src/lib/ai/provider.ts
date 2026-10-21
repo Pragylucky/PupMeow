@@ -30,7 +30,7 @@ function openAiChatModelId() {
 }
 
 export function getGroqChatModelId(): string {
-  return (process.env.GROQ_MODEL ?? process.env.AI_GROQ_MODEL ?? "").trim() || "llama-3.3-70b-versatile";
+  return (process.env.GROQ_MODEL ?? process.env.AI_GROQ_MODEL ?? "").trim() || "llama-3.1-8b-instant";
 }
 
 export function getXaiChatModelId(): string {

@@ -15,6 +15,51 @@ export type ChatStreamParams = {
   temperature?: number;
 };
 
+async function drainTextStream(
+  result: ReturnType<typeof streamText>,
+  onChunk: (chunk: string) => void,
+): Promise<string> {
+  let full = "";
+  for await (const chunk of result.textStream) {
+    if (!chunk) continue;
+    full += chunk;
+    onChunk(chunk);
+  }
+  if (!full.trim()) {
+    try {
+      const rest = await result.text;
+      if (rest?.trim()) {
+        full = rest;
+        onChunk(rest);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return full;
+}
+
+async function streamOne(
+  model: ReturnType<typeof buildChatModelChain>[number]["model"],
+  provider: AiProviderName,
+  params: ChatStreamParams,
+  onChunk: (chunk: string) => void,
+  opts: { maxRetries: number; signal: AbortSignal },
+): Promise<{ full: string; provider: AiProviderName } | null> {
+  const result = streamText({
+    model,
+    system: params.system,
+    messages: params.messages,
+    maxOutputTokens: params.maxOutputTokens ?? 550,
+    temperature: params.temperature ?? 0.5,
+    maxRetries: opts.maxRetries,
+    abortSignal: opts.signal,
+  });
+  const full = await drainTextStream(result, onChunk);
+  if (!full.trim()) return null;
+  return { full, provider };
+}
+
 async function streamSequential(
   chain: ReturnType<typeof buildChatModelChain>,
   params: ChatStreamParams,
@@ -23,26 +68,16 @@ async function streamSequential(
   let lastErr: unknown;
   for (let i = 0; i < chain.length; i++) {
     const { model, provider } = chain[i]!;
-    let full = "";
     try {
-      const result = streamText({
-        model,
-        system: params.system,
-        messages: params.messages,
-        maxOutputTokens: params.maxOutputTokens ?? 550,
-        temperature: params.temperature ?? 0.5,
+      const out = await streamOne(model, provider, params, onChunk, {
         maxRetries: CHAT_MAX_RETRIES,
-        abortSignal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
+        signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
       });
-      for await (const chunk of result.textStream) {
-        full += chunk;
-        onChunk(chunk);
-      }
-      if (full.trim()) return { full, provider };
-      lastErr = new Error("Empty response from model");
+      if (out) return out;
+      lastErr = new Error(`Empty response from ${provider}`);
+      console.warn("[ai/chat] empty stream from", provider);
     } catch (err) {
       lastErr = err;
-      if (full.trim()) return { full, provider };
       if (i < chain.length - 1) {
         console.warn("[ai/chat] trying fallback after", provider, flattenAiErrorMessage(err));
       }
@@ -51,10 +86,6 @@ async function streamSequential(
   throw lastErr ?? new Error("Kaia couldn't get a reply");
 }
 
-/**
- * Start all providers at once; the first to stream text wins. Losers are aborted so
- * the user never sees two answers mixed together (only one winner emits chunks).
- */
 async function streamRace(
   chain: ReturnType<typeof buildChatModelChain>,
   params: ChatStreamParams,
@@ -98,7 +129,18 @@ async function streamRace(
         full += chunk;
         onChunk(chunk);
       }
-      if (winner === provider && local.trim()) return;
+      if (winner === provider && !local.trim()) {
+        try {
+          const rest = await result.text;
+          if (rest?.trim()) {
+            local = rest;
+            full += rest;
+            onChunk(rest);
+          }
+        } catch {
+          /* ignore */
+        }
+      }
     } catch (err) {
       if (controllers[idx]?.signal.aborted && winner && winner !== provider) return;
       errors.push(err);
@@ -112,11 +154,8 @@ async function streamRace(
 
   if (full.trim() && winner) return { full, provider: winner };
 
-  if (!winner && chain.length > 0) {
-    return streamSequential(chain, params, onChunk);
-  }
-
-  throw errors[0] ?? new Error("Kaia couldn't get a reply");
+  console.warn("[ai/chat] race produced no text, using sequential fallback");
+  return streamSequential(chain, params, onChunk);
 }
 
 /** Stream Kaia reply — parallel race when multiple keys are set, else single provider. */
