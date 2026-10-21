@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, MapPin } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
+import { canViewHiddenContent } from "@/lib/moderation/visibility";
 import { createClient } from "@/lib/supabase/server";
 import { MINI_PROFILE } from "@/lib/columns";
 import { PhotoGallery } from "@/components/features/upload/lightbox";
@@ -32,6 +33,7 @@ export default async function MatchProfilePage({ params }: { params: Promise<{ i
     .maybeSingle();
   if (!data) notFound();
   const m = data as MatchProfileCard;
+  if (!canViewHiddenContent({ is_hidden: m.is_hidden, author_id: m.owner_id }, profile)) notFound();
   const isOwner = m.owner_id === profile.id;
   const [{ data: myPets }, { data: existing }] = await Promise.all([
     isOwner ? Promise.resolve({ data: [] }) : supabase.from("pets").select("id, name, species, gender, birthday").eq("owner_id", profile.id).eq("species", m.pet?.species ?? "dog"),

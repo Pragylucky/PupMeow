@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { EyeOff, Eye, Check, Ban, RotateCcw } from "lucide-react";
-import { adminSetHidden, adminSetBan, adminResolveReport } from "@/lib/actions/admin";
+import { EyeOff, Eye, Check, Ban, RotateCcw, Trash2 } from "lucide-react";
+import { adminSetHidden, adminSetBan, adminResolveReport, adminDeleteTarget } from "@/lib/actions/admin";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,17 +31,57 @@ const resolveAll = async (ids: string[], status: ReportStatus) => {
   return last;
 };
 
-export function ReportActions({ reportIds, status, targetType, targetId, hidden, ownerId, ownerBanned }: { reportIds: string[]; status: ReportStatus; targetType: ReportTarget; targetId: string; hidden: boolean; ownerId: string | null; ownerBanned: boolean }) {
+export function ReportActions({
+  reportIds,
+  status,
+  targetType,
+  targetId,
+  hidden,
+  contentExists,
+  ownerId,
+  ownerBanned,
+}: {
+  reportIds: string[];
+  status: ReportStatus;
+  targetType: ReportTarget;
+  targetId: string;
+  hidden: boolean;
+  contentExists: boolean;
+  ownerId: string | null;
+  ownerBanned: boolean;
+}) {
   const { pending, run } = useRun();
-  const label = targetType === "post" ? "post" : targetType === "comment" ? "comment" : targetType === "lost_found" ? "report" : targetType === "adoption" ? "listing" : "profile";
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("");
+  const label = targetType === "post" ? "post" : targetType === "comment" ? "comment" : targetType === "lost_found" ? "report" : targetType === "adoption" ? "listing" : targetType === "match_profile" ? "profile" : "profile";
+  const canModerateContent = targetType !== "profile" && contentExists;
+
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
-        {targetType !== "profile" && (hidden
-          ? <Button variant="outline" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, false))}><Eye className="h-4 w-4" aria-hidden /> Restore {label}</Button>
-          : <Button disabled={pending} onClick={() => run(async () => { const r = await adminSetHidden(targetType, targetId, true); if (r.ok) await resolveAll(reportIds, "resolved"); return r.ok ? { ok: true, message: `Hidden. ${reportIds.length} report${reportIds.length === 1 ? "" : "s"} resolved.` } : r; })}><EyeOff className="h-4 w-4" aria-hidden /> Hide {label}</Button>)}
-        {ownerId && <BanButton userId={ownerId} banned={ownerBanned} big />}
-      </div>
+      {!contentExists && targetType !== "profile" && (
+        <p className="rounded-[var(--radius-md)] bg-surface-2 px-3 py-2 text-sm font-semibold text-muted">This content was removed. Resolve or dismiss the reports below.</p>
+      )}
+      {canModerateContent && (
+        <div className="space-y-2">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-muted">Content</p>
+          <div className="flex flex-wrap gap-2">
+            {hidden ? (
+              <Button variant="outline" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, false))}>
+                <Eye className="h-4 w-4" aria-hidden /> Restore {label}
+              </Button>
+            ) : (
+              <Button variant="soft" disabled={pending} onClick={() => run(() => adminSetHidden(targetType, targetId, true))}>
+                <EyeOff className="h-4 w-4" aria-hidden /> Hide for review
+              </Button>
+            )}
+            <Button variant="danger" disabled={pending} onClick={() => { setDeleteReason(""); setDeleteOpen(true); }}>
+              <Trash2 className="h-4 w-4" aria-hidden /> Remove permanently
+            </Button>
+          </div>
+          <p className="text-xs text-muted"><strong>Hide for review</strong> takes it off the app but keeps it for moderators. <strong>Remove</strong> deletes it for everyone.</p>
+        </div>
+      )}
+      {ownerId && <BanButton userId={ownerId} banned={ownerBanned} big />}
       <div className="flex flex-wrap gap-2 border-t border-border pt-3">
         {status === "open" ? (
           <>
@@ -50,6 +90,34 @@ export function ReportActions({ reportIds, status, targetType, targetId, hidden,
           </>
         ) : <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => resolveAll(reportIds, "open"))}><RotateCcw className="h-4 w-4" aria-hidden /> Reopen</Button>}
       </div>
+      <ConfirmDialog
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        destructive
+        title={`Remove this ${label} permanently?`}
+        description="This cannot be undone. Photos and text will be deleted from Pupmeow. Open reports for this item will be marked resolved."
+        confirmLabel="Remove permanently"
+        loading={pending}
+        confirmDisabled={deleteReason.trim().length < 3}
+        onConfirm={() => {
+          const reason = deleteReason.trim();
+          setDeleteOpen(false);
+          run(async () => {
+            const del = await adminDeleteTarget(targetType, targetId, reason);
+            return del;
+          });
+        }}
+      >
+        <Textarea
+          label="Reason (saved in audit log)"
+          name="delete_reason"
+          value={deleteReason}
+          onChange={(e) => setDeleteReason(e.target.value)}
+          rows={3}
+          maxLength={500}
+          placeholder="e.g. Scam adoption listing with rehoming fee…"
+        />
+      </ConfirmDialog>
     </div>
   );
 }
