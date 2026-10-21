@@ -43,38 +43,36 @@ export function ReportQueueRow({
 
   return (
     <li className={cn("border-b border-border last:border-0", active && "bg-cream/60")}>
-      <div className="grid items-center gap-3 px-4 py-3.5 lg:grid-cols-[minmax(0,1fr)_120px_72px_64px_auto]">
+      <div className="space-y-3 px-4 py-4 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(7rem,9rem)_3.5rem_4rem_minmax(10.5rem,auto)] lg:items-center lg:gap-4 lg:space-y-0">
         <Link href={href} scroll={false} className={cn("flex min-w-0 items-center gap-3 hover:opacity-90", active && "text-ink")}>
-          <span className="flex min-w-0 flex-1 items-center gap-3">
-            <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[0.7rem] bg-surface-2">
-              {thumb ? (
-                <PetImage src={thumb} alt="" species="dog" sizes="48px" />
-              ) : p?.hidden ? (
-                <EyeOff className="h-5 w-5 text-muted" aria-hidden />
-              ) : (
-                <span className="text-xs font-extrabold text-muted">{p?.kindLabel ?? "—"}</span>
-              )}
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate font-bold">{p?.title ?? "Deleted content"}</span>
-              <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[0.8rem]">
-                {p && <span className={cn("rounded-full px-2 py-0.5 font-extrabold", p.kindTone)}>{p.kindLabel}</span>}
-                {ownerUsername && <span className="truncate text-muted">@{ownerUsername}</span>}
-                {p?.hidden && <Badge tone="ink" className="px-2 py-0.5">Hidden</Badge>}
-              </span>
+          <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[0.7rem] bg-surface-2">
+            {thumb ? (
+              <PetImage src={thumb} alt="" species="dog" sizes="48px" />
+            ) : p?.hidden ? (
+              <EyeOff className="h-5 w-5 text-muted" aria-hidden />
+            ) : (
+              <span className="text-xs font-extrabold text-muted">{p?.kindLabel ?? "—"}</span>
+            )}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate font-bold">{p?.title ?? "Deleted content"}</span>
+            <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[0.8rem]">
+              {p && <span className={cn("rounded-full px-2 py-0.5 font-extrabold", p.kindTone)}>{p.kindLabel}</span>}
+              {ownerUsername && <span className="truncate text-muted">@{ownerUsername}</span>}
+              {p?.hidden && <Badge tone="ink" className="px-2 py-0.5">Hidden</Badge>}
             </span>
           </span>
         </Link>
-        <span className="text-[0.9rem] font-semibold lg:block">
+        <p className="text-[0.9rem] font-semibold lg:truncate">
           <span className="text-muted lg:hidden">Reason: </span>
           {reasons.join(", ")}
-        </span>
-        <span className="font-heading text-lg font-semibold">
+        </p>
+        <p className="font-heading text-lg font-semibold lg:text-center">
           <span className="text-sm font-sans font-bold text-muted lg:hidden">Reports: </span>
           {reportCount}
-        </span>
-        <span className="text-sm font-semibold text-muted">{sinceLabel(createdAt)}</span>
-        <div className="flex justify-end">
+        </p>
+        <p className="text-sm font-semibold text-muted lg:text-right">{sinceLabel(createdAt)}</p>
+        <div className="hidden justify-end lg:flex">
           <ReportRowActions
             targetType={targetType}
             targetId={targetId}
@@ -83,6 +81,7 @@ export function ReportQueueRow({
           />
         </div>
       </div>
+      <p className="px-4 pb-3 text-xs font-semibold text-muted xl:hidden">Scroll down for Hide / Delete actions.</p>
     </li>
   );
 }

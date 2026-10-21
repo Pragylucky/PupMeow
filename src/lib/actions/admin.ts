@@ -8,6 +8,17 @@ import type { ActionResult } from "@/types/models";
 
 const targetSchema = z.enum(["post", "comment", "profile", "lost_found", "adoption", "match_profile"]);
 
+function adminRpcError(error: { message?: string; code?: string }, hint?: string): string {
+  const msg = error.message ?? "";
+  if (msg.includes("Could not find the function") || msg.includes("admin_set_hidden") || msg.includes("admin_delete_target")) {
+    return hint ?? "Database moderation functions are missing. Run the latest Supabase migrations (admin_delete_content).";
+  }
+  if (msg.includes("Admins only")) return "Your account is not recognised as admin in the database. Sign out and back in, or check your role in Supabase.";
+  const friendly = friendlyError(error);
+  if (friendly === "Something went wrong. Please try again." && msg.length > 0 && msg.length < 220) return msg;
+  return friendly;
+}
+
 async function adminCtx() {
   const ctx = await actionContext();
   if ("error" in ctx) return ctx;
@@ -22,7 +33,10 @@ export async function adminSetHidden(targetType: string, targetId: string, hidde
   const id = z.uuid().safeParse(targetId);
   if (!t.success || !id.success) return { ok: false, error: "Invalid target" };
   const { error } = await ctx.supabase.rpc("admin_set_hidden", { p_target_type: t.data, p_target_id: id.data, p_hidden: hidden });
-  if (error) return { ok: false, error: friendlyError(error) };
+  if (error) {
+    console.error("[admin] admin_set_hidden", error);
+    return { ok: false, error: adminRpcError(error) };
+  }
   revalidatePath("/admin");
   revalidatePath("/feed");
   revalidatePath("/lost");
@@ -49,11 +63,8 @@ export async function adminDeleteTarget(targetType: string, targetId: string, re
     p_reason: r,
   });
   if (error) {
-    const msg = friendlyError(error);
-    if (msg.toLowerCase().includes("admin_delete_target") || msg.toLowerCase().includes("could not find the function")) {
-      return { ok: false, error: "Delete is not set up on the database yet. Run migration 20261021000000_admin_delete_content.sql in Supabase." };
-    }
-    return { ok: false, error: msg };
+    console.error("[admin] admin_delete_target", error);
+    return { ok: false, error: adminRpcError(error, "Delete is not set up yet. Run migration 20261021000000_admin_delete_content.sql in Supabase SQL.") };
   }
   revalidatePath("/admin");
   revalidatePath("/feed");
