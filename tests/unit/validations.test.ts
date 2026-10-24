@@ -53,6 +53,10 @@ describe("adoptionSchema", async () => {
     expect(adoptionSchema.safeParse({ ...base, description: "Lovely pup, rehoming fee ₹5000 only, call now please" }).success).toBe(false);
     expect(adoptionSchema.safeParse({ ...base, description: "Pure breed puppy for sale, contact for price details" }).success).toBe(false);
   });
+  it("allows pet age like years and months", () => {
+    expect(adoptionSchema.safeParse({ ...base, age_text: "3 years 2 months", description: base.description }).success).toBe(true);
+    expect(adoptionSchema.safeParse({ ...base, age_text: "2 yrs 4 months", description: base.description }).success).toBe(true);
+  });
   it("requires the no-sale acknowledgement and NGO name", () => {
     expect(adoptionSchema.safeParse({ ...base, no_sale_ack: undefined }).success).toBe(false);
     expect(adoptionSchema.safeParse({ ...base, is_ngo: "on" }).success).toBe(false);

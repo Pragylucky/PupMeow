@@ -56,7 +56,7 @@ export async function completeOnboarding(_prev: ActionResult | null, formData: F
     return { ok: false, error: "Please upload your photo again.", fieldErrors: { avatar_url: "Upload failed" } };
   }
   if (v.bio) {
-    const mod = await moderateText(v.bio, "profile");
+    const mod = await moderateText(v.bio, "profile", { supabase: ctx.supabase });
     if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod), fieldErrors: { bio: blockedMessage(mod) } };
   }
 
@@ -119,7 +119,7 @@ export async function updateProfile(_prev: ActionResult | null, formData: FormDa
     if (!free) return { ok: false, error: "That username is taken.", fieldErrors: { username: "That username is taken" } };
   }
   if (v.bio) {
-    const mod = await moderateText(v.bio, "profile");
+    const mod = await moderateText(v.bio, "profile", { supabase: ctx.supabase });
     if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod) };
   }
   const { error } = await supabase

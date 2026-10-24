@@ -67,21 +67,27 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
-  // Home + login: read session from cookies only (no Auth API round-trip). Avoids 5–30s hangs when
-  // Supabase is paused, on bad Wi‑Fi, or the project URL/key is wrong.
+  // Home + login: validate JWT with Supabase (same as app routes). Stale cookies caused /login ↔ /home loops.
   if (pathname === "/" || pathname === "/login") {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const user = session?.user ?? null;
+    const user = await Promise.race([
+      supabase.auth.getUser().then(({ data }) => data.user ?? null),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 5_000)),
+    ]);
 
-    if (user && pathname === "/login") {
+    if (!user) {
+      if (hasSupabaseAuthCookies(request)) {
+        return clearSupabaseAuthCookies(request, response);
+      }
+      return response;
+    }
+
+    if (pathname === "/login") {
       const url = request.nextUrl.clone();
       url.pathname = safeNext(request.nextUrl.searchParams.get("next"));
       url.search = "";
       return copyCookies(response, NextResponse.redirect(url));
     }
-    if (user && pathname === "/") {
+    if (pathname === "/") {
       const url = request.nextUrl.clone();
       url.pathname = "/home";
       url.search = "";
@@ -113,4 +119,15 @@ function copyCookies(from: NextResponse, to: NextResponse) {
 
 function hasSupabaseAuthCookies(request: NextRequest) {
   return request.cookies.getAll().some((c) => c.name.includes("-auth-token") || (c.name.startsWith("sb-") && c.name.includes("auth")));
+}
+
+function clearSupabaseAuthCookies(request: NextRequest, response: NextResponse) {
+  const cleared = NextResponse.next({ request });
+  response.cookies.getAll().forEach((c) => cleared.cookies.set(c));
+  request.cookies.getAll().forEach((c) => {
+    if (c.name.includes("-auth-token") || (c.name.startsWith("sb-") && c.name.includes("auth"))) {
+      cleared.cookies.set(c.name, "", { maxAge: 0, path: "/" });
+    }
+  });
+  return cleared;
 }

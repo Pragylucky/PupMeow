@@ -36,7 +36,7 @@ export async function savePet(_prev: ActionResult | null, formData: FormData): P
   const v = parsed.data;
   if (!allOwnUploads(v.photo_urls, "pets", userId)) return { ok: false, error: "Please re-upload the photos." };
   if (v.bio) {
-    const mod = await moderateText(v.bio, "profile");
+    const mod = await moderateText(v.bio, "profile", { supabase: ctx.supabase });
     if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod), fieldErrors: { bio: blockedMessage(mod) } };
   }
   const row = { ...v, photo_url: v.photo_urls[0] ?? null };

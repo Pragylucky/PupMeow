@@ -34,7 +34,7 @@ export async function createAdoption(_prev: ActionResult<string> | null, formDat
   if (!parsed.success) return { ok: false, error: "Please fix the highlighted fields.", fieldErrors: zodFieldErrors(parsed.error) };
   const { no_sale_ack: _ack, ...v } = parsed.data;
   if (!allOwnUploads(v.photo_urls, "adoptions", ctx.userId)) return { ok: false, error: "Please re-upload the photos." };
-  const mod = await moderateText(`${v.pet_name}\n${v.description}`, "listing");
+  const mod = await moderateText(`${v.pet_name}\n${v.description}`, "listing", { supabase: ctx.supabase });
   if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod), fieldErrors: { description: blockedMessage(mod) } };
   const { data, error } = await ctx.supabase.from("adoptions").insert({ ...v, author_id: ctx.userId, city: "Delhi NCR", org_name: v.is_ngo ? v.org_name : null }).select("id").single();
   if (error || !data) return { ok: false, error: friendlyError(error, "Couldn't publish the listing.") };

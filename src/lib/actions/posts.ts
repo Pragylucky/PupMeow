@@ -25,7 +25,7 @@ export async function createPost(_prev: ActionResult<string> | null, formData: F
   const v = parsed.data;
   if (!allOwnUploads(v.image_urls, "posts", userId)) return { ok: false, error: "Please re-upload your photos." };
 
-  const mod = await moderateText(v.caption, "post");
+  const mod = await moderateText(v.caption, "post", { supabase });
   if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod), fieldErrors: { caption: blockedMessage(mod) } };
 
   const { data, error } = await supabase
@@ -47,7 +47,7 @@ export async function editPost(id: string, caption: string): Promise<ActionResul
   if ("error" in ctx) return { ok: false, error: ctx.error };
   const parsed = editPostSchema.safeParse({ id, caption });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid caption" };
-  const mod = await moderateText(parsed.data.caption, "post");
+  const mod = await moderateText(parsed.data.caption, "post", { supabase: ctx.supabase });
   if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod) };
   const { error, count } = await ctx.supabase.from("posts").update({ caption: parsed.data.caption }, { count: "exact" }).eq("id", parsed.data.id).eq("author_id", ctx.userId);
   if (error) return { ok: false, error: friendlyError(error) };
@@ -90,7 +90,7 @@ export async function addComment(postId: string, body: string): Promise<ActionRe
   if ("error" in ctx) return { ok: false, error: ctx.error };
   const parsed = commentSchema.safeParse({ post_id: postId, body });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid comment" };
-  const mod = await moderateText(parsed.data.body, "comment");
+  const mod = await moderateText(parsed.data.body, "comment", { supabase: ctx.supabase });
   if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod) };
   const { data, error } = await ctx.supabase
     .from("comments")

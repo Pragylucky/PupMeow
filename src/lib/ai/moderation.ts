@@ -7,6 +7,7 @@ import { moderationResultSchema, type ModerationResult } from "@/lib/validations
 import { SALE_PATTERN } from "@/lib/validations/listings";
 import { createAdminClient, hasServiceRole } from "@/lib/supabase/admin";
 import type { ReportTarget } from "@/types/database";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const ABUSE_PATTERN = /\b(?:kill (?:all|the) (?:dogs|cats)|poison (?:the )?(?:dogs|cats)|madarchod|bhenchod|chutiya|fuck you|kill yourself)\b/i;
 const SPAM_PATTERN = /(https?:\/\/\S+.*){4,}|(?:earn|make) ₹?\d+.*(?:daily|per day)|crypto|bitcoin|telegram\.me/i;
@@ -23,9 +24,21 @@ export function heuristicModeration(text: string, kind: "post" | "comment" | "li
   return { verdict: "allow", categories: [], reason: "" };
 }
 
-export async function moderateText(text: string, kind: "post" | "comment" | "listing" | "profile"): Promise<ModerationResult> {
+export async function moderateText(
+  text: string,
+  kind: "post" | "comment" | "listing" | "profile",
+  opts?: { supabase?: SupabaseClient },
+): Promise<ModerationResult> {
   const quick = heuristicModeration(text, kind);
   if (quick.verdict === "block" || !isAiModerationLlmEnabled() || text.trim().length < 40) return quick;
+  if (opts?.supabase) {
+    const { error } = await opts.supabase.rpc("consume_moderation_llm", { p_limit: 40 });
+    if (error) {
+      if (error.message.includes("RATE_LIMIT")) return quick;
+      console.warn("[moderation] consume_moderation_llm", error.message);
+      return quick;
+    }
+  }
   try {
     const { output } = await generateText({
       model: getLanguageModel(),

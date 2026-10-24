@@ -47,7 +47,7 @@ export async function createLostFound(_prev: ActionResult<string> | null, formDa
   if (!v.photo_urls.every((u) => isOwnUpload(u, "lost-found", userId) || isOwnUpload(u, "pets", userId))) return { ok: false, error: "Please re-upload the photos." };
 
   // Rewards are fine on lost posts; only check the description for abuse/spam.
-  const mod = await moderateText(v.description, "post");
+  const mod = await moderateText(v.description, "post", { supabase: ctx.supabase });
   if (mod.verdict === "block" && !mod.categories.every((c) => c === "animal_sale")) {
     return { ok: false, error: blockedMessage(mod), fieldErrors: { description: blockedMessage(mod) } };
   }
