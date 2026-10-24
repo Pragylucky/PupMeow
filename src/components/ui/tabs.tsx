@@ -26,7 +26,7 @@ export function Tabs({
   const tabCls = (active: boolean) =>
     pill
       ? cn(
-          "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-bold transition-colors",
+          "inline-flex h-11 min-h-11 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-bold transition-colors",
           active ? "bg-strong text-on-strong shadow-sm" : "text-muted hover:text-text",
         )
       : cn(

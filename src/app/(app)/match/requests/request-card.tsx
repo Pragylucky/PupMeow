@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, X, Phone } from "lucide-react";
 import { respondMatchRequest, cancelMatchRequest, getMatchContact } from "@/lib/actions/match";
-import { Button, ButtonLink } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { PetImage } from "@/components/brand/pet-image";
 import { WhatsAppIcon } from "@/components/brand/whatsapp-icon";
 import { AddToCalendar } from "@/components/features/care/reminder-actions";
+import { ContactSafetySheet, hasAcceptedContactSafety } from "@/components/features/listings/contact-safety-sheet";
 import { cn, displayName, telLink, timeAgo, whatsappLink } from "@/lib/utils";
 import type { MatchRequestWithPets } from "@/types/models";
 
@@ -20,9 +21,13 @@ function nextSaturdayEvening() {
   return d.toISOString();
 }
 
+type ContactRow = { display_name: string | null; whatsapp: string | null };
+
 export function RequestCard({ request: r, viewerId }: { request: MatchRequestWithPets; viewerId: string }) {
   const [pending, start] = useTransition();
-  const [contact, setContact] = useState<{ display_name: string | null; whatsapp: string | null } | null>(null);
+  const [contact, setContact] = useState<ContactRow | null>(null);
+  const [safetyOpen, setSafetyOpen] = useState(false);
+  const [pendingContact, setPendingContact] = useState<"wa" | "call" | null>(null);
   const router = useRouter();
   const toast = useToast();
   const incoming = r.to_owner_id === viewerId;
@@ -34,6 +39,41 @@ export function RequestCard({ request: r, viewerId }: { request: MatchRequestWit
   });
   const statusTone = r.status === "accepted" ? "bg-primary text-on-primary" : r.status === "declined" ? "bg-surface-2 text-muted" : "bg-secondary text-ink";
   const pair = `${r.from_pet?.name ?? "Pet"} & ${r.to_pet?.name ?? "Pet"}`;
+
+  const openContact = useCallback(
+    async (which: "wa" | "call") => {
+      let row = contact;
+      if (!row) {
+        const res = await getMatchContact(r.id);
+        if (!res.ok || !res.data) {
+          toast(res.ok ? "Unavailable" : res.error, "error");
+          return;
+        }
+        row = { display_name: res.data.display_name, whatsapp: res.data.whatsapp };
+        setContact(row);
+      }
+      if (!row.whatsapp) {
+        toast(`${displayName(other)} hasn't added WhatsApp yet.`, "info");
+        return;
+      }
+      if (which === "call") {
+        window.location.href = telLink(row.whatsapp);
+        return;
+      }
+      const url = whatsappLink(row.whatsapp, `Hi ${row.display_name ?? ""}! We matched on Pupmeow (${pair}). When works for a walk? `);
+      window.open(url, "_blank", "noopener,noreferrer");
+    },
+    [contact, other, pair, r.id, toast],
+  );
+
+  const requestContact = (which: "wa" | "call") => {
+    if (hasAcceptedContactSafety()) {
+      start(() => openContact(which));
+      return;
+    }
+    setPendingContact(which);
+    setSafetyOpen(true);
+  };
 
   return (
     <article className="rounded-[var(--radius-lg)] bg-surface p-4 shadow-[var(--shadow-card)] sm:p-5">
@@ -63,23 +103,30 @@ export function RequestCard({ request: r, viewerId }: { request: MatchRequestWit
           </>
         )}
         {r.status === "pending" && !incoming && <Button variant="ghost" loading={pending} onClick={() => act(() => cancelMatchRequest(r.id))}>Cancel request</Button>}
-        {r.status === "accepted" && (contact ? (
-          contact.whatsapp ? (
-            <>
-              <ButtonLink variant="whatsapp" href={whatsappLink(contact.whatsapp, `Hi ${contact.display_name ?? ""}! We matched on Pupmeow (${pair}). When works for a walk? `)} target="_blank" rel="noopener noreferrer"><WhatsAppIcon className="h-[1.1rem] w-[1.1rem]" /> WhatsApp</ButtonLink>
-              <ButtonLink variant="outline" href={telLink(contact.whatsapp)}><Phone className="h-4 w-4" aria-hidden /> Call</ButtonLink>
-            </>
-          ) : <p className="text-sm text-muted">{displayName(other)} hasn&apos;t added a WhatsApp number yet. Try <Link className="font-bold text-primary underline" href={`/u/${other?.username}`}>their profile</Link>.</p>
+        {r.status === "accepted" && (contact?.whatsapp ? (
+          <>
+            <Button variant="whatsapp" loading={pending} onClick={() => requestContact("wa")}><WhatsAppIcon className="h-[1.1rem] w-[1.1rem]" /> WhatsApp</Button>
+            <Button variant="outline" loading={pending} onClick={() => requestContact("call")}><Phone className="h-4 w-4" aria-hidden /> Call</Button>
+          </>
+        ) : contact && !contact.whatsapp ? (
+          <p className="text-sm text-muted">{displayName(other)} hasn&apos;t added a WhatsApp number yet. Try <Link className="font-bold text-primary underline" href={`/u/${other?.username}`}>their profile</Link>.</p>
         ) : (
-          <Button variant="whatsapp" loading={pending} onClick={() => start(async () => {
-            const res = await getMatchContact(r.id);
-            if (res.ok && res.data) setContact(res.data); else toast(res.ok ? "Unavailable" : res.error, "error");
-          })}>{!pending && <WhatsAppIcon className="h-[1.1rem] w-[1.1rem]" />} Show contact</Button>
+          <Button variant="whatsapp" loading={pending} onClick={() => requestContact("wa")}>{!pending && <WhatsAppIcon className="h-[1.1rem] w-[1.1rem]" />} Show contact</Button>
         ))}
         {r.status === "accepted" && (
           <AddToCalendar label="Plan on calendar" event={{ title: `Playdate: ${pair}`, start: nextSaturdayEvening(), durationMinutes: 60, details: `Playdate arranged on Pupmeow with ${displayName(other)}. First meet in a public park; leashes on for the first 10 minutes.` }} />
         )}
       </div>
+      <ContactSafetySheet
+        open={safetyOpen}
+        onClose={() => { setSafetyOpen(false); setPendingContact(null); }}
+        onAccept={() => {
+          setSafetyOpen(false);
+          const which = pendingContact ?? "wa";
+          setPendingContact(null);
+          start(() => openContact(which));
+        }}
+      />
     </article>
   );
 }

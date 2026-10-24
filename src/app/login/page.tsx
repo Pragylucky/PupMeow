@@ -4,6 +4,7 @@ import { HeartHandshake, MapPin, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { PetArt } from "@/components/brand/pet-art";
 import { LoginForm } from "./login-form";
+import { loginErrorMessage } from "@/lib/login-errors";
 import { safeNext } from "@/lib/redirect";
 
 export const metadata: Metadata = { title: "Log in", robots: { index: false } };
@@ -40,7 +41,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <div className="rounded-[var(--radius-xl)] bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8">
             <h2 className="text-[2rem] font-semibold leading-tight">Welcome to Pupmeow</h2>
             <p className="mb-6 mt-1 text-muted">Log in or create your free account. Browsing lost pets never needs one.</p>
-            <LoginForm next={next} initialError={sp.error ? decodeURIComponent(sp.error) : undefined} />
+            <LoginForm next={next} initialError={loginErrorMessage(sp.error)} />
           </div>
           <p className="mt-5 text-center text-sm text-muted">
             <Link href="/lost" className="font-bold text-text underline underline-offset-2">See lost pets near me</Link>

@@ -16,5 +16,5 @@ export async function GET(request: NextRequest) {
       return redirectWithSessionCookies(sessionResponse, `${origin}/auth/callback-done?next=${encodeURIComponent(next)}`);
     }
   }
-  return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent("That sign-in link has expired. Ask for a new code below.")}`);
+  return NextResponse.redirect(`${origin}/login?error=link_expired`);
 }

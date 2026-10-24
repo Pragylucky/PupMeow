@@ -63,20 +63,20 @@ git push -u origin main
 
 New Google AI Studio keys must use **`gemini-3.8-flash`** (the app default). **2.5 Flash is blocked** for those keys. Free tier can also hit **daily limits** or feel very slow.
 
-**Fastest fix (Groq):** [console.groq.com](https://console.groq.com) → API key → Vercel `GROQ_API_KEY` → redeploy. Kaia tries **Groq first**, then Gemini if Groq fails (keep `GOOGLE_GENERATIVE_AI_API_KEY` for backup). Check `/api/ai/status` → `chatTryOrder`.
+**Fastest fix (Groq):** [console.groq.com](https://console.groq.com) → API key → Vercel `GROQ_API_KEY` → redeploy. Kaia tries **Groq first**, then Gemini if Groq fails (keep `GOOGLE_GENERATIVE_AI_API_KEY` for backup). Public health: `/api/ai/status` → `{ "assistant": true }`. Full config + `?live=1` probes: **admin sign-in only**.
 
 Override order: `AI_CHAT_TRY_ORDER=groq,google`. With **both** keys set, Kaia tries **Groq first**, then Gemini if needed (sequential). Optional `AI_CHAT_RACE=true` for parallel race (not recommended for v1).
 
 Lost-pet embeddings still need **Gemini or OpenAI** (`AI_EMBEDDING_PROVIDER`) if you drop Gemini entirely.
 
-Check: `https://pupmeow.vercel.app/api/ai/status?live=1` — look at `geminiError`, `geminiErrorDetail`, and `checks.openAiChatFallback`.
+While signed in as admin: `https://pupmeow.vercel.app/api/ai/status?live=1` — look at `geminiError`, `chatTryOrder`, etc. (not public).
 
 **Kaia still says “coming soon”?**
 
 1. In Vercel, env vars must be enabled for **Production** (and **Preview** if you test preview URLs).
 2. Do **not** set `AI_ENABLED=false`.
 3. After adding keys, **Redeploy** (env changes do not apply to old deployments).
-4. Open `https://pupmeow.vercel.app/api/ai/status` — should show `"assistant": true`. If not, fix the vars above.
+4. Open `https://pupmeow.vercel.app/api/ai/status` — should show `"assistant": true` (public). If not, fix the vars above. See `docs/SUPABASE_LAUNCH_SQL.md` for database migrations.
 
 5. **Deploy**. Region: **Mumbai (bom1)** if available.
 6. Add **custom domain** in Vercel when ready → point DNS at your registrar, then update `NEXT_PUBLIC_SITE_URL`, Supabase Auth URLs, Google OAuth origins, and `LIVE_SITE_URL` in `src/lib/constants.ts`.
