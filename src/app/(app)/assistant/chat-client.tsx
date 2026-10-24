@@ -28,8 +28,8 @@ const STARTERS = [
 ];
 
 const VET_SEARCH = "https://www.google.com/maps/search/?api=1&query=24+hour+veterinary+hospital+near+me";
-/** If Kaia hasn't sent a real reply by then, show a friendly timeout message. */
-const KAIA_CLIENT_WAIT_MS = 20_000;
+/** No bytes yet — server allows ~55s; Groq→Gemini fallback can be slow. */
+const KAIA_CLIENT_WAIT_MS = 58_000;
 
 /** Marks Kaia replies that follow an emergency-sounding message (for saved chats). */
 export function withEmergencyFlags(list: Msg[]): Msg[] {

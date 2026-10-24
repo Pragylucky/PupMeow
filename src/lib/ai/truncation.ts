@@ -1,6 +1,6 @@
 /** Detect replies cut off mid-stream (common with some Groq streaming responses). */
 export function isLikelyTruncatedReply(text: string, finishReason?: string): boolean {
-  if (finishReason && finishReason !== "stop") return true;
+  if (finishReason === "length" || finishReason === "error" || finishReason === "content-filter") return true;
   const t = text.trim();
   if (!t) return true;
 

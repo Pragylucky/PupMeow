@@ -2,7 +2,7 @@
 export const KAIA_UNABLE_TO_REPLY =
   "Sorry — I couldn't put together an answer just now. My brain did a tiny bonk. 🐾 Try sending your question again in a moment?";
 
-/** Shown when the client waits ~20s with no usable reply. */
+/** Shown when the client waits too long with no usable reply. */
 export const KAIA_REPLY_TIMEOUT =
   "Hmm… this one took longer than a catnap and I still couldn't finish. Sorry, friend! 🐾 Please try again — I'll hop right back to it.";
 

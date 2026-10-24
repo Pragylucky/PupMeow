@@ -55,7 +55,7 @@ export function ReportQueueRow({
             )}
           </span>
           <span className="min-w-0">
-            <span className="block truncate font-bold">{p?.title ?? "Deleted content"}</span>
+            <span className="block truncate font-bold lg:line-clamp-2 lg:whitespace-normal">{p?.title ?? "Deleted content"}</span>
             <span className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[0.8rem]">
               {p && <span className={cn("rounded-full px-2 py-0.5 font-extrabold", p.kindTone)}>{p.kindLabel}</span>}
               {ownerUsername && <span className="truncate text-muted">@{ownerUsername}</span>}
@@ -71,7 +71,7 @@ export function ReportQueueRow({
           <span className="text-sm font-sans font-bold text-muted lg:hidden">Reports: </span>
           {reportCount}
         </p>
-        <p className="text-sm font-semibold text-muted lg:text-right">{sinceLabel(createdAt)}</p>
+        <p className={cn("text-sm font-semibold lg:text-right", active ? "text-ink/70" : "text-muted")}>{sinceLabel(createdAt)}</p>
         <div className="hidden justify-end lg:flex">
           <ReportRowActions
             targetType={targetType}

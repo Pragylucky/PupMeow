@@ -85,12 +85,11 @@ function flushReplyToClient(streamed: string, final: string, onChunk: (chunk: st
     return;
   }
   if (final === streamed) {
-    onChunk(streamed);
     return;
   }
   if (final.startsWith(streamed)) {
-    onChunk(streamed);
-    onChunk(final.slice(streamed.length));
+    const extra = final.slice(streamed.length);
+    if (extra) onChunk(extra);
     return;
   }
   onChunk(final);
@@ -114,7 +113,10 @@ async function streamOne(
     abortSignal: opts.signal,
   });
   try {
-    const { full, finishReason } = await drainTextStream(result, (c) => parts.push(c));
+    const { full, finishReason } = await drainTextStream(result, (c) => {
+      parts.push(c);
+      onChunk(c);
+    });
     if (!full.trim()) return null;
     const final = await repairTruncatedReply(model, provider, params, full, opts);
     if (!final.trim() || isLikelyTruncatedReply(final)) {
