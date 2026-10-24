@@ -3,14 +3,25 @@ import { generateText } from "ai";
 import { getAiConfigStatus, getKaiaChatProviderOrder, isAiAssistantEnabled } from "@/lib/ai/config";
 import { sanitizeAiErrorSnippet, userFacingAiError } from "@/lib/ai/errors";
 import { getActiveChatModelId, getChatModelForProvider } from "@/lib/ai/provider";
+import { isAdminApiRequest } from "@/lib/auth/admin-api";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const LIVE_PROBE_MS = 12_000;
 
-/** Public health check: is Kaia configured on this deployment? (no secrets returned) */
+/** Public: minimal health. Full config + live probes: admins only. */
 export async function GET(request: Request) {
+  const assistant = isAiAssistantEnabled();
+  const isAdmin = await isAdminApiRequest();
+
+  if (!isAdmin) {
+    return NextResponse.json(
+      { assistant, ok: assistant },
+      { status: assistant ? 200 : 503, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
   const status = getAiConfigStatus();
   const url = new URL(request.url);
   const body: Record<string, unknown> = {
@@ -19,7 +30,7 @@ export async function GET(request: Request) {
     deploySha: (process.env.VERCEL_GIT_COMMIT_SHA ?? "").slice(0, 7) || undefined,
   };
 
-  if (url.searchParams.get("live") === "1" && isAiAssistantEnabled()) {
+  if (url.searchParams.get("live") === "1" && assistant) {
     const order = getKaiaChatProviderOrder();
     let lastErr: unknown;
     for (const provider of order) {

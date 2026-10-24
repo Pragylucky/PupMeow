@@ -5,7 +5,7 @@ interface Extra { name: string; label: string; value: string; options: { value: 
 /** Plain GET form, so filters work without JavaScript and filtered URLs can be shared. */
 export function ListingFilters({ basePath, areas, area, hidden, extra = [] }: { basePath: string; areas: string[]; area?: string; hidden?: Record<string, string>; extra?: Extra[] }) {
   const active = Boolean(area || extra.some((e) => e.value));
-  const pill = "h-10 rounded-full border-2 border-border bg-surface px-3.5 text-sm font-bold text-text hover:border-muted/60 focus:border-primary focus:outline-none";
+  const pill = "h-11 min-h-11 rounded-full border-2 border-border bg-surface px-3.5 text-sm font-bold text-text hover:border-muted/60 focus:border-primary focus:outline-none";
   return (
     <form action={basePath} className="mb-5 flex flex-wrap items-center gap-2" aria-label="Filters">
       {Object.entries(hidden ?? {}).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
@@ -24,9 +24,9 @@ export function ListingFilters({ basePath, areas, area, hidden, extra = [] }: { 
           </select>
         </label>
       ))}
-      <button className="h-10 rounded-full bg-strong px-4 text-sm font-bold text-on-strong hover:opacity-90">Apply</button>
+      <button className="h-11 min-h-11 rounded-full bg-strong px-4 text-sm font-bold text-on-strong hover:opacity-90">Apply</button>
       {active && (
-        <a href={`${basePath}?${new URLSearchParams(hidden ?? {})}`} className="inline-flex h-10 items-center gap-1 rounded-full px-3 text-sm font-bold text-muted hover:bg-surface-2 hover:text-text">
+        <a href={`${basePath}?${new URLSearchParams(hidden ?? {})}`} className="inline-flex h-11 min-h-11 items-center gap-1 rounded-full px-3 text-sm font-bold text-muted hover:bg-surface-2 hover:text-text">
           <X className="h-4 w-4" aria-hidden /> Clear
         </a>
       )}
