@@ -1,5 +1,5 @@
 /** Safe to import anywhere: reads env only on the server, returns false in the browser. */
-export type AiProviderName = "google" | "openai" | "xai" | "groq";
+export type AiProviderName = "google" | "openai" | "xai" | "groq" | "cerebras";
 
 function envFlag(name: string, defaultOn = true): boolean {
   const v = (process.env[name] ?? "").trim().toLowerCase();
@@ -47,15 +47,20 @@ export function normalizeProviderName(raw: string): string {
   const p = raw.trim().toLowerCase();
   if (p === "gemini" || p === "google-gemini" || p === "google_gemini") return "google";
   if (p === "grok" || p === "xai-grok") return "xai";
+  if (p === "cerebras") return "cerebras";
   return p;
 }
 
 function isAiProviderName(name: string): name is AiProviderName {
-  return name === "google" || name === "openai" || name === "xai" || name === "groq";
+  return name === "google" || name === "openai" || name === "xai" || name === "groq" || name === "cerebras";
 }
 
 export function hasGroqKey(): boolean {
   return Boolean(trimEnv("GROQ_API_KEY"));
+}
+
+export function hasCerebrasKey(): boolean {
+  return Boolean(trimEnv("CEREBRAS_API_KEY"));
 }
 
 export function hasXaiKey(): boolean {
@@ -74,11 +79,12 @@ export function hasProviderKey(provider: AiProviderName): boolean {
   if (provider === "openai") return hasOpenAiKey();
   if (provider === "xai") return hasXaiKey();
   if (provider === "groq") return hasGroqKey();
+  if (provider === "cerebras") return hasCerebrasKey();
   return false;
 }
 
-/** Default Kaia chat order: Groq first (fast), then Gemini, then others. Override with AI_CHAT_TRY_ORDER. */
-const DEFAULT_CHAT_TRY_ORDER: AiProviderName[] = ["groq", "google", "openai", "xai"];
+/** Default Kaia chat order: Groq → Cerebras (optional) → Gemini → others. Override with AI_CHAT_TRY_ORDER. */
+const DEFAULT_CHAT_TRY_ORDER: AiProviderName[] = ["groq", "cerebras", "google", "openai", "xai"];
 
 /** Providers to try for Kaia chat, in order, until one responds. */
 export function getKaiaChatProviderOrder(): AiProviderName[] {
@@ -204,6 +210,7 @@ export function getAiConfigStatus() {
       googleKey: Boolean(googleKey),
       googleKeyFormatOk,
       groqKey: hasGroqKey(),
+      cerebrasKey: hasCerebrasKey(),
       openaiKey: Boolean(openaiKey),
       xaiKey: hasXaiKey(),
       groqInChatOrder: isGroqChatFallbackEnabled(),
@@ -214,6 +221,7 @@ export function getAiConfigStatus() {
         GEMINI_API_KEY: Boolean(normalizeApiKey(trimEnv("GEMINI_API_KEY"))),
         GOOGLE_API_KEY: Boolean(normalizeApiKey(trimEnv("GOOGLE_API_KEY"))),
         GROQ_API_KEY: hasGroqKey(),
+        CEREBRAS_API_KEY: hasCerebrasKey(),
         XAI_API_KEY: hasXaiKey(),
       },
     },

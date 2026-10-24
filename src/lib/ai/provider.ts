@@ -1,7 +1,7 @@
 import "server-only";
 import { google } from "@ai-sdk/google";
 import { groq } from "@ai-sdk/groq";
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI, openai } from "@ai-sdk/openai";
 import { xai } from "@ai-sdk/xai";
 import type { AiProviderName } from "./config";
 import {
@@ -33,6 +33,20 @@ export function getGroqChatModelId(): string {
   return (process.env.GROQ_MODEL ?? process.env.AI_GROQ_MODEL ?? "").trim() || "llama-3.1-8b-instant";
 }
 
+export function getCerebrasChatModelId(): string {
+  return (process.env.CEREBRAS_MODEL ?? "").trim() || "llama-3.3-70b";
+}
+
+let cerebrasProvider: ReturnType<typeof createOpenAI> | null = null;
+function cerebras() {
+  cerebrasProvider ??= createOpenAI({
+    name: "cerebras",
+    apiKey: (process.env.CEREBRAS_API_KEY ?? "").trim(),
+    baseURL: (process.env.CEREBRAS_BASE_URL ?? "").trim() || "https://api.cerebras.ai/v1",
+  });
+  return cerebrasProvider;
+}
+
 export function getXaiChatModelId(): string {
   return (process.env.XAI_MODEL ?? process.env.GROK_MODEL ?? process.env.AI_XAI_MODEL ?? "").trim() || "grok-4-fast";
 }
@@ -58,6 +72,7 @@ export function getActiveChatModelId(): string {
   if (provider === "openai") return openAiChatModelId();
   if (provider === "xai") return getXaiChatModelId();
   if (provider === "groq") return getGroqChatModelId();
+  if (provider === "cerebras") return getCerebrasChatModelId();
   return "unknown";
 }
 
@@ -66,6 +81,7 @@ export function getChatModelForProvider(provider: AiProviderName) {
   if (provider === "openai") return openai(openAiChatModelId());
   if (provider === "xai") return xai(getXaiChatModelId());
   if (provider === "groq") return groq(getGroqChatModelId());
+  if (provider === "cerebras") return cerebras().chat(getCerebrasChatModelId());
   throw new Error("AI is not configured");
 }
 
