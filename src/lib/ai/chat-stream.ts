@@ -9,9 +9,10 @@ import { isLikelyTruncatedReply } from "./truncation";
 const CHAT_MAX_RETRIES = 1;
 /** Short answers arrive faster; the prompt also asks Kaia to keep replies brief. */
 export const KAIA_MAX_OUTPUT_TOKENS = 700;
-const CHAT_TIMEOUT_MS = 45_000;
-/** If a provider hasn't sent its first words by now, try the next one. */
-const FIRST_TOKEN_TIMEOUT_MS = 8_000;
+const CHAT_TIMEOUT_MS = 55_000;
+/** First provider (cold start) needs more time; fallbacks get a shorter wait. */
+const FIRST_PROVIDER_FIRST_TOKEN_MS = 18_000;
+const FALLBACK_FIRST_TOKEN_MS = 12_000;
 
 export type ChatStreamParams = {
   system: string;
@@ -41,12 +42,12 @@ async function streamOne(
   provider: AiProviderName,
   params: ChatStreamParams,
   onChunk: (chunk: string) => void,
-  opts: { maxRetries: number; signal: AbortSignal },
+  opts: { maxRetries: number; signal: AbortSignal; firstTokenMs: number },
 ): Promise<{ full: string; provider: AiProviderName } | null> {
   const firstToken = new AbortController();
   const timer = setTimeout(
-    () => firstToken.abort(new NoFirstTokenError(`${provider} sent nothing in ${FIRST_TOKEN_TIMEOUT_MS}ms`)),
-    FIRST_TOKEN_TIMEOUT_MS,
+    () => firstToken.abort(new NoFirstTokenError(`${provider} sent nothing in ${opts.firstTokenMs}ms`)),
+    opts.firstTokenMs,
   );
   let full = "";
   try {
@@ -102,6 +103,7 @@ async function streamSequential(
       const out = await streamOne(model, provider, params, onChunk, {
         maxRetries: i === chain.length - 1 ? CHAT_MAX_RETRIES : 0,
         signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
+        firstTokenMs: i === 0 ? FIRST_PROVIDER_FIRST_TOKEN_MS : FALLBACK_FIRST_TOKEN_MS,
       });
       if (out) return out;
       lastErr = new Error(`Empty response from ${provider}`);
@@ -144,6 +146,7 @@ async function streamRace(
       }, {
         maxRetries: 0,
         signal: AbortSignal.any([controllers[idx]!.signal, AbortSignal.timeout(CHAT_TIMEOUT_MS)]),
+        firstTokenMs: idx === 0 ? FIRST_PROVIDER_FIRST_TOKEN_MS : FALLBACK_FIRST_TOKEN_MS,
       });
       if (out && winner === provider) full = out.full;
     } catch (err) {

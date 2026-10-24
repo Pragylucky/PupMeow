@@ -38,8 +38,8 @@ export function userFacingAiError(err: unknown): string {
   if (lower.includes("no longer available to new users") || lower.includes("use models/gemini-3.8-flash")) {
     return "This Gemini key must use gemini-3.8-flash (not 2.5 Flash). Remove AI_MODEL on Vercel or set AI_MODEL=gemini-3.8-flash, then redeploy.";
   }
-  if (lower.includes("quota") || lower.includes("rate limit") || lower.includes("resource_exhausted")) {
-    return "Gemini free-tier limit reached for today. Wait for the reset (see Google AI Studio usage) or enable billing on the key.";
+  if (lower.includes("quota") || lower.includes("rate limit") || lower.includes("resource_exhausted") || lower.includes("rate_limit")) {
+    return "AI free-tier limit reached for today. Wait a bit and try again, or check usage in Groq / Google AI Studio.";
   }
   if (lower.includes("not found") && lower.includes("model")) {
     return "The AI model name is wrong for this key. Use gemini-3.8-flash for new Google AI Studio keys, or set AI_MODEL in Vercel.";

@@ -1,3 +1,5 @@
+import { userFacingAiError } from "./errors";
+
 /** Friendly copy when Kaia has nothing to show — keep warm, never technical. */
 export const KAIA_UNABLE_TO_REPLY =
   "Sorry — I couldn't put together an answer just now. My brain did a tiny bonk. 🐾 Try sending your question again in a moment?";
@@ -22,5 +24,9 @@ export function userFacingKaiaChatError(err: unknown): string {
   if (lower.includes("aborted") || lower.includes("timeout") || lower.includes("timed out")) {
     return KAIA_REPLY_TIMEOUT;
   }
+  const fromProvider = userFacingAiError(err);
+  const helpful =
+    /api key|quota|rate limit|timed out|didn't get a reply|model name|gemini|groq|cerebras/i.test(fromProvider);
+  if (helpful) return fromProvider;
   return KAIA_UNABLE_TO_REPLY;
 }
