@@ -61,8 +61,12 @@ begin
         resolved_at = now()
     where target_type = p_target_type and target_id = p_target_id and status = 'open';
 
-  insert into public.admin_audit_log (admin_id, action, target_type, target_id, details)
-  values (auth.uid(), 'delete_content', p_target_type::text, p_target_id, left(trim(p_reason), 500));
+  begin
+    insert into public.admin_audit_log (admin_id, action, target_type, target_id, details)
+    values (auth.uid(), 'delete_content', p_target_type::text, p_target_id, left(trim(p_reason), 500));
+  exception when others then
+    null;
+  end;
 end; $$;
 
 revoke all on function public.admin_delete_target(public.report_target, uuid, text) from public, anon;

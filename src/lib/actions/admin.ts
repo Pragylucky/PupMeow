@@ -13,6 +13,9 @@ function adminRpcError(error: { message?: string; code?: string }, hint?: string
   if (msg.includes("Could not find the function") || msg.includes("admin_set_hidden") || msg.includes("admin_delete_target")) {
     return hint ?? "Database moderation functions are missing. Run the latest Supabase migrations (admin_delete_content).";
   }
+  if (msg.includes("admin_audit_log")) {
+    return "Admin audit table is missing in Supabase. Open SQL Editor and run migration 20261021000002_ensure_admin_audit_log.sql from the repo.";
+  }
   if (msg.includes("Admins only")) return "Your account is not recognised as admin in the database. Sign out and back in, or check your role in Supabase.";
   const friendly = friendlyError(error);
   if (friendly === "Something went wrong. Please try again." && msg.length > 0 && msg.length < 220) return msg;
