@@ -26,7 +26,7 @@ export async function saveMatchProfile(_prev: ActionResult<string> | null, formD
   const v = parsed.data;
   if (!allOwnUploads(v.photo_urls, "matchmaking", ctx.userId)) return { ok: false, error: "Please re-upload the photos." };
   if (v.health_doc_path && !isOwnDocumentPath(v.health_doc_path, ctx.userId)) return { ok: false, error: "Please re-upload the certificate." };
-  const mod = await moderateText(v.about, "listing");
+  const mod = await moderateText(v.about, "listing", { supabase: ctx.supabase });
   if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod), fieldErrors: { about: blockedMessage(mod) } };
 
   const { data: existing } = await ctx.supabase.from("pet_match_profiles").select("id").eq("pet_id", v.pet_id).eq("owner_id", ctx.userId).maybeSingle();
@@ -77,7 +77,7 @@ export async function sendMatchRequest(_prev: ActionResult | null, formData: For
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Check the form", fieldErrors: zodFieldErrors(parsed.error) };
   if (parsed.data.message) {
-    const mod = await moderateText(parsed.data.message, "comment");
+    const mod = await moderateText(parsed.data.message, "comment", { supabase: ctx.supabase });
     if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod) };
   }
   // to_owner_id is overwritten by a trigger from the target pet; the placeholder satisfies NOT NULL.

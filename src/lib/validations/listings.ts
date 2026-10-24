@@ -4,8 +4,9 @@ import {
 } from "./common";
 
 /** Mentions of money for an animal — paid sales are not allowed. */
+/** Word-boundary safe — avoids matching "years 2" as "rs 2". */
 export const SALE_PATTERN =
-  /(₹\s?\d|rs\.?\s?\d|\binr\b|\d+\s?(?:k|000)\s?(?:rs|rupees)|\bprice\b|\bfor sale\b|\bselling\b|\brehoming fee\b|\bstud fee\b|\bpaid adoption\b)/i;
+  /(₹\s?\d|\brs\.?\s*\d|\binr\b|\d+\s?(?:k|000)\s?(?:rs|rupees)|\bprice\b|\bfor\s+sale\b|\bselling\b|\bsell\b|\brehoming fee\b|\bstud fee\b|\bpaid adoption\b|price\s*\d)/i;
 
 export const lostFoundSchema = z.object({
   type: z.enum(["lost", "found"]),

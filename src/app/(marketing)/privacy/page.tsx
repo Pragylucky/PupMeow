@@ -40,7 +40,12 @@ export default function PrivacyPage() {
       </ul>
 
       <h2>Service providers</h2>
-      <p>We use Supabase (database, login and file storage), Vercel (hosting) and an AI provider — Google Gemini or OpenAI — to process AI requests. They process data only on our instructions. Some of these providers may store data outside India, as permitted under the DPDP Act. We do not sell your personal data, and we do not show ads.</p>
+      <p>
+        We use Supabase (database, login and file storage), Vercel (hosting) and AI providers to run Kaia and automated safety checks — including{" "}
+        <strong>Groq</strong>, <strong>Google Gemini</strong>, and optionally <strong>OpenAI</strong> or <strong>xAI</strong> depending on configuration.
+        When you pick a pet in Kaia, we may send that pet&apos;s profile and recent health records (vaccines, visits) to the model so answers stay relevant.
+        They process data only on our instructions. Some providers may store data outside India, as permitted under the DPDP Act. We do not sell your personal data, and we do not show ads.
+      </p>
 
       <h2>Your rights</h2>
       <ul>

@@ -59,6 +59,17 @@ export async function POST(req: NextRequest) {
   const emergency = detectEmergency(message);
   const userContent = emergency ? `${message}\n\n[This may be an emergency: start with an urgent go-to-vet-now line.]` : message;
 
+  const { error: userInsertError } = await supabase.from("ai_messages").insert({
+    conversation_id: convId,
+    user_id: userId,
+    role: "user",
+    content: message,
+  });
+  if (userInsertError) {
+    console.error("[ai/chat] save user message", userInsertError);
+    return NextResponse.json({ error: "Couldn't save your message. Try again." }, { status: 500 });
+  }
+
   const [historyRes, petContext] = await Promise.all([
     supabase.from("ai_messages").select("role, content").eq("conversation_id", convId).order("created_at", { ascending: false }).limit(12),
     loadPetContext(supabase, userId, petId),
@@ -66,8 +77,6 @@ export async function POST(req: NextRequest) {
 
   const history = ((historyRes.data ?? []) as { role: "user" | "assistant"; content: string }[]).reverse();
   const system = assistantSystemPrompt({ petContext, userArea: area });
-
-  void supabase.from("ai_messages").insert({ conversation_id: convId, user_id: userId, role: "user", content: message });
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -77,7 +86,15 @@ export async function POST(req: NextRequest) {
         const out = await streamChatToWriter(
           {
             system,
-            messages: [...history, { role: "user" as const, content: userContent }],
+            messages: (() => {
+              const messages = [...history] as { role: "user" | "assistant"; content: string }[];
+              if (messages.length && messages[messages.length - 1]?.role === "user") {
+                messages[messages.length - 1] = { role: "user", content: userContent };
+              } else {
+                messages.push({ role: "user", content: userContent });
+              }
+              return messages;
+            })(),
           },
           (chunk) => {
             controller.enqueue(encoder.encode(chunk));

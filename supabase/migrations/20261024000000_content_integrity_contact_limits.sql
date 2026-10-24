@@ -9,7 +9,7 @@ immutable
 parallel safe
 set search_path = ''
 as $$
-  select coalesce(p_text, '') ~* '(₹\s?\d|rs\.?\s?\d|\binr\b|\d+\s?(?:k|000)\s?(?:rs|rupees)|\bprice\b|\bfor sale\b|\bselling\b|\brehoming fee\b|\bstud fee\b|\bpaid adoption\b)';
+  select coalesce(p_text, '') ~* E'(₹\\s?\\d|\\mrs\\.?\\s*\\d|\\minr\\M|\\d+\\s?(?:k|000)\\s?(?:rs|rupees)|\\yprice\\y|\\yfor\\s+sale\\y|\\yselling\\y|\\ysell\\y|\\yrehoming fee\\y|\\ystud fee\\y|\\ypaid adoption\\y|price\\s*\\d)';
 $$;
 
 -- ---------- photo URLs must be this user's object in the given public bucket ----------
