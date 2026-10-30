@@ -34,25 +34,19 @@ function isNoFirstTokenError(err: unknown): boolean {
 
 const GOOGLE_CHAT_MAX_OUTPUT_TOKENS = 2048;
 
-/** Provider-specific limits so Gemini thinking doesn't burn the whole budget. */
-function modelCallOptions(provider: AiProviderName, params: ChatStreamParams) {
+type ChatModelCallBase = {
+  system: string;
+  messages: ChatStreamParams["messages"];
+  maxOutputTokens: number;
+  temperature?: number;
+};
+
+function chatModelCallBase(provider: AiProviderName, params: ChatStreamParams): ChatModelCallBase {
   if (provider === "google") {
     return {
       system: params.system,
       messages: params.messages,
       maxOutputTokens: GOOGLE_CHAT_MAX_OUTPUT_TOKENS,
-      providerOptions: {
-        google: { thinkingConfig: { thinkingLevel: "low" as const } },
-      },
-    };
-  }
-  if (provider === "groq") {
-    return {
-      system: params.system,
-      messages: params.messages,
-      maxOutputTokens: params.maxOutputTokens ?? KAIA_MAX_OUTPUT_TOKENS,
-      temperature: params.temperature ?? 0.5,
-      providerOptions: { groq: { reasoningEffort: "low" as const } },
     };
   }
   return {
@@ -61,6 +55,72 @@ function modelCallOptions(provider: AiProviderName, params: ChatStreamParams) {
     maxOutputTokens: params.maxOutputTokens ?? KAIA_MAX_OUTPUT_TOKENS,
     temperature: params.temperature ?? 0.5,
   };
+}
+
+function startChatStream(
+  model: ReturnType<typeof buildChatModelChain>[number]["model"],
+  provider: AiProviderName,
+  params: ChatStreamParams,
+  opts: { maxRetries: number; abortSignal: AbortSignal },
+) {
+  const base = chatModelCallBase(provider, params);
+  if (provider === "google") {
+    return streamText({
+      model,
+      ...base,
+      maxRetries: opts.maxRetries,
+      abortSignal: opts.abortSignal,
+      providerOptions: { google: { thinkingConfig: { thinkingLevel: "low" } } },
+    });
+  }
+  if (provider === "groq") {
+    return streamText({
+      model,
+      ...base,
+      maxRetries: opts.maxRetries,
+      abortSignal: opts.abortSignal,
+      providerOptions: { groq: { reasoningEffort: "low" } },
+    });
+  }
+  return streamText({
+    model,
+    ...base,
+    maxRetries: opts.maxRetries,
+    abortSignal: opts.abortSignal,
+  });
+}
+
+async function completeChatText(
+  model: ReturnType<typeof buildChatModelChain>[number]["model"],
+  provider: AiProviderName,
+  params: ChatStreamParams,
+  opts: { maxRetries: number; abortSignal: AbortSignal },
+) {
+  const base = chatModelCallBase(provider, params);
+  if (provider === "google") {
+    return generateText({
+      model,
+      ...base,
+      maxRetries: opts.maxRetries,
+      abortSignal: opts.abortSignal,
+      providerOptions: { google: { thinkingConfig: { thinkingLevel: "low" } } },
+    });
+  }
+  if (provider === "groq") {
+    return generateText({
+      model,
+      ...base,
+      maxRetries: opts.maxRetries,
+      abortSignal: opts.abortSignal,
+      providerOptions: { groq: { reasoningEffort: "low" } },
+    });
+  }
+  return generateText({
+    model,
+    ...base,
+    maxRetries: opts.maxRetries,
+    abortSignal: opts.abortSignal,
+  });
 }
 
 /**
@@ -82,9 +142,7 @@ async function streamOne(
   );
   let full = "";
   try {
-    const result = streamText({
-      model,
-      ...modelCallOptions(provider, params),
+    const result = startChatStream(model, provider, params, {
       maxRetries: opts.maxRetries,
       abortSignal: AbortSignal.any([opts.signal, firstToken.signal]),
     });
@@ -114,9 +172,7 @@ async function streamOne(
   }
   if (!full.trim()) {
     try {
-      const { text } = await generateText({
-        model,
-        ...modelCallOptions(provider, params),
+      const { text } = await completeChatText(model, provider, params, {
         maxRetries: opts.maxRetries,
         abortSignal: opts.signal,
       });
