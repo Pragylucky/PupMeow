@@ -16,8 +16,14 @@ export async function GET(request: Request) {
   const isAdmin = await isAdminApiRequest();
 
   if (!isAdmin) {
+    const order = getKaiaChatProviderOrder();
     return NextResponse.json(
-      { assistant, ok: assistant },
+      {
+        assistant,
+        ok: assistant,
+        /** Which providers will be tried for chat (no secrets). */
+        chatProviders: assistant ? order : [],
+      },
       { status: assistant ? 200 : 503, headers: { "Cache-Control": "no-store" } },
     );
   }
@@ -71,7 +77,11 @@ export async function GET(request: Request) {
     }
   }
 
-  const ok = status.assistant && status.checks.googleKeyFormatOk !== false;
+  const googleInOrder = status.chatTryOrder.includes("google");
+  const ok =
+    status.assistant &&
+    status.chatTryOrder.length > 0 &&
+    (!googleInOrder || status.checks.googleKeyFormatOk !== false);
   return NextResponse.json(body, {
     status: ok ? 200 : 503,
     headers: { "Cache-Control": "no-store" },

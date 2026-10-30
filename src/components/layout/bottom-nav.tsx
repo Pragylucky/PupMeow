@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
@@ -19,6 +20,7 @@ export function BottomNav({
 }) {
   const pathname = usePathname();
   const { open } = useCreateSheet();
+  const [createSpin, setCreateSpin] = useState(0);
   return (
     <nav aria-label="Main" className="no-print fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 pb-safe backdrop-blur md:hidden">
       <ul className="mx-auto grid max-w-md grid-cols-5 px-1 pt-1.5">
@@ -28,12 +30,19 @@ export function BottomNav({
               <li key="create" className="flex justify-center">
                 <button
                   type="button"
-                  onClick={open}
+                  onClick={() => {
+                    setCreateSpin((n) => n + 1);
+                    open();
+                  }}
                   aria-label="Create"
                   aria-haspopup="dialog"
                   className="-mt-5 flex h-14 w-14 items-center justify-center rounded-full bg-strong text-on-strong shadow-[var(--shadow-lift)] ring-4 ring-background active:scale-95"
                 >
-                  <Plus className="h-7 w-7" strokeWidth={2.75} />
+                  <Plus
+                    key={createSpin}
+                    className="h-7 w-7 animate-[pm-create-spin_420ms_ease-out]"
+                    strokeWidth={2.75}
+                  />
                 </button>
               </li>
             );
@@ -64,7 +73,15 @@ export function BottomNav({
                       className={cn(!active && "opacity-90")}
                     />
                   ) : (
-                    <item.icon className="h-[1.3rem] w-[1.3rem]" strokeWidth={active ? 2.5 : 2} aria-hidden />
+                    <item.icon
+                      key={active ? "on" : "off"}
+                      className={cn(
+                        "h-[1.3rem] w-[1.3rem]",
+                        active && "animate-[pm-tab-pop_340ms_ease-out]",
+                      )}
+                      strokeWidth={active ? 2.5 : 2}
+                      aria-hidden
+                    />
                   )}
                 </span>
                 <span className="truncate">{item.label}</span>

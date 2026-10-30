@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Download } from "lucide-react";
 import { updateProfile, updateNotificationPrefs, deleteAccount } from "@/lib/actions/profile";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -26,16 +27,26 @@ function useResultToast(state: ActionResult | null) {
 }
 
 export function ProfileSettingsForm({ profile, priv }: { profile: ProfileRow; priv: ProfilePrivateRow | null }) {
+  const router = useRouter();
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(updateProfile, null);
   const [uploading, setUploading] = useState(false);
+  const [displayName, setDisplayName] = useState(profile.display_name ?? "");
+  const [username, setUsername] = useState(profile.username ?? "");
   useResultToast(state);
+  useEffect(() => {
+    setDisplayName(profile.display_name ?? "");
+    setUsername(profile.username ?? "");
+  }, [profile.display_name, profile.username, profile.updated_at]);
+  useEffect(() => {
+    if (state?.ok) router.refresh();
+  }, [state, router]);
   const fe = state && !state.ok ? state.fieldErrors ?? {} : {};
   return (
-    <form action={action} className="space-y-5" noValidate>
+    <form key={profile.updated_at} action={action} className="space-y-5" noValidate>
       <ImageUploader bucket="avatars" userId={profile.id} name="avatar_url" label="Profile photo" max={1} shape="circle" value={profile.avatar_url ? [profile.avatar_url] : []} onUploadingChange={setUploading} />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Input label="Name" name="display_name" defaultValue={profile.display_name ?? ""} maxLength={50} required error={fe.display_name} />
-        <Input label="Username" name="username" defaultValue={profile.username ?? ""} maxLength={20} required error={fe.username} autoCapitalize="none" />
+        <Input label="Display name" name="display_name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={50} required autoComplete="name" error={fe.display_name} hint="Shown on posts, comments and Kaia" />
+        <Input label="Username" name="username" value={username} onChange={(e) => setUsername(e.target.value.toLowerCase())} maxLength={20} required error={fe.username} autoCapitalize="none" autoComplete="username" spellCheck={false} hint="Your @handle — letters, numbers, underscores only" />
       </div>
       <Combobox name="area" label="Area" options={NCR_AREAS} defaultValue={priv?.home_area ?? profile.area ?? ""} required allowCustom error={fe.area} hint="Used for “Nearby” posts and lost-pet alerts" />
       <Textarea label="Bio" name="bio" defaultValue={profile.bio ?? ""} maxLength={200} rows={3} error={fe.bio} />

@@ -323,7 +323,12 @@ export function ImageUploader({
       )}
 
       {(notice || error) && <p role="alert" className="text-xs font-semibold text-danger">{error || notice}</p>}
-      {name && doneValues.map((v) => <input key={v} type="hidden" name={name} value={v} />)}
+      {name &&
+        (max === 1 ? (
+          <input type="hidden" name={name} value={doneValues[0] ?? ""} />
+        ) : (
+          doneValues.map((v) => <input key={v} type="hidden" name={name} value={v} />)
+        ))}
     </div>
   );
 }

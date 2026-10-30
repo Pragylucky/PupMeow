@@ -26,7 +26,7 @@ export function LostFoundCard({ item, viewerArea, className, size = "md" }: { it
     <Link
       href={`/lost/${item.id}`}
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-[var(--radius-lg)] p-3 shadow-[var(--shadow-card)] transition-transform hover:-translate-y-0.5 focus-visible:-translate-y-0.5",
+        "press group relative flex flex-col overflow-hidden rounded-[var(--radius-lg)] p-3 shadow-[var(--shadow-card)] transition-transform hover:-translate-y-0.5 focus-visible:-translate-y-0.5",
         tone,
         !found && "halftone",
         className,
@@ -98,7 +98,7 @@ export function AdoptionCard({ item, viewerArea, className }: { item: AdoptItem;
   return (
     <Link
       href={`/adopt/${item.id}`}
-      className={cn("group flex flex-col overflow-hidden rounded-[var(--radius-lg)] bg-surface shadow-[var(--shadow-card)] transition-transform hover:-translate-y-0.5 focus-visible:-translate-y-0.5", className)}
+      className={cn("press group flex flex-col overflow-hidden rounded-[var(--radius-lg)] bg-surface shadow-[var(--shadow-card)] transition-transform hover:-translate-y-0.5 focus-visible:-translate-y-0.5", className)}
     >
       <div className="relative aspect-[4/3] overflow-hidden">
         <PetImage src={item.photo_urls[0]} alt={`${item.pet_name}, ${item.species} for adoption`} species={item.species} hints={[item.breed, item.description]} seed={item.id} sizes="(max-width: 768px) 50vw, 300px" className="transition-transform duration-300 group-hover:scale-[1.03]" />

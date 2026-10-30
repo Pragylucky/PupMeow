@@ -124,7 +124,7 @@ export default async function AdoptPage({ searchParams }: { searchParams: Promis
         { name: "gender", label: "Gender", value: sp.gender ?? "", options: [{ value: "", label: "any" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }] },
       ]} />
       {items.length ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{items.map((i) => <AdoptionCard key={i.id} item={i} viewerArea={viewerArea} />)}</div>
+        <div className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{items.map((i) => <AdoptionCard key={i.id} item={i} viewerArea={viewerArea} />)}</div>
       ) : (
         <EmptyState tone="card" art="heart" title={mine ? "You haven't listed a pet yet" : "No pets match these filters"} description={mine ? "Fostering a dog or cat? List them for free." : "Try clearing filters, or check back soon. New listings come in every week."} action={mine ? <ButtonLink href="/adopt/new">List a pet</ButtonLink> : <ButtonLink href="/adopt" variant="outline">Clear filters</ButtonLink>} />
       )}

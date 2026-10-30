@@ -128,7 +128,7 @@ export default async function LostPage({ searchParams }: { searchParams: Promise
       </div>
       <ListingFilters basePath="/lost" areas={NCR_AREAS} hidden={{ tab }} area={sp.area} extra={[{ name: "since", label: "Last seen", value: sp.since ?? "", options: [{ value: "", label: "any time" }, { value: "1d", label: "Last 24 hours" }, { value: "7d", label: "Last 7 days" }, { value: "30d", label: "Last 30 days" }] }]} />
       {items.length ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{items.map((i) => <LostFoundCard key={i.id} item={i} viewerArea={viewerArea} />)}</div>
+        <div className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{items.map((i) => <LostFoundCard key={i.id} item={i} viewerArea={viewerArea} />)}</div>
       ) : (
         <EmptyState
           tone="card"

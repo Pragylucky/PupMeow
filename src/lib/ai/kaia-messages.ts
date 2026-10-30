@@ -26,7 +26,7 @@ export function userFacingKaiaChatError(err: unknown): string {
   }
   const fromProvider = userFacingAiError(err);
   const helpful =
-    /api key|quota|rate limit|timed out|didn't get a reply|model name|gemini|groq|cerebras/i.test(fromProvider);
+    /api key|quota|rate limit|timed out|didn't get a reply|couldn't get an answer|model name|gemini|groq|cerebras|redeploy|vercel/i.test(fromProvider);
   if (helpful) return fromProvider;
   return KAIA_UNABLE_TO_REPLY;
 }

@@ -1,5 +1,5 @@
 import "server-only";
-import { streamText } from "ai";
+import { generateText, streamText } from "ai";
 import type { AiProviderName } from "./config";
 import { isChatRaceEnabled } from "./config";
 import { buildChatModelChain } from "./chat-fallback";
@@ -12,7 +12,7 @@ export const KAIA_MAX_OUTPUT_TOKENS = 700;
 const CHAT_TIMEOUT_MS = 55_000;
 /** First provider (cold start) needs more time; fallbacks get a shorter wait. */
 const FIRST_PROVIDER_FIRST_TOKEN_MS = 18_000;
-const FALLBACK_FIRST_TOKEN_MS = 12_000;
+const FALLBACK_FIRST_TOKEN_MS = 22_000;
 
 export type ChatStreamParams = {
   system: string;
@@ -83,6 +83,27 @@ async function streamOne(
     console.warn("[ai/chat] stream ended early from", provider, flattenAiErrorMessage(err));
   } finally {
     clearTimeout(timer);
+  }
+  if (!full.trim()) {
+    try {
+      const { text } = await generateText({
+        model,
+        system: params.system,
+        messages: params.messages,
+        maxOutputTokens: params.maxOutputTokens ?? KAIA_MAX_OUTPUT_TOKENS,
+        temperature: params.temperature ?? 0.5,
+        maxRetries: opts.maxRetries,
+        abortSignal: opts.signal,
+      });
+      if (text.trim()) {
+        full = text;
+        onChunk(text);
+        console.info("[ai/chat] non-stream fallback from", provider);
+      }
+    } catch (genErr) {
+      console.warn("[ai/chat] generate fallback failed", provider, flattenAiErrorMessage(genErr));
+      if (!full) throw genErr;
+    }
   }
   if (!full.trim()) return null;
   if (isLikelyTruncatedReply(full)) {

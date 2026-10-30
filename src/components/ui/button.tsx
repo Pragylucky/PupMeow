@@ -7,7 +7,7 @@ type Variant = "primary" | "teal" | "secondary" | "violet" | "outline" | "ghost"
 type Size = "sm" | "md" | "lg" | "icon" | "icon-sm";
 
 const base =
-  "inline-flex items-center justify-center gap-2 font-bold whitespace-nowrap select-none [&_svg]:shrink-0 transition-[background-color,box-shadow,transform,color,border-color] active:translate-y-px disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  "inline-flex items-center justify-center gap-2 font-bold whitespace-nowrap select-none [&_svg]:shrink-0 transition-[background-color,box-shadow,transform,color,border-color] active:scale-[0.96] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 const variants: Record<Variant, string> = {
   primary: "bg-strong text-on-strong hover:opacity-90",

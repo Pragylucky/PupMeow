@@ -79,7 +79,7 @@ export default async function LandingPage() {
               <Link href="/lost" className={`${buttonClasses("white", "lg")} mt-6`}>See all lost pets <ArrowRight className="h-5 w-5" aria-hidden /></Link>
             </div>
             {lost.length ? (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{lost.map((l) => <LostFoundCard key={l.id} item={l} size="sm" className="ring-4 ring-white/15" />)}</div>
+              <div className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{lost.map((l) => <LostFoundCard key={l.id} item={l} size="sm" className="ring-4 ring-white/15" />)}</div>
             ) : (
               <div className="flex flex-col items-center rounded-[var(--radius-xl)] bg-white/10 p-8 text-center">
                 <PetArt pet={{ species: "dog", look: "beagle" }} className="h-32 w-32" />
@@ -100,7 +100,7 @@ export default async function LandingPage() {
               </div>
               <Link href="/adopt" className={buttonClasses("primary", "lg")}>See pets for adoption</Link>
             </div>
-            {adopt.length > 0 && <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{adopt.map((a) => <AdoptionCard key={a.id} item={a} />)}</div>}
+            {adopt.length > 0 && <div className="stagger mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{adopt.map((a) => <AdoptionCard key={a.id} item={a} />)}</div>}
           </div>
         </section>
 
