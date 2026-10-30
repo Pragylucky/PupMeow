@@ -2,9 +2,9 @@ import type { Species } from "@/types/database";
 
 export const APP_NAME = "Pupmeow";
 
-/** Public URL until a custom domain is connected — keep in sync with Vercel `NEXT_PUBLIC_SITE_URL`. */
-export const LIVE_SITE_URL = "https://pupmeow.vercel.app";
-export const LIVE_SITE_HOST = "pupmeow.vercel.app";
+/** Canonical public site — keep in sync with Vercel `NEXT_PUBLIC_SITE_URL`. */
+export const LIVE_SITE_URL = "https://pupmeow.in";
+export const LIVE_SITE_HOST = "pupmeow.in";
 
 /** Team inbox for contact, partners, support, privacy and grievances. */
 export const CONTACT_EMAIL = "pupmeow.team@gmail.com";
