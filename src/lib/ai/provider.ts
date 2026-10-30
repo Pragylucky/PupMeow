@@ -31,10 +31,15 @@ function openAiChatModelId() {
 
 const RETIRED_GROQ_MODELS = new Set([
   "llama-3.3-70b-versatile",
+  "llama-3.1-8b-instant",
   "llama3-70b-8192",
   "llama3-8b-8192",
   "mixtral-8x7b-32768",
 ]);
+
+const RETIRED_CEREBRAS_MODELS = new Set(["llama-3.3-70b", "llama3.1-8b"]);
+
+export const RETIRED_CHAT_MODEL_IDS = [...RETIRED_GROQ_MODELS, ...RETIRED_CEREBRAS_MODELS];
 
 /** Groq retired llama-3.3-70b-versatile (404). Default: fast Qwen on current Groq catalog. */
 export function getGroqChatModelId(): string {
@@ -47,7 +52,12 @@ export function getGroqChatModelId(): string {
 }
 
 export function getCerebrasChatModelId(): string {
-  return (process.env.CEREBRAS_MODEL ?? "").trim() || "llama-3.3-70b";
+  const fromEnv = (process.env.CEREBRAS_MODEL ?? "").trim();
+  if (fromEnv) {
+    if (RETIRED_CEREBRAS_MODELS.has(fromEnv)) return "qwen-3.8-27b";
+    return fromEnv;
+  }
+  return "qwen-3.8-27b";
 }
 
 let cerebrasProvider: ReturnType<typeof createOpenAI> | null = null;

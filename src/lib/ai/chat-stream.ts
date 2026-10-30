@@ -32,6 +32,37 @@ function isNoFirstTokenError(err: unknown): boolean {
   return err instanceof NoFirstTokenError || (err instanceof Error && err.name === "NoFirstTokenError");
 }
 
+const GOOGLE_CHAT_MAX_OUTPUT_TOKENS = 2048;
+
+/** Provider-specific limits so Gemini thinking doesn't burn the whole budget. */
+function modelCallOptions(provider: AiProviderName, params: ChatStreamParams) {
+  if (provider === "google") {
+    return {
+      system: params.system,
+      messages: params.messages,
+      maxOutputTokens: GOOGLE_CHAT_MAX_OUTPUT_TOKENS,
+      providerOptions: {
+        google: { thinkingConfig: { thinkingLevel: "low" as const } },
+      },
+    };
+  }
+  if (provider === "groq") {
+    return {
+      system: params.system,
+      messages: params.messages,
+      maxOutputTokens: params.maxOutputTokens ?? KAIA_MAX_OUTPUT_TOKENS,
+      temperature: params.temperature ?? 0.5,
+      providerOptions: { groq: { reasoningEffort: "low" as const } },
+    };
+  }
+  return {
+    system: params.system,
+    messages: params.messages,
+    maxOutputTokens: params.maxOutputTokens ?? KAIA_MAX_OUTPUT_TOKENS,
+    temperature: params.temperature ?? 0.5,
+  };
+}
+
 /**
  * Stream one provider to the client.
  * - No first token within 8s → try next provider (unless user already saw text).
@@ -53,10 +84,7 @@ async function streamOne(
   try {
     const result = streamText({
       model,
-      system: params.system,
-      messages: params.messages,
-      maxOutputTokens: params.maxOutputTokens ?? KAIA_MAX_OUTPUT_TOKENS,
-      temperature: params.temperature ?? 0.5,
+      ...modelCallOptions(provider, params),
       maxRetries: opts.maxRetries,
       abortSignal: AbortSignal.any([opts.signal, firstToken.signal]),
     });
@@ -88,10 +116,7 @@ async function streamOne(
     try {
       const { text } = await generateText({
         model,
-        system: params.system,
-        messages: params.messages,
-        maxOutputTokens: params.maxOutputTokens ?? KAIA_MAX_OUTPUT_TOKENS,
-        temperature: params.temperature ?? 0.5,
+        ...modelCallOptions(provider, params),
         maxRetries: opts.maxRetries,
         abortSignal: opts.signal,
       });

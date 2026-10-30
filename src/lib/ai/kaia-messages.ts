@@ -21,6 +21,9 @@ export function userFacingKaiaChatError(err: unknown): string {
   if (lower.includes("coming soon")) {
     return "Kaia is resting for a bit — check back soon! 🐾";
   }
+  if (lower.includes("too slow to start") || lower.includes("sent nothing in")) {
+    return KAIA_REPLY_TIMEOUT;
+  }
   if (lower.includes("aborted") || lower.includes("timeout") || lower.includes("timed out")) {
     return KAIA_REPLY_TIMEOUT;
   }
