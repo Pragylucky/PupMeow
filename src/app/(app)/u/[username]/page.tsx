@@ -115,7 +115,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
           </dl>
           <div className="mt-4 flex gap-2">
             {isMe ? (
-              <ButtonLink href="/settings" variant="white" size="sm"><Settings className="h-4 w-4" aria-hidden /> Edit profile</ButtonLink>
+              <ButtonLink href="/settings#profile" variant="white" size="sm"><Settings className="h-4 w-4" aria-hidden /> Edit name &amp; profile</ButtonLink>
             ) : viewer ? (
               <FollowButton targetId={profile.id} initialFollowing={Boolean(followRes.data)} />
             ) : (

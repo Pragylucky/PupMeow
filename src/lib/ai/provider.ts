@@ -29,8 +29,21 @@ function openAiChatModelId() {
   return (process.env.OPENAI_MODEL ?? process.env.AI_OPENAI_MODEL ?? "").trim() || "gpt-4o-mini";
 }
 
+const RETIRED_GROQ_MODELS = new Set([
+  "llama-3.3-70b-versatile",
+  "llama3-70b-8192",
+  "llama3-8b-8192",
+  "mixtral-8x7b-32768",
+]);
+
+/** Groq retired llama-3.3-70b-versatile (404). Default: fast Qwen on current Groq catalog. */
 export function getGroqChatModelId(): string {
-  return (process.env.GROQ_MODEL ?? process.env.AI_GROQ_MODEL ?? "").trim() || "llama-3.3-70b-versatile";
+  const fromEnv = (process.env.GROQ_MODEL ?? process.env.AI_GROQ_MODEL ?? "").trim();
+  if (fromEnv) {
+    if (RETIRED_GROQ_MODELS.has(fromEnv)) return "qwen/qwen3.8-27b";
+    return fromEnv;
+  }
+  return "qwen/qwen3.8-27b";
 }
 
 export function getCerebrasChatModelId(): string {

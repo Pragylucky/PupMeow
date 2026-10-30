@@ -112,15 +112,21 @@ export async function updateProfile(_prev: ActionResult | null, formData: FormDa
   if (!parsed.success) return { ok: false, error: "Please fix the highlighted fields.", fieldErrors: zodFieldErrors(parsed.error) };
   const v = parsed.data;
   if (v.avatar_url && v.avatar_url !== profile.avatar_url && !isOwnUpload(v.avatar_url, "avatars", userId)) {
-    return { ok: false, error: "Please upload your photo again." };
+    return { ok: false, error: "Please upload your photo again.", fieldErrors: { avatar_url: "Upload failed" } };
   }
-  if (v.username !== profile.username) {
+  if (v.username.toLowerCase() !== (profile.username ?? "").toLowerCase()) {
     const { data: free } = await supabase.rpc("username_available", { p_username: v.username });
     if (!free) return { ok: false, error: "That username is taken.", fieldErrors: { username: "That username is taken" } };
   }
+  if (v.display_name) {
+    const modName = await moderateText(v.display_name, "profile", { supabase: ctx.supabase });
+    if (modName.verdict === "block") {
+      return { ok: false, error: blockedMessage(modName), fieldErrors: { display_name: blockedMessage(modName) } };
+    }
+  }
   if (v.bio) {
     const mod = await moderateText(v.bio, "profile", { supabase: ctx.supabase });
-    if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod) };
+    if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod), fieldErrors: { bio: blockedMessage(mod) } };
   }
   const { error } = await supabase
     .from("profiles")
@@ -133,6 +139,8 @@ export async function updateProfile(_prev: ActionResult | null, formData: FormDa
   const { error: privErr } = await supabase.from("profile_private").update({ home_area: v.area, whatsapp: v.whatsapp }).eq("id", userId);
   if (privErr) return { ok: false, error: friendlyError(privErr, "Couldn't save your area.") };
   revalidatePath("/", "layout");
+  if (profile.username) revalidatePath(`/u/${profile.username}`);
+  if (v.username !== profile.username) revalidatePath(`/u/${v.username}`);
   return { ok: true, message: "Profile saved" };
 }
 

@@ -103,7 +103,7 @@ export default async function MatchPage({ searchParams }: { searchParams: Promis
         { name: "age", label: "Age", value: sp.age ?? "", options: [{ value: "", label: "any" }, { value: "young", label: "Under 1 year" }, { value: "adult", label: "1–8 years" }, { value: "senior", label: "8+ years" }] },
       ]} />
       {items.length ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((m) => <MatchCard key={m.id} m={m} near={sameNeighbourhood(m.area, viewerArea)} />)}
         </div>
       ) : (
@@ -117,7 +117,7 @@ function MatchCard({ m, near }: { m: MatchProfileCard; near: boolean }) {
   const cover = m.photo_urls[0] ?? m.pet?.photo_url;
   const gender = m.pet?.gender === "male" ? "M" : m.pet?.gender === "female" ? "F" : null;
   return (
-    <Link href={`/match/${m.id}`} className="group flex flex-col overflow-hidden rounded-[var(--radius-lg)] bg-surface shadow-[var(--shadow-card)] transition-transform hover:-translate-y-0.5 focus-visible:-translate-y-0.5">
+    <Link href={`/match/${m.id}`} className="press group flex flex-col overflow-hidden rounded-[var(--radius-lg)] bg-surface shadow-[var(--shadow-card)] transition-transform hover:-translate-y-0.5 focus-visible:-translate-y-0.5">
       <div className="relative aspect-[4/3] overflow-hidden">
         <PetImage src={cover} alt={m.pet?.name ?? "Pet"} species={m.pet?.species} hints={[m.pet?.breed]} seed={m.id} tint="#ece7ff" className="transition-transform duration-300 group-hover:scale-[1.03]" />
         <span className="absolute right-2.5 top-2.5 rounded-full bg-white px-2.5 py-1 text-[0.75rem] font-extrabold text-ink">{near ? "Nearby" : m.area}</span>

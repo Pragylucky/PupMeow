@@ -42,13 +42,16 @@ export function userFacingAiError(err: unknown): string {
     return "AI free-tier limit reached for today. Wait a bit and try again, or check usage in Groq / Google AI Studio.";
   }
   if (lower.includes("not found") && lower.includes("model")) {
-    return "The AI model name is wrong for this key. Use gemini-3.8-flash for new Google AI Studio keys, or set AI_MODEL in Vercel.";
+    return "The AI model name is wrong for this key. Set GROQ_MODEL=qwen/qwen3.8-27b on Vercel (Groq retired llama-3.3-70b-versatile), or AI_MODEL=gemini-3.8-flash for Gemini, then redeploy.";
+  }
+  if (lower.includes("model_not_found") || lower.includes("does not exist or you do not have access")) {
+    return "Groq rejected the chat model. On Vercel set GROQ_MODEL=qwen/qwen3.8-27b (or remove GROQ_MODEL to use the app default), then redeploy.";
   }
   if (lower.includes("aborted") || lower.includes("timeout")) {
     return "Kaia timed out. Try again in a moment.";
   }
   if (lower.includes("empty response")) {
-    return "Kaia didn't get a reply from the AI. Try again in a few seconds.";
+    return "Kaia couldn't get an answer from the AI right now. Wait a moment and try again.";
   }
   if (lower.includes("invalid api key") || lower.includes("invalid_api_key")) {
     return "The Groq or Gemini API key on the server is invalid. Check keys on Vercel and redeploy.";

@@ -35,6 +35,7 @@ export function PostCard({ post, viewerId, priority, onDeleted, full, compact }:
   const [likes, setLikes] = useState(post.like_count);
   const [caption, setCaption] = useState(post.caption);
   const [burst, setBurst] = useState(0);
+  const [likePop, setLikePop] = useState(0);
   const [slide, setSlide] = useState(0);
   const [viewer, setViewer] = useState<number | null>(null);
   const [editing, setEditing] = useState(false);
@@ -51,6 +52,7 @@ export function PostCard({ post, viewerId, priority, onDeleted, full, compact }:
   const setLike = async (next: boolean) => {
     if (!viewerId) { toast("Log in to like posts", "info"); return; }
     if (next === liked) return;
+    if (next) setLikePop((n) => n + 1);
     setLiked(next);
     setLikes((n) => n + (next ? 1 : -1));
     const res = await toggleLike(post.id, next);
@@ -155,8 +157,16 @@ export function PostCard({ post, viewerId, priority, onDeleted, full, compact }:
       )}
 
       <div className={cn("flex items-center gap-1 px-2 pb-2 pt-1", onDark && "text-white")}>
-        <button type="button" onClick={() => setLike(!liked)} aria-pressed={liked} aria-label={liked ? "Unlike" : "Like"} className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-2 font-bold", onDark ? "hover:bg-white/15" : "hover:bg-surface-2")}>
-          <Heart className={cn("h-[1.4rem] w-[1.4rem] transition-transform active:scale-125", liked && (onDark ? "fill-white" : "fill-danger text-danger"))} aria-hidden />
+        <button type="button" onClick={() => void setLike(!liked)} aria-pressed={liked} aria-label={liked ? "Unlike" : "Like"} className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-2 font-bold", onDark ? "hover:bg-white/15" : "hover:bg-surface-2")}>
+          <Heart
+            key={liked ? `liked-${likePop}` : "idle"}
+            className={cn(
+              "h-[1.4rem] w-[1.4rem]",
+              liked && (onDark ? "fill-white" : "fill-danger text-danger"),
+              liked && likePop > 0 && "animate-[pm-like_450ms_ease-out]",
+            )}
+            aria-hidden
+          />
           <span className="tabular-nums">{compactNumber(likes)}</span>
         </button>
         <Link href={`/post/${post.id}#comments`} className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-2 font-bold", onDark ? "hover:bg-white/15" : "hover:bg-surface-2")} aria-label={`${post.comment_count} comments`}>

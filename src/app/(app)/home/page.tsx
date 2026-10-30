@@ -147,7 +147,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <span id="lost-h">Lost near you</span>
           </SectionTitle>
           {d.lostNear.length ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {d.lostNear.map((l) => <LostFoundCard key={l.id} item={l} viewerArea={area} />)}
             </div>
           ) : (
@@ -181,7 +181,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <SectionTitle action={<Link href="/adopt" className="font-bold text-primary hover:underline">See all</Link>}>
               <span id="adopt-h">Looking for a home</span>
             </SectionTitle>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {d.adoptions.map((a) => <AdoptionCard key={a.id} item={a} viewerArea={area} />)}
             </div>
           </section>
