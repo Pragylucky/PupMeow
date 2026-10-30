@@ -69,3 +69,27 @@ describe("ai config cost toggles", async () => {
     expect(mod.getAiDailyLimit()).toBe(12);
   });
 });
+
+describe("chat model defaults", async () => {
+  const { getGroqChatModelId, getCerebrasChatModelId, RETIRED_CHAT_MODEL_IDS } = await import("@/lib/ai/provider");
+
+  beforeEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("does not default to retired Groq or Cerebras model IDs", () => {
+    vi.stubEnv("GROQ_MODEL", "");
+    vi.stubEnv("CEREBRAS_MODEL", "");
+    expect(RETIRED_CHAT_MODEL_IDS).not.toContain(getGroqChatModelId());
+    expect(RETIRED_CHAT_MODEL_IDS).not.toContain(getCerebrasChatModelId());
+  });
+
+  it("remaps retired GROQ_MODEL env to a live model", () => {
+    vi.stubEnv("GROQ_MODEL", "llama-3.3-70b-versatile");
+    expect(getGroqChatModelId()).toBe("qwen/qwen3.8-27b");
+  });
+});

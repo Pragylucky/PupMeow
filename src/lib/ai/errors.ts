@@ -44,8 +44,8 @@ export function userFacingAiError(err: unknown): string {
   if (lower.includes("not found") && lower.includes("model")) {
     return "The AI model name is wrong for this key. Set GROQ_MODEL=qwen/qwen3.8-27b on Vercel (Groq retired llama-3.3-70b-versatile), or AI_MODEL=gemini-3.8-flash for Gemini, then redeploy.";
   }
-  if (lower.includes("model_not_found") || lower.includes("does not exist or you do not have access")) {
-    return "Groq rejected the chat model. On Vercel set GROQ_MODEL=qwen/qwen3.8-27b (or remove GROQ_MODEL to use the app default), then redeploy.";
+  if (lower.includes("decommissioned") || lower.includes("model_not_found") || lower.includes("does not exist or you do not have access")) {
+    return "Groq or Cerebras rejected the chat model. Remove old GROQ_MODEL / CEREBRAS_MODEL on Vercel or redeploy the latest Pupmeow code.";
   }
   if (lower.includes("aborted") || lower.includes("timeout")) {
     return "Kaia timed out. Try again in a moment.";
