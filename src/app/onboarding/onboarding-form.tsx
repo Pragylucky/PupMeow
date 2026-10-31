@@ -17,6 +17,8 @@ import type { ActionResult } from "@/types/models";
 export function OnboardingForm({ userId, defaults }: { userId: string; defaults: { display_name: string; username: string; avatar_url: string | null } }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(completeOnboarding, null);
   const [username, setUsername] = useState(defaults.username);
+  const [displayName, setDisplayName] = useState(defaults.display_name);
+  const [bio, setBio] = useState("");
   const [check, setCheck] = useState<{ available: boolean; message: string } | null>(null);
   const [checking, setChecking] = useState(false);
   const [hasPets, setHasPets] = useState<"yes" | "no">("no");
@@ -39,9 +41,8 @@ export function OnboardingForm({ userId, defaults }: { userId: string; defaults:
 
   return (
     <form action={action} className="space-y-6" noValidate>
-      {state && !state.ok && <p role="alert" className="rounded-[var(--radius-md)] bg-danger-soft px-3 py-2 text-sm font-semibold text-danger">{state.error}</p>}
 
-      <ImageUploader bucket="avatars" userId={userId} name="avatar_url" label="Profile photo" hint="Optional — a photo of you or your pet" max={1} shape="circle" value={defaults.avatar_url ? [defaults.avatar_url] : []} onUploadingChange={setUploading} />
+      <ImageUploader bucket="avatars" userId={userId} name="avatar_url" label="Profile photo" hint="Required — a photo of you or your pet" max={1} shape="circle" value={defaults.avatar_url ? [defaults.avatar_url] : []} onUploadingChange={setUploading} />
 
       <div>
         <Input
@@ -65,14 +66,14 @@ export function OnboardingForm({ userId, defaults }: { userId: string; defaults:
         )}
       </div>
 
-      <Input label="Your name" name="display_name" required defaultValue={defaults.display_name} maxLength={50} autoComplete="name" error={fe.display_name} />
+      <Input label="Your name" name="display_name" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={50} autoComplete="name" error={fe.display_name}/>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Input label="City" name="city" value="Delhi NCR" readOnly hint="More cities soon" />
         <Combobox name="area" label="Area" options={NCR_AREAS} placeholder="Search your area" required error={fe.area} allowCustom />
       </div>
 
-      <Textarea label="Short bio" name="bio" maxLength={200} rows={3} placeholder="Indie mom to Bruno 🐶 · Dwarka evening walks" error={fe.bio} />
+      <Textarea label="Short bio" name="bio" value={bio} onChange={(e) => setBio(e.target.value)} maxLength={200} rows={3} placeholder="Indie mom to Bruno 🐶 · Dwarka evening walks" error={fe.bio}/>
 
       <RadioGroup
         name="species_pref"
@@ -120,6 +121,12 @@ export function OnboardingForm({ userId, defaults }: { userId: string; defaults:
       <Button type="submit" size="lg" className="w-full" loading={pending} disabled={uploading || (check !== null && !check.available)}>
         {uploading ? "Uploading photo…" : "Finish and say hi to the neighbourhood"}
       </Button>
+      
+      {state && !state.ok && (
+        <p role="alert" className="rounded-[var(--radius-md)] bg-danger-soft px-3 py-2 text-sm font-semibold text-danger">
+          {state.error}
+        </p>
+      )}
     </form>
   );
 }
