@@ -31,7 +31,7 @@ Playdates in your own park. Every vaccine date in one place. And Kaia, a friendl
 ![price of any pet](https://img.shields.io/badge/price%20of%20any%20pet-%E2%82%B90-0e7c72?style=flat-square)
 ![treats](https://img.shields.io/badge/treats-%E2%88%9E-c32f3a?style=flat-square)
 
-**[🌐 Open Pupmeow](https://pupmeow.in)** &nbsp;·&nbsp; **[🚨 Lost pets](https://pupmeow.in/lost)** &nbsp;·&nbsp; **[💛 Adopt](https://pupmeow.in/adopt)** &nbsp;·&nbsp; **[✉️ Say hi](mailto:pupmeow.team@gmail.com)**
+**[🌐 Open Pupmeow](https://pupmeow.in)** &nbsp;·&nbsp; **[📲 Get the app](https://pupmeow.in/get-app)** &nbsp;·&nbsp; **[🚨 Lost pets](https://pupmeow.in/lost)** &nbsp;·&nbsp; **[💛 Adopt](https://pupmeow.in/adopt)** &nbsp;·&nbsp; **[✉️ Say hi](mailto:pupmeow.team@gmail.com)**
 
 <br/>
 
@@ -186,6 +186,8 @@ Then run the SQL files in `supabase/migrations/` **in filename order** (Supabase
 
 Host on **[Vercel](https://vercel.com)** (Mumbai **bom1** region), run Supabase migrations on production, and see **[docs/LAUNCH_HANDOFF.md](./docs/LAUNCH_HANDOFF.md)** for the launch checklist.
 
+**Android app:** The site is a PWA at **pupmeow.in**. Users can **Install app** from Chrome, or you can wrap the same URL with **[PWABuilder](https://www.pwabuilder.com)** into an APK/AAB for testers and Play Store — full steps in **[docs/ANDROID_APP.md](./docs/ANDROID_APP.md)** and **[pupmeow.in/get-app](https://pupmeow.in/get-app)**.
+
 </details>
 
 <details>
@@ -225,7 +227,8 @@ docs/assets/          the animated pictures in this README
 - [x] Lost & Found with posters, sightings and reunions
 - [x] Free adoption, playdates, pet health and Kaia
 - [x] Redesigned web app with dark mode
-- [ ] 📲 Android and iPhone apps with push alerts for lost pets near you
+- [x] **Live at [pupmeow.in](https://pupmeow.in)**
+- [ ] 📲 **Android:** PWA install + [APK / Play steps](./docs/ANDROID_APP.md) · site page [**/get-app**](https://pupmeow.in/get-app)
 - [ ] 🩺 Vets and groomers near you
 - [ ] 🎪 Pet meetups and adoption camps
 - [ ] 🏙️ More cities beyond Delhi NCR

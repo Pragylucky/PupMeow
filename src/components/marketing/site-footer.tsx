@@ -25,6 +25,7 @@ export function SiteFooter() {
         <nav aria-label="Pupmeow">
           <h2 className="font-heading text-base font-semibold">Pupmeow</h2>
           <ul className="mt-2 space-y-1.5 text-[0.95rem]">
+            <li><Link className="hover:underline" href="/get-app">Get the app</Link></li>
             <li><Link className="hover:underline" href="/about">About</Link></li>
             <li><Link className="hover:underline" href="/contact">Contact</Link></li>
             <li><Link className="hover:underline" href="/#ngos">For NGOs</Link></li>

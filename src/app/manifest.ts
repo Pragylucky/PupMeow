@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
+import { env } from "@/lib/env";
 
 export default function manifest(): MetadataRoute.Manifest {
+  const base = env.siteUrl.replace(/\/$/, "");
   return {
+    id: `${base}/`,
     name: "Pupmeow — Delhi's pet community",
     short_name: "Pupmeow",
     description: "Share moments, find lost pets, adopt and get AI pet care help in Delhi NCR.",

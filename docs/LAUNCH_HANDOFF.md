@@ -18,7 +18,7 @@ Pupmeow is a **mobile-friendly website** (installable as a PWA) for **dog and ca
 - Optional **Kaia** AI helper (Google Gemini when enabled)  
 - **Sign-in:** Google only (no email OTP / SMS login on the site)
 
-**Not included:** native iOS/Android app; WhatsApp is for **listing contact**, not login.
+**Not included yet:** separate native iOS app; WhatsApp is for **listing contact**, not login. **Android:** installable PWA + optional APK via [PWABuilder](https://www.pwabuilder.com) — see [docs/ANDROID_APP.md](./ANDROID_APP.md) and [/get-app](https://pupmeow.in/get-app).
 
 **Stack:** Next.js 15 on **Vercel**, **Supabase** (Auth, Postgres + RLS, Storage, Realtime).
 
@@ -73,6 +73,7 @@ where id = (select id from auth.users where email = 'pupmeow.team@gmail.com');
 ```
 
 - [ ] **Live smoke test (~15 min):** Google sign-in → onboarding → lost post → map → safety sheet → WhatsApp → calendar reminder → `/admin`.  
+- [ ] **PWA / Android:** On phone Chrome, open `https://pupmeow.in/home` → **Install app**; optional APK: [docs/ANDROID_APP.md](./ANDROID_APP.md).  
 - [ ] **Seed data:** If you ever ran `npm run seed` on prod, run `npm run remove-seed`.  
 - [ ] **Terms:** Lawyer review of `/terms` before large marketing.
 
