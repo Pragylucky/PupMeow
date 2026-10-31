@@ -30,6 +30,7 @@ const FAQ = [
   { q: "Who can see my phone number?", a: "Only signed-in members who tap Call or WhatsApp on your lost, found or adoption post. It's never shown to visitors who aren't logged in, and never on your profile." },
   { q: "Which areas do you cover?", a: "All of Delhi NCR: Delhi, Noida, Greater Noida, Gurugram, Ghaziabad and Faridabad." },
   { q: "Is Kaia, the AI helper, a vet?", a: "No. Kaia gives general care tips and flags emergencies, but it's not a substitute for a vet." },
+  { q: "Is there an Android app?", a: "Yes — install from Chrome (Add to Home screen) at pupmeow.in, or see our Get the app page for an APK via PWABuilder. It's the same website, full screen." },
 ];
 
 export default async function LandingPage() {
