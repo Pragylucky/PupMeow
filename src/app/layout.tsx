@@ -7,6 +7,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.siteUrl),
+  manifest: "/manifest.webmanifest",
   title: { default: "Pupmeow — Delhi's pet community", template: "%s · Pupmeow" },
   description:
     "Share your pet's moments, find lost pets, adopt, set up playdates and get friendly AI pet care help. Made for dog and cat families in Delhi NCR.",
@@ -39,6 +40,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             __html: `try{var t=localStorage.getItem('pupmeow:theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}`,
           }}
         />
+        {process.env.NODE_ENV === "production" ? (
+          <script
+            // Register before React hydrates so PWA auditors (PWABuilder) detect the service worker.
+            dangerouslySetInnerHTML={{
+              __html: `if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js",{scope:"/"}).catch(function(){})}`,
+            }}
+          />
+        ) : null}
       </head>
       <body className="min-h-dvh">
         <a href="#main" className="sr-only z-[100] rounded-full bg-primary px-4 py-2 font-bold text-on-primary focus:not-sr-only focus:fixed focus:left-3 focus:top-3">

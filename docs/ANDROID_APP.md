@@ -78,6 +78,7 @@ After you have an APK or Play link:
 | Problem | Fix |
 |--------|-----|
 | PWABuilder “not a PWA” | Deploy latest `main`; check `https://pupmeow.in/manifest.webmanifest` in browser |
+| PWABuilder red **Service Worker** | Wait for Vercel deploy, then re-run PWABuilder (SW registers from HTML + `/sw.js`). In Chrome DevTools → Application → Service workers, you should see `/sw.js` active on pupmeow.in |
 | Google login fails in app | Supabase redirect URLs include `https://pupmeow.in/**`; Google OAuth **JavaScript origins** include `https://pupmeow.in` |
 | Blank WebView | `NEXT_PUBLIC_SITE_URL` must be `https://pupmeow.in` on Vercel |
 | TWA opens browser chrome | Complete **assetlinks.json** for verified TWA |
