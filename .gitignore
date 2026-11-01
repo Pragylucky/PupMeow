@@ -50,3 +50,6 @@ yarn-error.log*
 
 # local handoff export (generate with scripts/generate-launch-handoff-pdf.py)
 /docs/Pupmeow-Launch-Handoff.pdf
+
+#supabase temporary files and local cache
+supabase/.temp/

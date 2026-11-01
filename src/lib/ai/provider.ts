@@ -41,7 +41,7 @@ const RETIRED_CEREBRAS_MODELS = new Set(["llama-3.3-70b", "llama3.1-8b"]);
 
 export const RETIRED_CHAT_MODEL_IDS = [...RETIRED_GROQ_MODELS, ...RETIRED_CEREBRAS_MODELS];
 
-/** Groq retired llama-3.3-70b-versatile (404). Default: fast Qwen on current Groq catalog. */
+/** Groq retired llama-3.3-70b-versatile (404). Default: gpt-oss on current Groq catalog. */
 export function getGroqChatModelId(): string {
   const fromEnv = (process.env.GROQ_MODEL ?? process.env.AI_GROQ_MODEL ?? "").trim();
   if (fromEnv) {
@@ -57,7 +57,7 @@ export function getCerebrasChatModelId(): string {
     if (RETIRED_CEREBRAS_MODELS.has(fromEnv)) return "qwen-3.8-27b";
     return fromEnv;
   }
-  return "qwen-3.8-27b";
+  return "openai/gpt-oss-120b";
 }
 
 let cerebrasProvider: ReturnType<typeof createOpenAI> | null = null;
