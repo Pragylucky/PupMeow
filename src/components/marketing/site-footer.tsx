@@ -59,8 +59,9 @@ export function MarketingHeader() {
         </nav>
         <nav aria-label="Account" className="flex items-center gap-1 sm:gap-2">
           <InstagramIconLink className="h-10 w-10" />
-          <Link href="/login" className="rounded-full px-4 py-2 text-sm font-bold hover:bg-surface-2">Log in</Link>
-          <Link href="/login" className="rounded-full bg-strong px-4 py-2.5 text-sm font-bold text-on-strong hover:opacity-90">Join free</Link>
+          {/* Same page as "Join free"; dropped on very narrow phones so the header fits. */}
+          <Link href="/login" className="whitespace-nowrap rounded-full px-3 py-2 text-sm font-bold hover:bg-surface-2 max-[379px]:hidden sm:px-4">Log in</Link>
+          <Link href="/login" className="whitespace-nowrap rounded-full bg-strong px-3.5 py-2.5 text-sm font-bold text-on-strong hover:opacity-90 sm:px-4">Join free</Link>
         </nav>
       </div>
     </header>
