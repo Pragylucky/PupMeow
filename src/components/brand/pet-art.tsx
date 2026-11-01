@@ -65,24 +65,29 @@ export function tintFor(seed: string) {
   return TILE_TINTS[hash(seed) % TILE_TINTS.length];
 }
 
+/**
+ * `animated` adds a tail and idle motion (wag, blink, ear flops, breathing) — see `.pm-alive` in globals.css.
+ * Eyes shift by the `--look-x` / `--look-y` CSS variables if an ancestor sets them.
+ */
 export function PetArt({
-  pet, className, title, mood = "happy",
-}: { pet: PetLook; className?: string; title?: string; mood?: "happy" | "calm" }) {
+  pet, className, title, mood = "happy", animated = false,
+}: { pet: PetLook; className?: string; title?: string; mood?: "happy" | "calm"; animated?: boolean }) {
   return (
-    <svg viewBox="0 0 120 120" className={cn("block", className)} role={title ? "img" : undefined} aria-hidden={title ? undefined : true} aria-label={title}>
-      {pet.species === "dog" ? <Dog look={pet.look} /> : <Cat look={pet.look} mood={mood} />}
+    <svg viewBox="0 0 120 120" className={cn("block", animated && "pm-alive overflow-visible", className)} role={title ? "img" : undefined} aria-hidden={title ? undefined : true} aria-label={title}>
+      {pet.species === "dog" ? <Dog look={pet.look} animated={animated} /> : <Cat look={pet.look} mood={mood} animated={animated} />}
     </svg>
   );
 }
 
-function Dog({ look }: { look: DogLook }) {
+function Dog({ look, animated }: { look: DogLook; animated: boolean }) {
   const c = DOG[look];
   const outline = look === "dalmatian" || look === "cream" ? { stroke: "#1a223322", strokeWidth: 1.2 } : {};
   return (
-    <g>
+    <g className={animated ? "pm-breathe" : undefined}>
+      {animated && <path className="pm-wag" d="M85 106 Q101 104 104 86" stroke={c.body} strokeWidth="7" fill="none" strokeLinecap="round" />}
       {/* ears behind */}
-      <path d="M39 44 Q18 44 20 71 Q22 83 31 79 Q36 62 42 50 Z" fill={c.ear} />
-      <path d="M81 44 Q102 44 100 71 Q98 83 89 79 Q84 62 78 50 Z" fill={c.ear} />
+      <path className={animated ? "pm-ear-l" : undefined} d="M39 44 Q18 44 20 71 Q22 83 31 79 Q36 62 42 50 Z" fill={c.ear} />
+      <path className={animated ? "pm-ear-r" : undefined} d="M81 44 Q102 44 100 71 Q98 83 89 79 Q84 62 78 50 Z" fill={c.ear} />
       {/* head + body as one friendly shape */}
       <path d="M33 121 V64 Q33 30 60 30 Q87 30 87 64 V121 Z" fill={c.body} {...outline} />
       {c.lower && <path d="M33 96 H87 V121 H33 Z" fill={c.lower} />}
@@ -97,8 +102,13 @@ function Dog({ look }: { look: DogLook }) {
       {/* muzzle */}
       <ellipse cx="60" cy="71" rx="16" ry="12" fill={c.muzzle} />
       {/* eyes */}
-      <circle cx="48.5" cy="56" r="3.6" fill={INK} /><circle cx="49.6" cy="54.8" r="1.2" fill="#fff" />
-      <circle cx="71.5" cy="56" r="3.6" fill={INK} /><circle cx="72.6" cy="54.8" r="1.2" fill="#fff" />
+      <g className={animated ? "pm-look" : undefined}>
+        <g className={animated ? "pm-blink" : undefined}>
+          <circle cx="48.5" cy="56" r="3.6" fill={INK} /><circle cx="49.6" cy="54.8" r="1.2" fill="#fff" />
+          <circle cx="71.5" cy="56" r="3.6" fill={INK} /><circle cx="72.6" cy="54.8" r="1.2" fill="#fff" />
+        </g>
+      </g>
+      {animated && <path className="pm-pant" d="M55 75 Q55 87 60 87 Q65 87 65 75 Z" fill="#f07c9a" />}
       {/* nose + smile */}
       <ellipse cx="60" cy="65.5" rx="5.6" ry="4.1" fill={INK} />
       <path d="M52.5 73 Q60 80 67.5 73" stroke={INK} strokeWidth="2.6" fill="none" strokeLinecap="round" />
@@ -109,18 +119,21 @@ function Dog({ look }: { look: DogLook }) {
   );
 }
 
-function Cat({ look, mood }: { look: CatLook; mood: "happy" | "calm" }) {
+function Cat({ look, mood, animated }: { look: CatLook; mood: "happy" | "calm"; animated: boolean }) {
   const c = CAT[look];
   const dark = look === "black" || look === "violet";
   const line = dark ? "#ffffff" : INK;
   const outline = look === "white" ? { stroke: "#1a223322", strokeWidth: 1.2 } : {};
   const openEyes = Boolean(c.eye) && mood === "calm";
   return (
-    <g>
+    <g className={animated ? "pm-breathe pm-breathe-slow" : undefined}>
+      {animated && <path className="pm-swish" d="M38 112 Q14 114 15 94 Q16 80 27 79" stroke={c.body} strokeWidth="7" fill="none" strokeLinecap="round" {...outline} />}
       <path d="M36 56 L40 22 L58 40 Z" fill={c.body} {...outline} />
-      <path d="M84 56 L80 22 L62 40 Z" fill={c.body} {...outline} />
       <path d="M40.5 44 L42.5 29 L51 38 Z" fill={c.inner} />
-      <path d="M79.5 44 L77.5 29 L69 38 Z" fill={c.inner} />
+      <g className={animated ? "pm-twitch" : undefined}>
+        <path d="M84 56 L80 22 L62 40 Z" fill={c.body} {...outline} />
+        <path d="M79.5 44 L77.5 29 L69 38 Z" fill={c.inner} />
+      </g>
       <path d="M36 121 V54 Q36 38 52 38 H68 Q84 38 84 54 V121 Z" fill={c.body} {...outline} />
       {c.stripes && (
         <g fill={c.stripes}>
@@ -129,16 +142,18 @@ function Cat({ look, mood }: { look: CatLook; mood: "happy" | "calm" }) {
           <rect x="55" y="40" width="10" height="3.5" rx="1.75" />
         </g>
       )}
-      {openEyes || look === "black" ? (
-        <g>
-          <ellipse cx="50" cy="60" rx="4" ry="4.4" fill={c.eye ?? "#f6b21b"} /><ellipse cx="50" cy="60" rx="1.5" ry="3.2" fill={INK} />
-          <ellipse cx="70" cy="60" rx="4" ry="4.4" fill={c.eye ?? "#f6b21b"} /><ellipse cx="70" cy="60" rx="1.5" ry="3.2" fill={INK} />
-        </g>
-      ) : (
-        <g stroke={line} strokeWidth="2.6" fill="none" strokeLinecap="round">
-          <path d="M45 60 Q50 55 55 60" /><path d="M65 60 Q70 55 75 60" />
-        </g>
-      )}
+      <g className={animated ? "pm-look" : undefined}>
+        {openEyes || look === "black" ? (
+          <g className={animated ? "pm-blink pm-blink-cat" : undefined}>
+            <ellipse cx="50" cy="60" rx="4" ry="4.4" fill={c.eye ?? "#f6b21b"} /><ellipse cx="50" cy="60" rx="1.5" ry="3.2" fill={INK} />
+            <ellipse cx="70" cy="60" rx="4" ry="4.4" fill={c.eye ?? "#f6b21b"} /><ellipse cx="70" cy="60" rx="1.5" ry="3.2" fill={INK} />
+          </g>
+        ) : (
+          <g stroke={line} strokeWidth="2.6" fill="none" strokeLinecap="round">
+            <path d="M45 60 Q50 55 55 60" /><path d="M65 60 Q70 55 75 60" />
+          </g>
+        )}
+      </g>
       <path d="M56.5 66.5 H63.5 L60 70.5 Z" fill={dark ? "#f7c6d6" : "#e58aa8"} />
       <path d="M60 70.5 V72.5 M60 72.5 Q56.5 76 53 73.5 M60 72.5 Q63.5 76 67 73.5" stroke={line} strokeWidth="2.2" fill="none" strokeLinecap="round" />
       <g stroke={dark ? "#ffffff99" : "#1a223355"} strokeWidth="1.6" strokeLinecap="round">

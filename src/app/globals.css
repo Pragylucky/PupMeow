@@ -252,6 +252,49 @@
   .press:active {
     transform: scale(0.96);
   }
+  /* Landing sections fade up on scroll (see Reveal). Only hidden when JS can reveal them again. */
+  @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 600ms ease-out, transform 600ms ease-out;
+    }
+    .reveal[data-shown] {
+      opacity: 1;
+      transform: none;
+    }
+    .reveal:not([data-shown]) .stagger > * {
+      animation-play-state: paused;
+    }
+  }
+  /* Animated mascots (<PetArt animated>). Pivots are in the 120×120 viewBox. */
+  .pm-alive :is(.pm-breathe, .pm-wag, .pm-swish, .pm-ear-l, .pm-ear-r, .pm-twitch, .pm-blink, .pm-pant, .pm-look) {
+    transform-box: view-box;
+  }
+  .pm-alive .pm-breathe { transform-origin: 60px 121px; }
+  .pm-alive .pm-wag { transform-origin: 85px 106px; }
+  .pm-alive .pm-swish { transform-origin: 38px 112px; }
+  .pm-alive .pm-ear-l { transform-origin: 40px 46px; }
+  .pm-alive .pm-ear-r { transform-origin: 80px 46px; }
+  .pm-alive .pm-twitch { transform-origin: 74px 48px; }
+  .pm-alive .pm-blink { transform-origin: 60px 58px; }
+  .pm-alive .pm-pant { transform-origin: 60px 75px; transform: scaleY(0); }
+  .pm-alive .pm-look {
+    transform: translate(var(--look-x, 0px), var(--look-y, 0px));
+    transition: transform 250ms ease-out;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .pm-alive .pm-breathe { animation: pm-breathe 3.2s ease-in-out infinite; }
+    .pm-alive .pm-breathe-slow { animation-duration: 4.4s; animation-delay: -1.2s; }
+    .pm-alive .pm-wag { animation: pm-wag 2.6s ease-in-out infinite; }
+    .pm-alive .pm-swish { animation: pm-swish 3.6s ease-in-out infinite; }
+    .pm-alive .pm-ear-l { animation: pm-flop-l 2.6s ease-in-out infinite; }
+    .pm-alive .pm-ear-r { animation: pm-flop-r 2.6s ease-in-out infinite; }
+    .pm-alive .pm-twitch { animation: pm-twitch 5.5s ease-in-out infinite; }
+    .pm-alive .pm-blink { animation: pm-blink 4.6s ease-in-out infinite; }
+    .pm-alive .pm-blink-cat { animation-duration: 6.2s; animation-delay: -2s; }
+    .pm-alive .pm-pant { animation: pm-pant 7s ease-in-out infinite; }
+  }
 }
 
 @keyframes pm-pop {
@@ -286,6 +329,71 @@
 @keyframes pm-bob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
+}
+@keyframes pm-breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.012, 1.025); }
+}
+/* A burst of wags, then a rest. */
+@keyframes pm-wag {
+  0%, 48%, 100% { transform: rotate(0deg); }
+  6%, 18%, 30%, 42% { transform: rotate(-18deg); }
+  12%, 24%, 36% { transform: rotate(16deg); }
+}
+@keyframes pm-swish {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(16deg); }
+}
+@keyframes pm-flop-l {
+  0%, 48%, 100% { transform: rotate(0deg); }
+  12%, 36% { transform: rotate(7deg); }
+  24% { transform: rotate(-3deg); }
+}
+@keyframes pm-flop-r {
+  0%, 48%, 100% { transform: rotate(0deg); }
+  12%, 36% { transform: rotate(-7deg); }
+  24% { transform: rotate(3deg); }
+}
+@keyframes pm-twitch {
+  0%, 84%, 100% { transform: rotate(0deg); }
+  87% { transform: rotate(14deg); }
+  90% { transform: rotate(-4deg); }
+  93% { transform: rotate(9deg); }
+  96% { transform: rotate(0deg); }
+}
+@keyframes pm-blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  93% { transform: scaleY(0.1); }
+}
+@keyframes pm-pant {
+  0%, 52%, 100% { transform: scaleY(0); }
+  58%, 92% { transform: scaleY(1); }
+  64%, 72%, 80% { transform: scaleY(0.82); }
+  68%, 76%, 84% { transform: scaleY(1); }
+}
+@keyframes pm-hop {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  18% { transform: translateY(0) scale(1.06, 0.92); }
+  45% { transform: translateY(-16%) scale(0.96, 1.06); }
+  72% { transform: translateY(0) scale(1.05, 0.95); }
+}
+@keyframes pm-stretch {
+  0%, 100% { transform: scale(1, 1); }
+  35% { transform: scale(0.94, 1.1); }
+  65% { transform: scale(1.04, 0.97); }
+}
+@keyframes pm-heart {
+  0% { transform: translate(-50%, 0) scale(0.4); opacity: 0; }
+  20% { transform: translate(-50%, -20%) scale(1.15); opacity: 1; }
+  100% { transform: translate(-50%, -180%) scale(0.9); opacity: 0; }
+}
+@keyframes pm-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes pm-dot {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(-4px); opacity: 1; }
 }
 @keyframes pm-tab-pop {
   0% { transform: scale(0.82); }
