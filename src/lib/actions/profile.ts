@@ -52,9 +52,24 @@ export async function completeOnboarding(_prev: ActionResult | null, formData: F
   });
   if (!parsed.success) return { ok: false, error: "Please fix the highlighted fields.", fieldErrors: zodFieldErrors(parsed.error) };
   const v = parsed.data;
-  if (v.avatar_url && !isOwnUpload(v.avatar_url, "avatars", userId)) {
-    return { ok: false, error: "Please upload your photo again.", fieldErrors: { avatar_url: "Upload failed" } };
+
+  // ensuring user has uploaded a PROfile Picture and that is their own upload
+  if (!v.avatar_url) {
+    return {
+      ok: false,
+      error: "Please upload a profile picture.",
+      fieldErrors: { avatar_url: "Profile picture is required" },
+    };
   }
+
+  if (!isOwnUpload(v.avatar_url, "avatars", userId)) {
+    return {
+      ok: false,
+      error: "Please upload your profile picture.",
+      fieldErrors: { avatar_url: "Upload failed" },
+    };
+  }
+
   if (v.bio) {
     const mod = await moderateText(v.bio, "profile", { supabase: ctx.supabase });
     if (mod.verdict === "block") return { ok: false, error: blockedMessage(mod), fieldErrors: { bio: blockedMessage(mod) } };

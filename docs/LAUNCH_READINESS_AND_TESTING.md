@@ -113,6 +113,55 @@ PEAK_CONCURRENCY=500 BASE_URL=http://127.0.0.1:3000 npm run load-test
 
 ---
 
+### Windows PowerShell
+
+Terminal 1:
+
+```powershell
+npm run build
+if ($?) { npm run start }
+```
+
+Terminal 2:
+
+```powershell
+# 50 + 100 concurrent request waves
+$env:PEAK_CONCURRENCY = "100"
+$env:BASE_URL = "http://127.0.0.1:3000"
+npm run load-test
+
+# Optional: include parallel Supabase reads (uses .env.local)
+$env:DOTENV_CONFIG_PATH = ".env.local"
+$env:RUN_DB = "1"
+$env:PEAK_CONCURRENCY = "100"
+npm run load-test
+
+# DB only
+$env:DOTENV_CONFIG_PATH = ".env.local"
+$env:N = "100"
+npx tsx scripts/load-test-db-only.mts
+```
+
+For a higher peak:
+
+```powershell
+$env:PEAK_CONCURRENCY = "500"
+$env:BASE_URL = "http://127.0.0.1:3000"
+npm run load-test
+```
+
+To clear the variables after testing:
+
+```powershell
+Remove-Item Env:\PEAK_CONCURRENCY -ErrorAction SilentlyContinue
+Remove-Item Env:\BASE_URL -ErrorAction SilentlyContinue
+Remove-Item Env:\DOTENV_CONFIG_PATH -ErrorAction SilentlyContinue
+Remove-Item Env:\RUN_DB -ErrorAction SilentlyContinue
+Remove-Item Env:\N -ErrorAction SilentlyContinue
+```
+
+---
+
 ## 4. Manual QA checklist (do before public launch)
 
 Use **Google** with `pupmeow.team@gmail.com` on **production** Supabase after migrations.

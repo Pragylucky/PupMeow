@@ -14,7 +14,7 @@ export const onboardingSchema = z.object({
   display_name: z.string().trim().min(1, { error: "Tell us your name" }).max(50),
   area: areaSchema,
   bio: optionalText(200),
-  avatar_url: z.string().trim().max(500).optional().transform((v) => v || null),
+  avatar_url: z.string().trim().min(1, { error: "Profile picture is required" }).max(500),
   species_pref: speciesPrefSchema.default("both"),
 });
 
