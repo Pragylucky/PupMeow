@@ -7,7 +7,7 @@ export const chatRequestSchema = z.object({
 });
 
 export const writeRequestSchema = z.object({
-  kind: z.enum(["post_caption", "adoption_description", "lost_description", "found_description", "match_about"]),
+  kind: z.enum(["post_caption", "adoption_description", "lost_description", "found_description", "match_about", "profile_bio", "pet_about"]),
   details: z.string().trim().min(3, { error: "Add a few details first" }).max(800),
 });
 

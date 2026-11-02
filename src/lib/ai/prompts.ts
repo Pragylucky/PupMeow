@@ -91,6 +91,10 @@ export const WRITE_PROMPTS: Record<string, string> = {
     "Write a clear FOUND pet description (50-100 words) from the details: appearance, where and when found, current condition and where the pet is being kept safe. Ask the owner to share a photo as proof. Return only the description.",
   match_about:
     "Write a short friendly matchmaking profile (40-80 words) for a pet looking for playdates or a responsible breeding match, from the details. Mention temperament and health. Never mention money or stud fees. Return only the text.",
+  profile_bio:
+    "Write a short, friendly first-person profile bio (max 180 characters, 1-2 lines) for a pet parent, from the details. Warm and natural, at most 2 emojis, no hashtags. Return only the bio.",
+  pet_about:
+    "Write a short, charming 'About' blurb (max 280 characters) for a pet's profile, from the details: personality, favourite things, quirks. Third person or in the pet's voice, at most 2 emojis. Return only the blurb.",
 };
 
 export const VISION_PROMPT =
