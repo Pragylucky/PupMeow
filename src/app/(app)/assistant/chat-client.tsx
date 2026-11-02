@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Send, Plus, Trash2, History, Siren, MapPin } from "lucide-react";
+import { Send, Plus, Trash2, History, Siren, MapPin, Wind, Sparkles, Syringe } from "lucide-react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -14,10 +14,20 @@ import { detectEmergency } from "@/lib/ai/emergency";
 import { KAIA_REPLY_TIMEOUT, KAIA_UNABLE_TO_REPLY, userFacingKaiaChatError } from "@/lib/ai/kaia-messages";
 import { cn, timeAgo } from "@/lib/utils";
 import { deleteConversation } from "./actions";
+import type { TodayChip } from "@/lib/ai/live-context";
 import type { AiConversationRow, PetRow } from "@/types/database";
 
 interface Msg { id: string; role: "user" | "assistant"; content: string; emergency?: boolean }
 
+const CHIP_ICONS = { place: MapPin, air: Wind, festival: Sparkles, due: Syringe } as const;
+const CHIP_TONES = {
+  neutral: "bg-surface-2 text-text",
+  ok: "bg-success/12 text-success",
+  warn: "bg-secondary-soft text-on-secondary",
+  bad: "bg-danger/12 text-danger",
+} as const;
+
+/** Fallback when live context (weather, season, due dates) couldn't load. */
 const STARTERS = [
   "What should I feed my Indie puppy?",
   "How do I protect my dog from ticks in monsoon?",
@@ -36,8 +46,9 @@ export function withEmergencyFlags(list: Msg[]): Msg[] {
   return list.map((m, i) => (m.role === "assistant" && i > 0 && list[i - 1].role === "user" && detectEmergency(list[i - 1].content) ? { ...m, emergency: true } : m));
 }
 
-export function ChatClient({ conversationId, conversations, initialMessages, pets, initialPetId, dailyLimit, remaining: initialRemaining, firstName }: {
+export function ChatClient({ conversationId, conversations, initialMessages, pets, initialPetId, dailyLimit, remaining: initialRemaining, firstName, starters = STARTERS, today = [] }: {
   conversationId: string | null; conversations: AiConversationRow[]; initialMessages: Msg[]; pets: Pick<PetRow, "id" | "name" | "species">[]; initialPetId: string | null; dailyLimit: number; remaining: number; firstName: string;
+  starters?: string[]; today?: TodayChip[];
 }) {
   const [messages, setMessages] = useState<Msg[]>(withEmergencyFlags(initialMessages));
   const [input, setInput] = useState("");
@@ -178,8 +189,20 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
               <KaiaAvatar size={88} className="mx-auto animate-[pm-bob_3s_ease-in-out_infinite]" />
               <h2 className="mt-3 text-[1.9rem] font-semibold">Hi {firstName}! I&apos;m Kaia</h2>
               <p className="mx-auto mt-1 max-w-sm text-muted">Ask me about food, ticks, Delhi heat, vaccines, behaviour, or how to use Pupmeow.{pet ? ` I'll keep ${pet.name} in mind.` : pets.length ? " Pick a pet above for personal tips." : ""}</p>
-              <div className="mt-5 grid gap-2 text-left sm:grid-cols-2">
-                {STARTERS.map((s) => (
+              {today.length > 0 && (
+                <ul className="mt-4 flex flex-wrap justify-center gap-2" aria-label="Today">
+                  {today.map((c) => {
+                    const Icon = CHIP_ICONS[c.icon];
+                    return (
+                      <li key={c.icon} className={cn("inline-flex animate-[pm-rise_400ms_ease-out_both] items-center gap-1.5 rounded-full px-3 py-1.5 text-[0.85rem] font-extrabold", CHIP_TONES[c.tone])}>
+                        <Icon className="h-4 w-4" aria-hidden /> {c.text}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              <div className="stagger mt-5 grid gap-2 text-left sm:grid-cols-2">
+                {starters.map((s) => (
                   <button key={s} type="button" onClick={() => send(s)} className="rounded-[var(--radius-md)] border-2 border-border bg-surface px-4 py-3 text-[0.92rem] font-bold hover:border-text">{s}</button>
                 ))}
               </div>
