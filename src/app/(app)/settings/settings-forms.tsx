@@ -11,6 +11,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Switch } from "@/components/ui/switch";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
+import { WriteForMe } from "@/components/features/ai/write-for-me";
 import { ImageUploader } from "@/components/features/upload/image-uploader";
 import { SpeciesToggle } from "@/components/features/species/species-toggle";
 import { NCR_AREAS } from "@/lib/constants";
@@ -26,17 +27,19 @@ function useResultToast(state: ActionResult | null) {
   }, [state, toast]);
 }
 
-export function ProfileSettingsForm({ profile, priv }: { profile: ProfileRow; priv: ProfilePrivateRow | null }) {
+export function ProfileSettingsForm({ profile, priv, aiEnabled = false }: { profile: ProfileRow; priv: ProfilePrivateRow | null; aiEnabled?: boolean }) {
   const router = useRouter();
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(updateProfile, null);
   const [uploading, setUploading] = useState(false);
   const [displayName, setDisplayName] = useState(profile.display_name ?? "");
   const [username, setUsername] = useState(profile.username ?? "");
+  const [bio, setBio] = useState(profile.bio ?? "");
   useResultToast(state);
   useEffect(() => {
     setDisplayName(profile.display_name ?? "");
     setUsername(profile.username ?? "");
-  }, [profile.display_name, profile.username, profile.updated_at]);
+    setBio(profile.bio ?? "");
+  }, [profile.display_name, profile.username, profile.bio, profile.updated_at]);
   useEffect(() => {
     if (state?.ok) router.refresh();
   }, [state, router]);
@@ -49,7 +52,17 @@ export function ProfileSettingsForm({ profile, priv }: { profile: ProfileRow; pr
         <Input label="Username" name="username" value={username} onChange={(e) => setUsername(e.target.value.toLowerCase())} maxLength={20} required error={fe.username} autoCapitalize="none" autoComplete="username" spellCheck={false} hint="Your @handle — letters, numbers, underscores only" />
       </div>
       <Combobox name="area" label="Area" options={NCR_AREAS} defaultValue={priv?.home_area ?? profile.area ?? ""} required allowCustom error={fe.area} hint="Used for “Nearby” posts and lost-pet alerts" />
-      <Textarea label="Bio" name="bio" defaultValue={profile.bio ?? ""} maxLength={200} rows={3} error={fe.bio} />
+      <Textarea
+        label="Bio"
+        name="bio"
+        value={bio}
+        onChange={(e) => setBio(e.target.value)}
+        maxLength={200}
+        rows={3}
+        error={fe.bio}
+        placeholder={aiEnabled ? "Type a few words about you and your pets, then tap “Write it for me”" : undefined}
+        action={aiEnabled ? <WriteForMe kind="profile_bio" getDetails={() => (bio.trim().length < 3 ? "" : [`Name: ${displayName}`, `Area: ${priv?.home_area ?? profile.area ?? ""}`, `About me: ${bio}`].join("\n"))} onDraft={setBio} /> : undefined}
+      />
       <Input
         label="WhatsApp number"
         name="whatsapp"

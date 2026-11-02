@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { generateText } from "ai";
 import { aiGuard, sameOrigin } from "@/lib/ai/guard";
-import { getLanguageModel } from "@/lib/ai/provider";
+import { generateDraft } from "@/lib/ai/write";
 import { WRITE_PROMPTS } from "@/lib/ai/prompts";
 import { writeRequestSchema } from "@/lib/validations/ai";
 
@@ -16,15 +15,13 @@ export async function POST(req: NextRequest) {
   const g = await aiGuard("write", req);
   if ("error" in g) return g.error;
   try {
-    const { text } = await generateText({
-      model: getLanguageModel(),
+    const { text, provider } = await generateDraft({
+      kind: body.data.kind,
       system: `You write short, warm copy for Pupmeow, a pet community in Delhi NCR. Indian English. Never invent facts that weren't given except gentle generic phrasing. Never mention money for animals. ${WRITE_PROMPTS[body.data.kind]}`,
       prompt: `Details from the user:\n${body.data.details}`,
-      maxOutputTokens: 400,
-      temperature: 0.7,
-      abortSignal: AbortSignal.timeout(20000),
     });
-    return NextResponse.json({ text: text.trim().replace(/^"|"$/g, ""), remaining: g.remaining });
+    console.info("[ai/write] drafted via", provider);
+    return NextResponse.json({ text, remaining: g.remaining });
   } catch (err) {
     console.error("[ai/write]", err);
     return NextResponse.json({ error: "AI couldn't write this right now." }, { status: 502 });

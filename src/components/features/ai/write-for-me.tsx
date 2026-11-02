@@ -5,7 +5,7 @@ import { Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
-export type WriteKind = "post_caption" | "adoption_description" | "lost_description" | "found_description" | "match_about";
+export type WriteKind = "post_caption" | "adoption_description" | "lost_description" | "found_description" | "match_about" | "profile_bio" | "pet_about";
 
 /** "Write it for me": drafts text from a few details. The user always edits before posting. */
 export function WriteForMe({ kind, getDetails, onDraft, className }: { kind: WriteKind; getDetails: () => string; onDraft: (text: string) => void; className?: string }) {

@@ -10,6 +10,7 @@ import { RadioGroup } from "@/components/ui/radio-group";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ImageUploader } from "@/components/features/upload/image-uploader";
+import { WriteForMe } from "@/components/features/ai/write-for-me";
 import { FillWithAI } from "@/components/features/ai/fill-with-ai";
 import { breedsFor } from "@/lib/constants";
 import { todayIso } from "@/lib/utils";
@@ -22,8 +23,11 @@ export function PetForm({ userId, pet, aiEnabled }: { userId: string; pet?: PetR
   const [species, setSpecies] = useState<Species>(pet?.species ?? "dog");
   const [breed, setBreed] = useState(pet?.breed ?? "");
   const [birthday, setBirthday] = useState(pet?.birthday ?? "");
+  const [gender, setGender] = useState<string>(pet?.gender ?? "unknown");
   const [breedKey, setBreedKey] = useState(0);
   const [aiNote, setAiNote] = useState("");
+  const [name, setName] = useState(pet?.name ?? "");
+  const [about, setAbout] = useState(pet?.bio ?? "");
   const [uploading, setUploading] = useState(false);
   const fe = state && !state.ok ? state.fieldErrors ?? {} : {};
 
@@ -52,16 +56,26 @@ export function PetForm({ userId, pet, aiEnabled }: { userId: string; pet?: PetR
         </div>
       )}
 
-      <Input label="Name" name="name" required maxLength={40} defaultValue={pet?.name} error={fe.name} />
+      <Input label="Name" name="name" required maxLength={40} value={name} onChange={(e) => setName(e.target.value)} error={fe.name} />
       <RadioGroup name="species" legend="Species" value={species} onChange={(v) => { setSpecies(v as Species); setBreedKey((k) => k + 1); }} options={[{ value: "dog", label: "Dog" }, { value: "cat", label: "Cat" }]} error={fe.species} />
       <Combobox key={`${species}-${breedKey}`} name="breed" label="Breed" options={breedsFor(species)} defaultValue={breed} onChange={setBreed} placeholder="Search breed" allowCustom error={fe.breed} />
-      <RadioGroup name="gender" legend="Gender" defaultValue={pet?.gender ?? "unknown"} columns={3} options={[{ value: "male", label: "Boy" }, { value: "female", label: "Girl" }, { value: "unknown", label: "Not sure" }]} />
+      <RadioGroup name="gender" legend="Gender" value={gender} onChange={setGender} columns={3} options={[{ value: "male", label: "Boy" }, { value: "female", label: "Girl" }, { value: "unknown", label: "Not sure" }]} />
       <div className="grid gap-4 sm:grid-cols-2">
         <DatePicker label="Birthday" name="birthday" value={birthday} onChange={(e) => setBirthday(e.target.value)} max={todayIso()} hint="Approximate is fine" error={fe.birthday} />
         <Input label="Weight (kg)" name="weight_kg" type="number" inputMode="decimal" step="0.1" min="0.1" max="149" defaultValue={pet?.weight_kg ?? ""} error={fe.weight_kg} />
       </div>
       <Checkbox name="is_neutered" label="Neutered / spayed" defaultChecked={pet?.is_neutered} />
-      <Textarea label="About" name="bio" maxLength={300} rows={3} defaultValue={pet?.bio ?? ""} placeholder="Loves belly rubs, scared of Diwali crackers…" error={fe.bio} />
+      <Textarea
+        label="About"
+        name="bio"
+        maxLength={300}
+        rows={3}
+        value={about}
+        onChange={(e) => setAbout(e.target.value)}
+        placeholder="Loves belly rubs, scared of Diwali crackers…"
+        error={fe.bio}
+        action={aiEnabled ? <WriteForMe kind="pet_about" getDetails={() => (about.trim().length < 3 && !name.trim() ? "" : [`Name: ${name}`, `Species: ${species}`, breed && `Breed: ${breed}`, `Gender: ${gender}`, about && `Notes: ${about}`].filter(Boolean).join("\n"))} onDraft={setAbout} /> : undefined}
+      />
       <Button type="submit" size="lg" className="w-full sm:w-auto" loading={pending} disabled={uploading}>
         {pet ? "Save changes" : "Add pet"}
       </Button>

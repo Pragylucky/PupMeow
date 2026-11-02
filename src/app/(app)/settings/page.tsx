@@ -11,6 +11,7 @@ import { WithRail } from "@/components/layout/page-layout";
 import { TipCard } from "@/components/brand/bits";
 import { createClient } from "@/lib/supabase/server";
 import { displayName } from "@/lib/utils";
+import { isAiAssistantEnabled } from "@/lib/ai/config";
 
 export const metadata: Metadata = { title: "Settings", robots: { index: false } };
 
@@ -58,7 +59,7 @@ export default async function SettingsPage() {
       <h1 className="mb-5 text-[2rem] font-semibold leading-tight sm:text-[2.4rem]">Settings</h1>
       <div className="space-y-4">
         <Section id="profile" icon={User} title="Profile" description="How neighbours see you.">
-          <ProfileSettingsForm profile={profile} priv={priv} />
+          <ProfileSettingsForm profile={profile} priv={priv} aiEnabled={isAiAssistantEnabled()} />
         </Section>
         <Section id="appearance" icon={Palette} title="Appearance" description="Saved on this device.">
           <ThemePicker />
