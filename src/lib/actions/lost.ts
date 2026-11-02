@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { revalidatePublicListingCaches } from "@/lib/cache/revalidate-public";
 import { actionContext } from "@/lib/auth";
 import { lostFoundSchema } from "@/lib/validations/listings";
@@ -11,6 +12,7 @@ import { moderateText, blockedMessage, flagForReview } from "@/lib/ai/moderation
 import { isAiLostMatchingEnabled } from "@/lib/ai/config";
 import { buildLostFoundEmbedding, toPgVector } from "@/lib/ai/embeddings";
 import { createAdminClient, hasServiceRole } from "@/lib/supabase/admin";
+import { pushRecentNotifications } from "@/lib/push";
 import type { ActionResult } from "@/types/models";
 import type { ContactMethod } from "@/types/database";
 
@@ -84,6 +86,14 @@ export async function createLostFound(_prev: ActionResult<string> | null, formDa
     }
   }
 
+  // Phone alerts: the DB trigger already chose who to tell (same area, alerts on, not blocked);
+  // deliver those after the response so the reporter isn't kept waiting.
+  const lostId = data.id;
+  after(async () => {
+    await pushRecentNotifications({ entityId: lostId, types: ["lost_nearby"], title: `🚨 Lost ${v.species} near you`, url: `/lost/${lostId}`, urgency: "high" });
+    await pushRecentNotifications({ entityId: lostId, types: ["lost_match"], title: "🐾 Possible match for your pet", url: `/lost/${lostId}`, urgency: "high" });
+  });
+
   revalidatePath("/lost");
   revalidatePublicListingCaches();
   return { ok: true, data: data.id };
@@ -135,6 +145,8 @@ export async function reportLostSighting(lostId: string, message: string): Promi
   if (text.length < 8) return { ok: false, error: "Please add where and when you saw the pet." };
   const { error } = await ctx.supabase.rpc("report_lost_sighting", { p_lost_id: pid.data, p_message: text });
   if (error) return { ok: false, error: friendlyError(error) };
+  const sightedId = pid.data;
+  after(() => pushRecentNotifications({ entityId: sightedId, types: ["system"], actorId: ctx.userId, title: "👀 Someone saw your pet", url: `/lost/${sightedId}`, urgency: "high" }));
   revalidatePath(`/lost/${pid.data}`);
   return { ok: true, message: "Sighting sent to the owner in Pupmeow." };
 }

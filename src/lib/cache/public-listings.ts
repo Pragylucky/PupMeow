@@ -13,18 +13,23 @@ export async function getLandingRecentCached() {
   return unstable_cache(
     async () => {
       const supabase = createPublicClient();
-      const [lost, adopt, reunited] = await Promise.all([
+      const [lost, adopt, reunited, reunitedRecent, adoptedRecent] = await Promise.all([
         supabase.from("lost_found").select(LOST_FOUND_COLUMNS).eq("status", "open").eq("is_hidden", false).order("created_at", { ascending: false }).limit(3),
         supabase.from("adoptions").select(ADOPTION_COLUMNS).eq("status", "available").eq("is_hidden", false).order("created_at", { ascending: false }).limit(3),
         supabase.from("lost_found").select("id", { count: "exact", head: true }).eq("status", "reunited"),
+        // Real happy endings for the landing page (no made-up testimonials).
+        supabase.from("lost_found").select(LOST_FOUND_COLUMNS).eq("status", "reunited").eq("is_hidden", false).order("reunited_at", { ascending: false }).limit(2),
+        supabase.from("adoptions").select(ADOPTION_COLUMNS).eq("status", "adopted").eq("is_hidden", false).order("adopted_at", { ascending: false }).limit(2),
       ]);
       return {
         lost: (lost.data ?? []) as LostFoundRow[],
         adopt: (adopt.data ?? []) as AdoptionRow[],
         reunited: reunited.count ?? 0,
+        reunitedRecent: (reunitedRecent.data ?? []) as LostFoundRow[],
+        adoptedRecent: (adoptedRecent.data ?? []) as AdoptionRow[],
       };
     },
-    ["landing-recent-v1"],
+    ["landing-recent-v2"],
     { revalidate: 120, tags: [LANDING_TAG] },
   )();
 }

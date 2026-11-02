@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <>
       <h1>Privacy Policy</h1>
-      <p className="updated">Last updated: 11 October 2026 · Draft for review</p>
+      <p className="updated">Last updated: 2 November 2026 · Draft for review</p>
       <p>This policy explains, in plain English, what personal data Pupmeow collects, why, and the choices you have. We follow India&apos;s Digital Personal Data Protection Act, 2023 (&ldquo;DPDP Act&rdquo;). Pupmeow is the &ldquo;Data Fiduciary&rdquo; for the data you share with us.</p>
 
       <h2>What we collect</h2>
@@ -19,6 +19,8 @@ export default function PrivacyPage() {
         <li><strong>Contact numbers:</strong> the WhatsApp/phone number you add to a lost &amp; found report, adoption listing or your settings.</li>
         <li><strong>AI chats:</strong> messages you send to Kaia (our AI helper) and its replies.</li>
         <li><strong>Technical data:</strong> sign-in cookies needed to keep you logged in, and basic logs for security.</li>
+        <li><strong>Notification devices:</strong> if you turn on phone notifications, a push address for that browser or app (no phone number). Turning notifications off deletes it.</li>
+        <li><strong>Usage statistics:</strong> anonymous page-view counts (which pages are visited, device type, country). No cookies and no tracking across sites.</li>
       </ul>
 
       <h2>Why we use it (purpose)</h2>
@@ -27,6 +29,8 @@ export default function PrivacyPage() {
         <li>To help reunite lost pets: alert people in the same area and suggest possible matches using AI.</li>
         <li>To keep Pupmeow safe: moderate content (including automated AI checks), handle reports and prevent spam and animal sales.</li>
         <li>To give personalised pet-care tips when you choose a pet in Kaia.</li>
+        <li>To send the notifications you choose: lost pets near you, sightings of your pet, and vaccine, deworming or tick-treatment reminders from your pets&apos; health records.</li>
+        <li>To understand which features are used, so we can improve them (anonymous counts only).</li>
       </ul>
       <p>We rely on your consent, which you give when you create an account and choose what to share. You can withdraw consent at any time by deleting content or your account.</p>
 
@@ -44,6 +48,10 @@ export default function PrivacyPage() {
         We use Supabase (database, login and file storage), Vercel (hosting) and AI providers to run Kaia and automated safety checks — including{" "}
         <strong>Groq</strong>, <strong>Google Gemini</strong>, and optionally <strong>Cerebras</strong>, <strong>OpenAI</strong>, or <strong>xAI</strong> depending on configuration.
         When you pick a pet in Kaia, we may send that pet&apos;s profile and recent health records (vaccines, visits) to the model so answers stay relevant.
+        With every Kaia message we also send today&apos;s date, the weather and air quality for your city, and your pets&apos; names with any vaccines or treatments due in the next 30 days, so Kaia can give timely advice.
+        Weather comes from <strong>Open-Meteo</strong>, which receives only your city&apos;s map coordinates, never anything about you.
+        Phone notifications are delivered through your browser&apos;s push service (Google, Apple or Mozilla), which sees only the notification itself.
+        Anonymous page-view statistics are provided by <strong>Vercel Web Analytics</strong>.
         They process data only on our instructions. Some providers may store data outside India, as permitted under the DPDP Act. We do not sell your personal data, and we do not show ads.
       </p>
 

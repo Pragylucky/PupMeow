@@ -52,3 +52,36 @@ self.addEventListener("fetch", (event) => {
 
   event.respondWith(fetch(req).catch(() => caches.match(req)));
 });
+
+/* Web push: lost-pet alerts, sightings and pet health reminders (sent by src/lib/push.ts). */
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Pupmeow", {
+      body: data.body || "",
+      icon: "/pwa-icon/192",
+      tag: data.tag,
+      renotify: Boolean(data.tag),
+      data: { url: data.url || "/notifications" },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || "/notifications", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      const same = list.find((c) => c.url === url);
+      if (same) return same.focus();
+      const open = list.find((c) => "navigate" in c);
+      if (open) return open.navigate(url).then((c) => c && c.focus());
+      return self.clients.openWindow(url);
+    }),
+  );
+});

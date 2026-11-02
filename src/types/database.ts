@@ -21,7 +21,7 @@ export type ReportTarget = "post" | "comment" | "profile" | "lost_found" | "adop
 export type ReportReason = "spam" | "abuse" | "animal_cruelty" | "scam_selling" | "fake_listing" | "other" | "ai_flag";
 export type NotificationType =
   | "like" | "comment" | "follow" | "mention" | "match_request" | "match_accepted"
-  | "match_declined" | "lost_nearby" | "lost_match" | "system";
+  | "match_declined" | "lost_nearby" | "lost_match" | "system" | "reminder";
 
 export interface ProfileRow {
   id: string;
@@ -50,6 +50,7 @@ export interface ProfilePrivateRow {
   notify_mentions: boolean;
   notify_matches: boolean;
   notify_lost_nearby: boolean;
+  notify_reminders: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -73,10 +73,11 @@ export function ProfileSettingsForm({ profile, priv }: { profile: ProfileRow; pr
 export function NotificationSettingsForm({ priv }: { priv: ProfilePrivateRow | null }) {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(updateNotificationPrefs, null);
   useResultToast(state);
-  const p = priv ?? { notify_likes: true, notify_comments: true, notify_follows: true, notify_mentions: true, notify_matches: true, notify_lost_nearby: true };
+  const p = priv ?? { notify_likes: true, notify_comments: true, notify_follows: true, notify_mentions: true, notify_matches: true, notify_lost_nearby: true, notify_reminders: true };
   return (
     <form action={action} className="space-y-4">
       <Switch name="notify_lost_nearby" label="Lost pets near me" description="When a pet goes missing in your area" defaultChecked={p.notify_lost_nearby} />
+      <Switch name="notify_reminders" label="Vaccine & health reminders" description="3 days before a vaccine, deworming or tick treatment is due, on the day, and a week late" defaultChecked={p.notify_reminders ?? true} />
       <Switch name="notify_matches" label="Matchmaking" description="New requests and answers" defaultChecked={p.notify_matches} />
       <Switch name="notify_comments" label="Comments" defaultChecked={p.notify_comments} />
       <Switch name="notify_mentions" label="Mentions" defaultChecked={p.notify_mentions} />

@@ -35,6 +35,7 @@ export const notificationPrefsSchema = z.object({
   notify_mentions: booleanish,
   notify_matches: booleanish,
   notify_lost_nearby: booleanish,
+  notify_reminders: booleanish,
 });
 
 export type OnboardingInput = z.input<typeof onboardingSchema>;

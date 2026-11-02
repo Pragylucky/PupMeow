@@ -6,6 +6,7 @@ import { ProfileSettingsForm, NotificationSettingsForm, DangerZone } from "./set
 import { Avatar } from "@/components/ui/avatar";
 import { UnblockButton } from "@/components/features/social/follow-button";
 import { ThemePicker } from "@/components/features/settings/theme-picker";
+import { PushToggle } from "@/components/features/push/push-toggle";
 import { WithRail } from "@/components/layout/page-layout";
 import { TipCard } from "@/components/brand/bits";
 import { createClient } from "@/lib/supabase/server";
@@ -62,7 +63,8 @@ export default async function SettingsPage() {
         <Section id="appearance" icon={Palette} title="Appearance" description="Saved on this device.">
           <ThemePicker />
         </Section>
-        <Section id="notifications" icon={Bell} title="Notifications" description="In-app alerts. Lost pets near you are on by default.">
+        <Section id="notifications" icon={Bell} title="Notifications" description="Lost pets near you and vaccine reminders are on by default.">
+          <PushToggle className="mb-4" />
           <NotificationSettingsForm priv={priv} />
         </Section>
         <Section id="blocked" icon={ShieldBan} title="Blocked people" description="They can't see your posts or listings, and you won't see theirs.">

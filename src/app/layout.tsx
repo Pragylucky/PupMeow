@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { fredoka, nunito } from "./fonts";
 import { env } from "@/lib/env";
 import { Providers } from "@/components/layout/providers";
@@ -54,6 +55,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           Skip to content
         </a>
         <Providers initialSpecies={species}>{children}</Providers>
+        {/* Cookieless page-view analytics; enable it in the Vercel dashboard (Analytics tab). */}
+        <Analytics />
       </body>
     </html>
   );
