@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, MessageCircle, UserPlus, AtSign, Users, MapPin, Bell, CheckCheck, ChevronRight, Sparkles } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, AtSign, Users, MapPin, Bell, CheckCheck, ChevronRight, Sparkles, Syringe } from "lucide-react";
 import { markNotificationsRead } from "@/lib/actions/posts";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import type { NotificationWithActor } from "@/types/models";
 
 const ICONS: Record<string, typeof Bell> = {
   like: Heart, comment: MessageCircle, follow: UserPlus, mention: AtSign,
-  match_request: Users, match_accepted: Users, match_declined: Users, lost_nearby: MapPin, lost_match: Sparkles,
+  match_request: Users, match_accepted: Users, match_declined: Users, lost_nearby: MapPin, lost_match: Sparkles, reminder: Syringe,
 };
 
 function hrefFor(n: NotificationWithActor) {
@@ -24,6 +24,7 @@ function hrefFor(n: NotificationWithActor) {
     case "adoption": return `/adopt/${n.entity_id}`;
     case "match_request": return "/match/requests";
     case "match_profile": return `/match/${n.entity_id}`;
+    case "pet": return `/pets/${n.entity_id}/health`;
     default: return "/notifications";
   }
 }

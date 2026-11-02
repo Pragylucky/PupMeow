@@ -13,7 +13,7 @@ import type { AdoptionRow, LostFoundRow } from "@/types/database";
 export const revalidate = 300;
 
 async function getRecent() {
-  const empty = { lost: [] as LostFoundRow[], adopt: [] as AdoptionRow[], reunited: 0 };
+  const empty = { lost: [] as LostFoundRow[], adopt: [] as AdoptionRow[], reunited: 0, reunitedRecent: [] as LostFoundRow[], adoptedRecent: [] as AdoptionRow[] };
   try {
     return await Promise.race([
       getLandingRecentCached(),
@@ -48,7 +48,7 @@ const FAQ = [
 ];
 
 export default async function LandingPage() {
-  const { lost, adopt, reunited } = await getRecent();
+  const { lost, adopt, reunited, reunitedRecent, adoptedRecent } = await getRecent();
   return (
     <>
       <MarketingHeader />
@@ -145,6 +145,28 @@ export default async function LandingPage() {
             )}
           </Reveal>
         </section>
+
+        {/* Happy endings: real reunions and adoptions only; hidden until there are some. */}
+        {reunitedRecent.length + adoptedRecent.length > 0 && (
+          <section aria-labelledby="happy" className="mx-auto max-w-6xl px-5 pt-16">
+            <Reveal>
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <div className="max-w-xl">
+                  <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-muted">Happy endings</p>
+                  <h2 id="happy" className="mt-2 text-[2.3rem] font-bold leading-tight sm:text-[2.8rem]">Home again, home at last.</h2>
+                  <p className="mt-3 text-[1.05rem] font-semibold text-muted">
+                    Real pets from the community{reunited > 0 ? `: ${reunited} reunited with their families so far` : ""}.
+                  </p>
+                </div>
+                <Link href="/lost?tab=reunited" className={buttonClasses("outline", "lg")}>See all reunions</Link>
+              </div>
+              <div className="stagger mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {reunitedRecent.map((l) => <LostFoundCard key={l.id} item={l} size="sm" />)}
+                {adoptedRecent.map((a) => <AdoptionCard key={a.id} item={a} />)}
+              </div>
+            </Reveal>
+          </section>
+        )}
 
         {/* Playdates + Care */}
         <section className="mx-auto max-w-6xl px-5 py-16">

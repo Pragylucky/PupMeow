@@ -17,6 +17,7 @@ import { PetImage } from "@/components/brand/pet-image";
 import { Avatar } from "@/components/ui/avatar";
 import { ButtonLink } from "@/components/ui/button";
 import { displayName, formatDate, sinceLabel } from "@/lib/utils";
+import { createAdminClient, hasServiceRole } from "@/lib/supabase/admin";
 import { getLostFound, lostHeadline } from "./data";
 import { OwnerActions, PossibleMatches } from "./lost-client";
 
@@ -28,8 +29,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title, description, openGraph: { title, description, type: "article" }, twitter: { card: "summary_large_image", title, description } };
 }
 
-export default async function LostDetailPage({ params }: { params: Promise<{ id: string }> }) {
+/** How many neighbours the area trigger alerted (owner-only, right after posting). */
+async function alertedCount(lostId: string): Promise<number | null> {
+  if (!hasServiceRole()) return null;
+  const { count } = await createAdminClient().from("notifications").select("id", { count: "exact", head: true }).eq("entity_id", lostId).eq("type", "lost_nearby");
+  return count ?? 0;
+}
+
+export default async function LostDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ new?: string }> }) {
   const { id } = await params;
+  const justPosted = (await searchParams).new === "1";
   const item = await getLostFound(id);
   if (!item) notFound();
   const viewer = await getViewer();
@@ -50,6 +59,7 @@ export default async function LostDetailPage({ params }: { params: Promise<{ id:
   const label = reunited ? "REUNITED" : lost ? "LOST" : "FOUND";
   const tone = reunited ? "bg-primary text-on-primary" : lost ? "bg-danger text-white halftone" : "bg-secondary text-ink";
   const signedIn = Boolean(user);
+  const alerted = isOwner && justPosted && lost && !reunited ? await alertedCount(item.id) : null;
 
   const actions = (
     <div className="space-y-4">
@@ -107,6 +117,17 @@ export default async function LostDetailPage({ params }: { params: Promise<{ id:
         <Link href="/lost" className="inline-flex items-center gap-1 text-sm font-bold text-muted hover:text-text"><ChevronLeft className="h-4 w-4" aria-hidden /> Lost &amp; Found</Link>
         {reunited && <Celebration title={`${item.pet_name ?? "This pet"} is home!`} text={`Reunited${item.reunited_at ? ` on ${formatDate(item.reunited_at)}` : ""}. Thank you to everyone who shared.`} species={item.species} />}
         {item.is_hidden && <p className="rounded-[var(--radius-md)] bg-warning-soft px-3 py-2 text-sm font-semibold text-warning">Hidden by moderators.</p>}
+        {isOwner && justPosted && lost && !reunited && (
+          <section aria-labelledby="live-h" className="space-y-3 rounded-[var(--radius-xl)] bg-ink p-5 text-white sm:p-6">
+            <h2 id="live-h" className="text-[1.5rem] font-semibold leading-tight">Your report is live. Now spread the word.</h2>
+            <p className="font-semibold text-white/85">
+              {alerted ? `We alerted ${alerted} ${alerted === 1 ? "neighbour" : "neighbours"} in ${item.last_seen_area}. ` : ""}
+              The first hours matter most: share it in your society, RWA and building WhatsApp groups, and put up the poster near where {item.pet_name ?? "your pet"} was last seen.
+            </p>
+            <ShareButtons path={`/lost/${item.id}`} text={`${headline}. Please share! 🐾`} className="[&>button:last-child:hover]:bg-white/10 [&>button:last-child]:text-white" />
+            <ButtonLink href={`/lost/${item.id}/poster`} variant="white" size="sm"><Printer className="h-4 w-4" aria-hidden /> Print the poster</ButtonLink>
+          </section>
+        )}
 
         <section className={`overflow-hidden rounded-[var(--radius-xl)] p-4 sm:p-6 ${tone}`}>
           <div className="flex items-start justify-between gap-3">

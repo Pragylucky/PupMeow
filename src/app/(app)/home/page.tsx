@@ -18,6 +18,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { birthdaySoon, cn, daysUntil, dueLabel, formatAge, formatDate, greeting, shortArea } from "@/lib/utils";
 import { WelcomeToast } from "../feed/welcome-toast";
+import { PushPromptCard } from "@/components/features/push/push-toggle";
 
 export const metadata: Metadata = { title: "Home", robots: { index: false } };
 
@@ -78,6 +79,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <PetArt pet={{ species: "cat", look: "violet" }} className="-ml-10 h-28 w-28" />
           </div>
         </section>
+
+        <PushPromptCard />
 
         {/* Care reminder */}
         {next ? (
