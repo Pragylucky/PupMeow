@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, MapPin } from "lucide-react";
+import { BadgeCheck, Building2, MapPin } from "lucide-react";
 import { PetImage } from "@/components/brand/pet-image";
 import { Stamp } from "@/components/brand/bits";
 import { cn, sameNeighbourhood, shortArea, sinceLabel } from "@/lib/utils";
@@ -88,7 +88,7 @@ export function LostRow({ item }: { item: LostItem }) {
   );
 }
 
-type AdoptItem = Pick<AdoptionRow, "id" | "pet_name" | "species" | "breed" | "age_text" | "gender" | "vaccinated" | "neutered" | "photo_urls" | "area" | "is_ngo" | "org_name" | "status" | "description">;
+type AdoptItem = Pick<AdoptionRow, "id" | "pet_name" | "species" | "breed" | "age_text" | "gender" | "vaccinated" | "neutered" | "photo_urls" | "area" | "is_ngo" | "org_name" | "ngo_verified" | "status" | "description">;
 
 export function AdoptionCard({ item, viewerArea, className }: { item: AdoptItem; viewerArea?: string | null; className?: string }) {
   const adopted = item.status === "adopted";
@@ -105,7 +105,7 @@ export function AdoptionCard({ item, viewerArea, className }: { item: AdoptItem;
         {near && !adopted && <span className="absolute right-2.5 top-2.5 rounded-full bg-ink px-2.5 py-1 text-[0.75rem] font-extrabold text-white">Nearby</span>}
         {item.is_ngo && !adopted && (
           <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[0.75rem] font-extrabold text-ink">
-            <Building2 className="h-3.5 w-3.5" aria-hidden /> NGO
+            {item.ngo_verified ? <BadgeCheck className="h-3.5 w-3.5 text-primary" aria-hidden /> : <Building2 className="h-3.5 w-3.5" aria-hidden />} {item.ngo_verified ? "Verified NGO" : "NGO"}
           </span>
         )}
         {adopted && <Stamp tone="green" className="absolute bottom-3 right-3">Adopted</Stamp>}

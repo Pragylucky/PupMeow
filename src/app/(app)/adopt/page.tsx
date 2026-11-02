@@ -36,7 +36,9 @@ export default async function AdoptPage({ searchParams }: { searchParams: Promis
   const mine = Boolean(user && sp.mine === "1");
 
   const areaQ = sp.near === "1" && viewerArea ? shortArea(viewerArea) : sp.area;
-  const useListCache = !mine && !areaQ && !sp.gender && sp.vaccinated !== "yes" && sp.neutered !== "yes" && !sp.age;
+  const search = (sp.q ?? "").replace(/[%_,()*\\]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+  const verifiedOnly = sp.ngo === "verified";
+  const useListCache = !mine && !areaQ && !sp.gender && sp.vaccinated !== "yes" && sp.neutered !== "yes" && !sp.age && !search && !verifiedOnly;
 
   let items: AdoptionRow[];
   let happy: AdoptionRow[];
@@ -52,6 +54,8 @@ export default async function AdoptPage({ searchParams }: { searchParams: Promis
     if (sp.gender === "male" || sp.gender === "female") q = q.eq("gender", sp.gender);
     if (sp.vaccinated === "yes") q = q.eq("vaccinated", true);
     if (sp.neutered === "yes") q = q.eq("neutered", true);
+    if (verifiedOnly) q = q.eq("ngo_verified", true);
+    if (search) q = q.or(`pet_name.ilike.%${search}%,breed.ilike.%${search}%,description.ilike.%${search}%`);
     if (sp.age && AGE[sp.age]) q = q.gte("age_months", AGE[sp.age][0]).lte("age_months", AGE[sp.age][1]);
     const [{ data }, happyRes] = await Promise.all([
       q,
@@ -116,10 +120,11 @@ export default async function AdoptPage({ searchParams }: { searchParams: Promis
           <FilterChip href={toggle("age", "young")} active={sp.age === "young"}>{species === "cat" ? "Kittens" : species === "dog" ? "Puppies" : "Puppies & kittens"}</FilterChip>
           <FilterChip href={toggle("vaccinated", "yes")} active={sp.vaccinated === "yes"}>Vaccinated</FilterChip>
           <FilterChip href={toggle("neutered", "yes")} active={sp.neutered === "yes"}>Sterilised</FilterChip>
+          <FilterChip href={toggle("ngo", "verified")} active={verifiedOnly}>Verified NGOs</FilterChip>
         </nav>
         <SpeciesToggle compact />
       </div>
-      <ListingFilters basePath="/adopt" areas={NCR_AREAS} area={sp.area} hidden={Object.fromEntries(Object.entries(sp).filter(([k, v]) => v && ["near", "vaccinated", "neutered", "mine"].includes(k)) as [string, string][])} extra={[
+      <ListingFilters basePath="/adopt" areas={NCR_AREAS} area={sp.area} search={{ value: search, placeholder: "Name or breed" }} hidden={Object.fromEntries(Object.entries(sp).filter(([k, v]) => v && ["near", "vaccinated", "neutered", "mine", "ngo"].includes(k)) as [string, string][])} extra={[
         { name: "age", label: "Age", value: sp.age ?? "", options: [{ value: "", label: "any" }, { value: "young", label: "Puppy / kitten" }, { value: "adult", label: "Adult (1–8 yrs)" }, { value: "senior", label: "Senior (8+)" }] },
         { name: "gender", label: "Gender", value: sp.gender ?? "", options: [{ value: "", label: "any" }, { value: "male", label: "Male" }, { value: "female", label: "Female" }] },
       ]} />

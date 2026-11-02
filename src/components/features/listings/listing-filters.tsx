@@ -1,15 +1,22 @@
-import { MapPin, SlidersHorizontal, X } from "lucide-react";
+import { MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 
 interface Extra { name: string; label: string; value: string; options: { value: string; label: string }[] }
 
 /** Plain GET form, so filters work without JavaScript and filtered URLs can be shared. */
-export function ListingFilters({ basePath, areas, area, hidden, extra = [] }: { basePath: string; areas: string[]; area?: string; hidden?: Record<string, string>; extra?: Extra[] }) {
-  const active = Boolean(area || extra.some((e) => e.value));
+export function ListingFilters({ basePath, areas, area, hidden, extra = [], search }: { basePath: string; areas: string[]; area?: string; hidden?: Record<string, string>; extra?: Extra[]; search?: { value: string; placeholder: string } }) {
+  const active = Boolean(area || search?.value || extra.some((e) => e.value));
   const pill = "h-11 min-h-11 rounded-full border-2 border-border bg-surface px-3.5 text-sm font-bold text-text hover:border-muted/60 focus:border-primary focus:outline-none";
   return (
     <form action={basePath} className="mb-5 flex flex-wrap items-center gap-2" aria-label="Filters">
       {Object.entries(hidden ?? {}).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
       <span className="hidden items-center gap-1.5 pr-1 text-sm font-extrabold text-muted sm:inline-flex"><SlidersHorizontal className="h-4 w-4" aria-hidden /> Filter</span>
+      {search && (
+        <label className="relative">
+          <span className="sr-only">Search</span>
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden />
+          <input name="q" type="search" maxLength={60} defaultValue={search.value} placeholder={search.placeholder} className={`${pill} w-48 pl-9`} />
+        </label>
+      )}
       <label className="relative">
         <span className="sr-only">Area</span>
         <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden />

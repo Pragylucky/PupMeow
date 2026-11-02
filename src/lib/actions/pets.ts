@@ -8,6 +8,8 @@ import { uuidSchema, zodFieldErrors } from "@/lib/validations/common";
 import { allOwnUploads, isOwnDocumentPath } from "@/lib/storage-paths";
 import { friendlyError, todayIso } from "@/lib/utils";
 import { moderateText, blockedMessage } from "@/lib/ai/moderation";
+import { repeatMonthsFor, addMonthsIso } from "@/lib/care";
+import { dateString } from "@/lib/validations/common";
 import type { ActionResult } from "@/types/models";
 
 function petInput(formData: FormData) {
@@ -138,16 +140,6 @@ export async function addVaccineReminders(petId: string, items: { title: string;
   return { ok: true, message: `${rows.length} reminder${rows.length === 1 ? "" : "s"} added` };
 }
 
-/** Rough repeat interval for common records, used when a due item is marked as done. */
-function repeatMonthsFor(title: string, type: string): number | null {
-  const t = title.toLowerCase();
-  if (type === "weight" || type === "vet_visit") return null;
-  if (/tick|flea/.test(t)) return 1;
-  if (/deworm/.test(t)) return 3;
-  if (/rabies|dhpp|lepto|fvrcp|annual|booster|vaccin/.test(t) || type === "vaccination") return 12;
-  return null;
-}
-
 /** "Mark as given": logs today's dose and schedules the next one (when it usually repeats). */
 export async function markHealthDone(recordId: string): Promise<ActionResult<{ nextDue: string | null }>> {
   const ctx = await actionContext();
@@ -165,9 +157,7 @@ export async function markHealthDone(recordId: string): Promise<ActionResult<{ n
   const months = repeatMonthsFor(rec.title, rec.type);
   let nextDue: string | null = null;
   if (months) {
-    const d = new Date(`${today}T00:00:00Z`);
-    d.setUTCMonth(d.getUTCMonth() + months);
-    nextDue = d.toISOString().slice(0, 10);
+    nextDue = addMonthsIso(today, months);
   }
   const title = rec.title.replace(/^Reminder:\s*/i, "");
   const { error: insErr } = await ctx.supabase.from("pet_health_records").insert({
@@ -186,4 +176,22 @@ export async function markHealthDone(recordId: string): Promise<ActionResult<{ n
       ? `Marked as given. Next one is due ${new Date(`${nextDue}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}.`
       : "Marked as given.",
   };
+}
+
+/** Sets (or changes) when a vaccine or treatment is next due, so reminders can reach the owner. */
+export async function setNextDueDate(recordId: string, dueDate: string): Promise<ActionResult> {
+  const ctx = await actionContext();
+  if ("error" in ctx) return { ok: false, error: ctx.error };
+  const id = uuidSchema.safeParse(recordId);
+  const due = dateString.safeParse(dueDate);
+  if (!id.success || !due.success) return { ok: false, error: "Pick a valid date." };
+  const { data: rec } = await ctx.supabase.from("pet_health_records").select("id, pet_id, date").eq("id", id.data).eq("owner_id", ctx.userId).maybeSingle();
+  if (!rec) return { ok: false, error: "Record not found." };
+  if (due.data < rec.date) return { ok: false, error: "The next due date can't be before the record date." };
+  const { error } = await ctx.supabase.from("pet_health_records").update({ next_due_date: due.data }).eq("id", rec.id).eq("owner_id", ctx.userId);
+  if (error) return { ok: false, error: friendlyError(error, "Couldn't save the date.") };
+  revalidatePath(`/pets/${rec.pet_id}/health`);
+  revalidatePath("/pets");
+  revalidatePath("/home");
+  return { ok: true, message: "Reminder set. We'll nudge you before it's due." };
 }

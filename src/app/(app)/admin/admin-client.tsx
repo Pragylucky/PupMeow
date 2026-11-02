@@ -3,8 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { EyeOff, Eye, Check, Ban, RotateCcw, Trash2 } from "lucide-react";
-import { adminSetHidden, adminSetBan, adminResolveReport, adminDeleteTarget } from "@/lib/actions/admin";
+import { adminSetHidden, adminSetBan, adminResolveReport, adminDeleteTarget, adminSetNgoVerified } from "@/lib/actions/admin";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
@@ -223,5 +224,22 @@ export function BanButton({ userId, banned, big }: { userId: string; banned: boo
         />
       </ConfirmDialog>
     </>
+  );
+}
+
+/** Verify (or un-verify) an NGO by @username. Their adoption listings then show a "Verified NGO" badge. */
+export function NgoVerifyForm() {
+  const { pending, run } = useRun();
+  const [username, setUsername] = useState("");
+  return (
+    <section aria-label="Verify an NGO" className="rounded-[var(--radius-lg)] bg-surface p-4 shadow-[var(--shadow-card)]">
+      <h2 className="text-lg font-semibold">Verify an NGO</h2>
+      <p className="mb-3 text-sm text-muted">Check their registration first. Then enter their @username to add the &ldquo;Verified NGO&rdquo; badge to their adoption listings.</p>
+      <div className="flex flex-wrap items-end gap-2">
+        <Input label="Username" name="ngo_username" value={username} onChange={(e) => setUsername(e.target.value.toLowerCase())} placeholder="@pawstrust" maxLength={21} autoCapitalize="none" spellCheck={false} wrapperClassName="min-w-[12rem] flex-1" />
+        <Button loading={pending} disabled={username.trim().length < 3} onClick={() => run(() => adminSetNgoVerified(username, true))}>Verify</Button>
+        <Button variant="outline" loading={pending} disabled={username.trim().length < 3} onClick={() => run(() => adminSetNgoVerified(username, false))}>Remove badge</Button>
+      </div>
+    </section>
   );
 }

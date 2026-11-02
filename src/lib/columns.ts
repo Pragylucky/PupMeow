@@ -11,6 +11,6 @@ export const LOST_FOUND_COLUMNS =
   "id, author_id, type, pet_name, species, breed, color, gender, description, photo_urls, last_seen_area, landmark, last_seen_date, contact_method, reward_text, status, reunited_at, city, is_hidden, created_at, updated_at";
 
 export const ADOPTION_COLUMNS =
-  "id, author_id, pet_name, species, breed, age_text, age_months, gender, vaccinated, neutered, description, photo_urls, city, area, is_ngo, org_name, contact_method, status, adopted_at, is_hidden, created_at, updated_at";
+  "id, author_id, pet_name, species, breed, age_text, age_months, gender, vaccinated, neutered, description, photo_urls, city, area, is_ngo, org_name, ngo_verified, contact_method, status, adopted_at, is_hidden, created_at, updated_at";
 
 export const POST_WITH_RELATIONS = `*, author:profiles!posts_author_id_fkey(${MINI_PROFILE}), pet:pets(${MINI_PET})`;

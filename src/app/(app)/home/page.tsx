@@ -19,6 +19,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { birthdaySoon, cn, daysUntil, dueLabel, formatAge, formatDate, greeting, shortArea } from "@/lib/utils";
 import { WelcomeToast } from "../feed/welcome-toast";
 import { PushPromptCard } from "@/components/features/push/push-toggle";
+import { GetStartedCard } from "@/components/features/home/get-started";
 
 export const metadata: Metadata = { title: "Home", robots: { index: false } };
 
@@ -80,7 +81,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           </div>
         </section>
 
-        <PushPromptCard />
+        {/* New-member checklist; once its server-side steps are done, only the alerts nudge remains. */}
+        {d.pets.length > 0 && d.hasReminder && (!aiOn || d.kaiaTried) ? (
+          <PushPromptCard />
+        ) : (
+          <GetStartedCard hasPet={d.pets.length > 0} firstPetId={d.pets[0]?.id} hasReminder={d.hasReminder} kaiaTried={d.kaiaTried} aiOn={aiOn} />
+        )}
 
         {/* Care reminder */}
         {next ? (

@@ -109,3 +109,20 @@ export async function adminResolveReport(reportId: string, status: "open" | "res
   revalidatePath("/admin");
   return { ok: true, message: status === "dismissed" ? "Report dismissed" : status === "resolved" ? "Report resolved" : "Report reopened" };
 }
+
+/** Mark an NGO account as verified (or remove the badge). Shown on its adoption listings. */
+export async function adminSetNgoVerified(username: string, verified: boolean): Promise<ActionResult> {
+  const ctx = await adminCtx();
+  if ("error" in ctx) return { ok: false, error: ctx.error };
+  const name = username.trim().replace(/^@/, "");
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(name)) return { ok: false, error: "Enter a valid @username." };
+  const { error } = await ctx.supabase.rpc("admin_set_ngo_verified", { p_username: name, p_verified: verified });
+  if (error) {
+    if (error.message.includes("No member")) return { ok: false, error: "No member with that username." };
+    if (error.message.includes("Could not find the function")) return { ok: false, error: "Run the latest Supabase migration (20261103000000_ngo_verification.sql) first." };
+    return { ok: false, error: adminRpcError(error) };
+  }
+  revalidatePath("/admin");
+  revalidatePath("/adopt");
+  return { ok: true, message: verified ? `@${name} is now a verified NGO.` : `Removed the NGO badge from @${name}.` };
+}

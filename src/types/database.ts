@@ -156,6 +156,7 @@ export interface AdoptionRow {
   area: string;
   is_ngo: boolean;
   org_name: string | null;
+  ngo_verified: boolean;
   contact_method: ContactMethod;
   status: AdoptionStatus;
   adopted_at: string | null;
