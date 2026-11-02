@@ -18,6 +18,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { ButtonLink } from "@/components/ui/button";
 import { displayName, formatDate, sinceLabel } from "@/lib/utils";
 import { createAdminClient, hasServiceRole } from "@/lib/supabase/admin";
+import { lostShareText, posterFilename } from "@/lib/lost-share";
 import { getLostFound, lostHeadline } from "./data";
 import { OwnerActions, PossibleMatches } from "./lost-client";
 
@@ -36,9 +37,11 @@ async function alertedCount(lostId: string): Promise<number | null> {
   return count ?? 0;
 }
 
-export default async function LostDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ new?: string }> }) {
+export default async function LostDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ new?: string; share?: string }> }) {
   const { id } = await params;
-  const justPosted = (await searchParams).new === "1";
+  const sp = await searchParams;
+  const justPosted = sp.new === "1";
+  const shareAgain = sp.share === "1";
   const item = await getLostFound(id);
   if (!item) notFound();
   const viewer = await getViewer();
@@ -60,6 +63,8 @@ export default async function LostDetailPage({ params, searchParams }: { params:
   const tone = reunited ? "bg-primary text-on-primary" : lost ? "bg-danger text-white halftone" : "bg-secondary text-ink";
   const signedIn = Boolean(user);
   const alerted = isOwner && justPosted && lost && !reunited ? await alertedCount(item.id) : null;
+  const caption = lostShareText({ headline, area: item.last_seen_area, reward: item.reward_text, reunited });
+  const poster = { path: `/lost/${item.id}/poster/image`, filename: posterFilename(item) };
 
   const actions = (
     <div className="space-y-4">
@@ -82,7 +87,7 @@ export default async function LostDetailPage({ params, searchParams }: { params:
       ) : null}
       <section aria-label="Share" className="space-y-3 rounded-[var(--radius-lg)] bg-surface p-4 shadow-[var(--shadow-card)]">
         <p className="font-heading text-lg font-semibold">{reunited ? "Share the good news" : "Every share helps"}</p>
-        <ShareButtons path={`/lost/${item.id}`} text={reunited ? `${petLabel} is back home! Thank you Delhi 🎉` : `${headline}. Please share! 🐾`} size="sm" />
+        <ShareButtons path={`/lost/${item.id}`} text={reunited ? `${petLabel} is back home! Thank you Delhi 🎉` : caption} poster={poster} size="sm" />
         {!reunited && !isOwner && (
           <ButtonLink href={`/lost/${item.id}/poster`} variant="outline" size="sm"><Printer className="h-4 w-4" aria-hidden /> Printable poster</ButtonLink>
         )}
@@ -117,14 +122,16 @@ export default async function LostDetailPage({ params, searchParams }: { params:
         <Link href="/lost" className="inline-flex items-center gap-1 text-sm font-bold text-muted hover:text-text"><ChevronLeft className="h-4 w-4" aria-hidden /> Lost &amp; Found</Link>
         {reunited && <Celebration title={`${item.pet_name ?? "This pet"} is home!`} text={`Reunited${item.reunited_at ? ` on ${formatDate(item.reunited_at)}` : ""}. Thank you to everyone who shared.`} species={item.species} />}
         {item.is_hidden && <p className="rounded-[var(--radius-md)] bg-warning-soft px-3 py-2 text-sm font-semibold text-warning">Hidden by moderators.</p>}
-        {isOwner && justPosted && lost && !reunited && (
+        {isOwner && (justPosted || shareAgain) && lost && !reunited && (
           <section aria-labelledby="live-h" className="space-y-3 rounded-[var(--radius-xl)] bg-ink p-5 text-white sm:p-6">
-            <h2 id="live-h" className="text-[1.5rem] font-semibold leading-tight">Your report is live. Now spread the word.</h2>
+            <h2 id="live-h" className="text-[1.5rem] font-semibold leading-tight">{justPosted ? "Your report is live. Now spread the word." : `${item.pet_name ?? "Your pet"} is still missing. Share again.`}</h2>
             <p className="font-semibold text-white/85">
               {alerted ? `We alerted ${alerted} ${alerted === 1 ? "neighbour" : "neighbours"} in ${item.last_seen_area}. ` : ""}
-              The first hours matter most: share it in your society, RWA and building WhatsApp groups, and put up the poster near where {item.pet_name ?? "your pet"} was last seen.
+              {justPosted
+                ? `The first hours matter most. Send the poster to your society, RWA and building WhatsApp groups, and put it up near where ${item.pet_name ?? "your pet"} was last seen.`
+                : "A fresh share reaches new people. Send the poster to your groups again, and put copies up where people walk and ask."}
             </p>
-            <ShareButtons path={`/lost/${item.id}`} text={`${headline}. Please share! 🐾`} className="[&>button:last-child:hover]:bg-white/10 [&>button:last-child]:text-white" />
+            <ShareButtons path={`/lost/${item.id}`} text={caption} poster={poster} className="[&>button:last-child:hover]:bg-white/10 [&>button:last-child]:text-white" />
             <ButtonLink href={`/lost/${item.id}/poster`} variant="white" size="sm"><Printer className="h-4 w-4" aria-hidden /> Print the poster</ButtonLink>
           </section>
         )}

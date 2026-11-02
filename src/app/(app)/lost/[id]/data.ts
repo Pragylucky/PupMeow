@@ -20,3 +20,16 @@ export function lostHeadline(item: Pick<LostFoundRow, "type" | "status" | "pet_n
   const where = item.type === "lost" ? `last seen ${item.last_seen_area}` : `found in ${item.last_seen_area}`;
   return `${label}: ${who}, ${where}`;
 }
+
+/**
+ * The report's phone number, only for the signed-in author (used for the optional number on their poster).
+ * Everyone else, and anyone signed out, gets null, so a shared poster link can never reveal it.
+ */
+export async function getOwnerPhone(item: Pick<LostFoundRow, "id" | "author_id">): Promise<string | null> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user || auth.user.id !== item.author_id) return null;
+  const { data } = await supabase.rpc("get_lost_found_contact", { p_id: item.id });
+  const row = (data as { contact_value: string }[] | null)?.[0];
+  return row?.contact_value ?? null;
+}
