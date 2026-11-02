@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { OnlyAt } from "@/components/layout/only-at";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Building2, ChevronLeft, MapPin, ShieldAlert } from "lucide-react";
+import { BadgeCheck, Building2, ChevronLeft, MapPin, ShieldAlert } from "lucide-react";
 import { getCurrentProfile, getViewer } from "@/lib/auth";
 import { canViewHiddenContent } from "@/lib/moderation/visibility";
 import { PhotoGallery } from "@/components/features/upload/lightbox";
@@ -99,6 +99,7 @@ export default async function AdoptionDetailPage({ params }: { params: Promise<{
               {a.vaccinated && <span className="rounded-full bg-white px-3 py-1.5 text-[0.85rem] font-extrabold">Owner says vaccinated</span>}
               {a.neutered && <span className="rounded-full bg-white px-3 py-1.5 text-[0.85rem] font-extrabold">Sterilised</span>}
               {a.is_ngo && <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-[0.85rem] font-extrabold"><Building2 className="h-4 w-4" aria-hidden /> {a.org_name}</span>}
+              {a.is_ngo && a.ngo_verified && <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[0.85rem] font-extrabold text-on-primary"><BadgeCheck className="h-4 w-4" aria-hidden /> Verified NGO</span>}
             </div>
           </div>
         </section>
@@ -114,7 +115,7 @@ export default async function AdoptionDetailPage({ params }: { params: Promise<{
           <Link href={`/u/${a.author.username}`} className="flex items-center gap-3 rounded-[var(--radius-lg)] bg-surface p-4 shadow-[var(--shadow-card)] hover:ring-2 hover:ring-border">
             <Avatar src={a.author.avatar_url} name={displayName(a.author)} size="md" />
             <span className="min-w-0 flex-1">
-              <span className="block text-xs font-extrabold uppercase tracking-wider text-muted">{a.is_ngo ? "Listed by an NGO" : "Listed by the foster"}</span>
+              <span className="block text-xs font-extrabold uppercase tracking-wider text-muted">{a.is_ngo ? (a.ngo_verified ? "Listed by a verified NGO" : "Listed by an NGO · not yet verified") : "Listed by the foster"}</span>
               <span className="block truncate font-bold">{displayName(a.author)}{a.is_ngo && a.org_name && a.org_name !== displayName(a.author) ? ` · ${a.org_name}` : ""}</span>
             </span>
           </Link>

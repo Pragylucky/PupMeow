@@ -13,7 +13,7 @@ import { PetImage } from "@/components/brand/pet-image";
 import { REPORT_REASONS } from "@/lib/constants";
 import { cn, displayName, formatDate, sinceLabel } from "@/lib/utils";
 import { moderationPreviewImage } from "@/lib/moderation/visibility";
-import { ReportActions, BanButton } from "./admin-client";
+import { ReportActions, BanButton, NgoVerifyForm } from "./admin-client";
 import { ReportQueueRow } from "./report-queue-row";
 import type { ProfileRow, ReportRow, ReportTarget } from "@/types/database";
 import type { MiniProfile } from "@/types/models";
@@ -94,6 +94,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </div>
         ))}
       </dl>
+      <NgoVerifyForm />
       {tab === "reports" ? <ReportsQueue status={status} type={type} selected={sp.report} supabase={supabase} /> : <UsersPanel q={sp.q ?? ""} supabase={supabase} />}
       <AuditLog supabase={supabase} />
     </div>

@@ -16,6 +16,10 @@ export interface HomeData {
   requests: MatchRequestWithPets[];
   posts: FeedPost[];
   adoptions: AdoptionRow[];
+  /** Has any health record with a next-due date (so reminders can fire). */
+  hasReminder: boolean;
+  /** Has started at least one Kaia chat. */
+  kaiaTried: boolean;
 }
 
 /** Everything the Home dashboard needs, in parallel. */
@@ -25,7 +29,7 @@ export async function loadHome(opts: { userId: string; area: string | null; spec
   const in30 = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
   const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
 
-  const [pets, due, lost, reunited, reunitedAny, requests, posts, adoptions] = await Promise.all([
+  const [pets, due, lost, reunited, reunitedAny, requests, posts, adoptions, reminders, chats] = await Promise.all([
     supabase.from("pets").select("*").eq("owner_id", opts.userId).order("created_at"),
     supabase.from("pet_health_records").select("*").eq("owner_id", opts.userId).not("next_due_date", "is", null).lte("next_due_date", in30).order("next_due_date").limit(6),
     supabase.from("lost_found").select(LOST_FOUND_COLUMNS).eq("status", "open").eq("type", "lost").eq("is_hidden", false).in("species", sp).order("created_at", { ascending: false }).limit(30),
@@ -44,6 +48,8 @@ export async function loadHome(opts: { userId: string; area: string | null; spec
       return q;
     })(),
     supabase.from("adoptions").select(ADOPTION_COLUMNS).eq("status", "available").eq("is_hidden", false).in("species", sp).order("created_at", { ascending: false }).limit(12),
+    supabase.from("pet_health_records").select("id", { count: "exact", head: true }).eq("owner_id", opts.userId).not("next_due_date", "is", null),
+    supabase.from("ai_conversations").select("id", { count: "exact", head: true }).eq("user_id", opts.userId),
   ]);
 
   const petList = (pets.data ?? []) as PetRow[];
@@ -62,5 +68,7 @@ export async function loadHome(opts: { userId: string; area: string | null; spec
     requests: (requests.data ?? []) as MatchRequestWithPets[],
     posts: await withLikes(supabase, opts.userId, (posts.data ?? []) as Omit<FeedPost, "liked_by_me">[]),
     adoptions: [...adoptNear, ...adoptAll.filter((a) => !adoptNear.includes(a))].slice(0, 3),
+    hasReminder: (reminders.count ?? 0) > 0,
+    kaiaTried: (chats.count ?? 0) > 0,
   };
 }

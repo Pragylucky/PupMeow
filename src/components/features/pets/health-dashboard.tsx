@@ -3,7 +3,8 @@
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Syringe, Pill, Stethoscope, Scale, FileText, Trash2, Sparkles, Lock } from "lucide-react";
-import { addHealthRecord, deleteHealthRecord, getDocumentUrl, addVaccineReminders } from "@/lib/actions/pets";
+import { addHealthRecord, deleteHealthRecord, getDocumentUrl, addVaccineReminders, setNextDueDate } from "@/lib/actions/pets";
+import { DUE_PRESETS, dueFromPreset, suggestedPreset } from "@/lib/care";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AddToCalendar, MarkGivenButton } from "@/components/features/care/reminder-actions";
@@ -40,6 +41,16 @@ export function HealthDashboard({ pet, records, userId, aiEnabled, disclaimer, i
   const router = useRouter();
   const list = tab === "all" ? records : records.filter((r) => r.type === tab);
   const weights = records.filter((r) => r.type === "weight" && r.weight_kg).map((r) => ({ date: r.date, kg: Number(r.weight_kg) }));
+  // Latest vaccine / medicine entries that have no next due date yet: nudge the owner to set one.
+  const needsDue = new Set<string>();
+  const seen = new Set<string>();
+  for (const r of [...records].sort((a, b) => b.date.localeCompare(a.date))) {
+    if (r.type !== "vaccination" && r.type !== "medication") continue;
+    const key = r.title.trim().toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (!r.next_due_date) needsDue.add(r.id);
+  }
   const sorted = [...list].sort((a, b) => {
     // Due items first (soonest first), then everything else newest first.
     if (a.next_due_date && b.next_due_date) return a.next_due_date.localeCompare(b.next_due_date);
@@ -98,6 +109,7 @@ export function HealthDashboard({ pet, records, userId, aiEnabled, disclaimer, i
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
+                  {!r.next_due_date && needsDue.has(r.id) && <NextDuePrompt record={r} onDone={() => router.refresh()} />}
                   {r.next_due_date && (
                     <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3 pl-14">
                       <AddToCalendar label="Remind me" event={{ title: `${pet.name}: ${title}`, start: r.next_due_date, details: `Pupmeow reminder for ${pet.name}. Last given ${formatDate(r.date)}.${r.notes ? ` ${r.notes}` : ""}` }} />
@@ -168,8 +180,17 @@ function AddRecordModal({ open, onClose, petId, userId, defaultType, onSaved }: 
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(addHealthRecord, null);
   const [type, setType] = useState<HealthRecordType>(defaultType);
   const [uploading, setUploading] = useState(false);
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState(todayIso());
+  const [nextDue, setNextDue] = useState("");
   const toast = useToast();
-  useEffect(() => setType(defaultType), [defaultType, open]);
+  useEffect(() => {
+    setType(defaultType);
+    setTitle("");
+    setDate(todayIso());
+    setNextDue("");
+  }, [defaultType, open]);
+  const suggested = type === "weight" ? null : suggestedPreset(title, type);
   useEffect(() => {
     if (state?.ok) { toast(state.message ?? "Saved"); onSaved(); }
   }, [state, toast, onSaved]);
@@ -182,15 +203,32 @@ function AddRecordModal({ open, onClose, petId, userId, defaultType, onSaved }: 
           { value: "vaccination", label: "Vaccination" }, { value: "medication", label: "Medication" },
           { value: "vet_visit", label: "Vet visit" }, { value: "weight", label: "Weight" },
         ]} />
-        <Input label="Title" name="title" required maxLength={80} defaultValue={type === "weight" ? "Weight check" : ""} placeholder={type === "vaccination" ? "Anti-Rabies" : type === "medication" ? "Deworming tablet" : "Annual check-up"} error={fe.title} />
+        <Input label="Title" name="title" required maxLength={80} value={type === "weight" && !title ? "Weight check" : title} onChange={(e) => setTitle(e.target.value)} placeholder={type === "vaccination" ? "Anti-Rabies" : type === "medication" ? "Deworming tablet" : "Annual check-up"} error={fe.title} />
         <div className="grid gap-4 sm:grid-cols-2">
-          <DatePicker label="Date" name="date" required defaultValue={todayIso()} error={fe.date} />
+          <DatePicker label="Date" name="date" required value={date} onChange={(e) => setDate(e.target.value)} error={fe.date} />
           {type === "weight" ? (
             <Input label="Weight (kg)" name="weight_kg" type="number" step="0.1" inputMode="decimal" required error={fe.weight_kg} />
           ) : (
-            <DatePicker label="Next due (optional)" name="next_due_date" error={fe.next_due_date} />
+            <DatePicker label="Next due (optional)" name="next_due_date" value={nextDue} onChange={(e) => setNextDue(e.target.value)} min={date} error={fe.next_due_date} />
           )}
         </div>
+        {type !== "weight" && (
+          <div className="-mt-1" aria-label="Quick next due date">
+            <p className="mb-1.5 text-sm font-bold">Next dose in…{!nextDue && <span className="font-semibold text-muted"> (so we can remind you)</span>}</p>
+            <div className="flex flex-wrap gap-2">
+              {DUE_PRESETS.map((p) => {
+                const value = dueFromPreset(date || todayIso(), p);
+                const on = nextDue === value;
+                return (
+                  <button key={p.label} type="button" onClick={() => setNextDue(on ? "" : value)} aria-pressed={on} className={cn("h-9 rounded-full border-2 px-3.5 text-sm font-bold", on ? "border-primary bg-primary text-on-primary" : "border-border bg-surface hover:border-muted/60")}>
+                    {p.label}{suggested?.label === p.label && !on ? " ✨" : ""}
+                  </button>
+                );
+              })}
+            </div>
+            {nextDue && <p className="mt-1.5 text-sm text-muted">Due {formatDate(nextDue)}. We&apos;ll remind you 3 days before, on the day, and a week after.</p>}
+          </div>
+        )}
         <Textarea label="Notes" name="notes" maxLength={1000} rows={3} />
         {type !== "weight" && (
           <ImageUploader bucket="documents" userId={userId} name="document_url" label="Certificate or prescription (optional)" hint="Photo or PDF, max 5 MB. Private to you." max={1} onUploadingChange={setUploading} />
@@ -266,5 +304,31 @@ function VaccineSuggest({ pet, disclaimer, onAdded }: { pet: PetRow; disclaimer:
         ) : <p className="mt-3 text-sm text-muted">Looks up to date. Keep checking with your vet. 🐾</p>
       )}
     </Card>
+  );
+}
+
+/** One-tap "when is the next one?" for a done vaccine or medicine, so a reminder gets scheduled. */
+function NextDuePrompt({ record, onDone }: { record: HealthRecordRow; onDone: () => void }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const toast = useToast();
+  const suggested = suggestedPreset(record.title, record.type);
+  const save = async (label: string, due: string) => {
+    setBusy(label);
+    const res = await setNextDueDate(record.id, due);
+    setBusy(null);
+    toast(res.ok ? res.message ?? "Saved" : res.error, res.ok ? "success" : "error");
+    if (res.ok) onDone();
+  };
+  return (
+    <div className="mt-3 border-t border-border pt-3 pl-14">
+      <p className="mb-1.5 text-sm font-bold">When is the next one due? <span className="font-semibold text-muted">We&apos;ll remind you.</span></p>
+      <div className="flex flex-wrap gap-2">
+        {DUE_PRESETS.map((p) => (
+          <Button key={p.label} size="sm" variant={suggested?.label === p.label ? "primary" : "outline"} loading={busy === p.label} disabled={busy !== null} onClick={() => save(p.label, dueFromPreset(record.date, p))}>
+            {p.label}
+          </Button>
+        ))}
+      </div>
+    </div>
   );
 }
