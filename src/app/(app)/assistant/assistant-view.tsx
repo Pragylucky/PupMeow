@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getAiConfigStatus, getAiDailyLimit, isAiAssistantEnabled } from "@/lib/ai/config";
+import { kaiaStarters, loadLiveSnapshot, todayChips } from "@/lib/ai/live-context";
 import { AI_DISCLAIMER } from "@/lib/constants";
 import { EmptyState } from "@/components/ui/empty-state";
 import { KaiaAvatar } from "@/components/features/ai/kaia-avatar";
@@ -34,10 +35,11 @@ export async function AssistantView({ conversationId }: { conversationId: string
     );
   }
   const supabase = await createClient();
-  const [{ data: convs }, { data: pets }, { data: usage }] = await Promise.all([
+  const [{ data: convs }, { data: pets }, { data: usage }, live] = await Promise.all([
     supabase.from("ai_conversations").select("*").eq("user_id", profile.id).order("updated_at", { ascending: false }).limit(50),
     supabase.from("pets").select("id, name, species").eq("owner_id", profile.id).order("name"),
     supabase.rpc("my_ai_usage"),
+    conversationId ? null : loadLiveSnapshot(supabase, profile.id, profile.area).catch(() => null),
   ]);
   let messages: AiMessageRow[] = [];
   let current: AiConversationRow | null = null;
@@ -65,6 +67,8 @@ export async function AssistantView({ conversationId }: { conversationId: string
         dailyLimit={dailyLimit}
         remaining={Math.max(0, dailyLimit - used)}
         firstName={(profile.display_name ?? profile.username ?? "there").split(" ")[0]}
+        starters={live ? kaiaStarters(live) : undefined}
+        today={live ? todayChips(live) : []}
       />
     </div>
   );

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { aiGuard, sameOrigin } from "@/lib/ai/guard";
 import { streamChatToWriter } from "@/lib/ai/chat-stream";
 import { assistantSystemPrompt, petContextFor } from "@/lib/ai/prompts";
+import { kaiaLiveContext } from "@/lib/ai/live-context";
 import { detectEmergency } from "@/lib/ai/emergency";
 import { KAIA_UNABLE_TO_REPLY, userFacingKaiaChatError } from "@/lib/ai/kaia-messages";
 import { chatRequestSchema } from "@/lib/validations/ai";
@@ -70,13 +71,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Couldn't save your message. Try again." }, { status: 500 });
   }
 
-  const [historyRes, petContext] = await Promise.all([
+  const [historyRes, petContext, liveContext] = await Promise.all([
     supabase.from("ai_messages").select("role, content").eq("conversation_id", convId).order("created_at", { ascending: false }).limit(12),
     loadPetContext(supabase, userId, petId),
+    kaiaLiveContext(supabase, userId, area).catch((err) => {
+      console.warn("[ai/chat] live context", err);
+      return undefined;
+    }),
   ]);
 
   const history = ((historyRes.data ?? []) as { role: "user" | "assistant"; content: string }[]).reverse();
-  const system = assistantSystemPrompt({ petContext, userArea: area });
+  const system = assistantSystemPrompt({ petContext, userArea: area, liveContext });
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
