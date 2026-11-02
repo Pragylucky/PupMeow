@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { hasServiceRole } from "@/lib/supabase/admin";
 import { sendDueReminders } from "@/lib/reminders";
+import { sendLostFollowUps } from "@/lib/lost-followups";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,8 +15,14 @@ export async function GET(req: NextRequest) {
   }
   if (!hasServiceRole()) return NextResponse.json({ error: "SUPABASE_SERVICE_ROLE_KEY is not configured" }, { status: 500 });
   try {
-    const result = await sendDueReminders();
+    // Independent jobs: one failing shouldn't stop the other.
+    const [health, lost] = await Promise.allSettled([sendDueReminders(), sendLostFollowUps()]);
+    const result = {
+      health: health.status === "fulfilled" ? health.value : { error: String(health.reason) },
+      lostFollowUps: lost.status === "fulfilled" ? lost.value : { error: String(lost.reason) },
+    };
     console.info("[cron/reminders]", result);
+    if (health.status === "rejected" && lost.status === "rejected") return NextResponse.json({ error: "Reminder run failed", ...result }, { status: 500 });
     return NextResponse.json(result);
   } catch (err) {
     console.error("[cron/reminders]", err);

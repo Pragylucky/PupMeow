@@ -3,24 +3,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
-import { ChevronLeft, Download } from "lucide-react";
+import { Check, ChevronLeft, Download } from "lucide-react";
 import { env } from "@/lib/env";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
+import { getUser } from "@/lib/auth";
+import { formatPhone, lostShareText, posterFilename } from "@/lib/lost-share";
 import { WithRail } from "@/components/layout/page-layout";
 import { Steps, TipCard } from "@/components/brand/bits";
 import { LogoMark } from "@/components/layout/logo";
 import { ShareButtons } from "@/components/features/listings/share-buttons";
 import { ButtonLink } from "@/components/ui/button";
-import { getLostFound } from "../data";
+import { getLostFound, getOwnerPhone, lostHeadline } from "../data";
 import { PrintButton } from "./print-button";
 
 export const metadata: Metadata = { title: "Printable poster", robots: { index: false } };
 
 /** Print-optimised A4 poster. Use the browser's "Save as PDF" to get a PDF. */
-export default async function PosterPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PosterPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ phone?: string }> }) {
   const { id } = await params;
+  const wantsPhone = (await searchParams).phone === "1";
   const item = await getLostFound(id);
   if (!item) notFound();
+  const isOwner = (await getUser())?.id === item.author_id;
+  // Only the owner can print their own number, and only if they switch it on.
+  const phone = isOwner && wantsPhone ? await getOwnerPhone(item) : null;
+  const posterPath = `/lost/${item.id}/poster/image${phone ? "?phone=1" : ""}`;
   const url = `${env.siteUrl}/lost/${item.id}`;
   const qr = await QRCode.toString(url, { type: "svg", margin: 1, width: 320, color: { dark: "#1a2233", light: "#ffffff" } });
   const isLost = item.type === "lost";
@@ -42,11 +49,25 @@ export default async function PosterPage({ params }: { params: Promise<{ id: str
         <Link href={`/lost/${item.id}`} className="inline-flex items-center gap-1 text-sm font-bold text-muted hover:text-text"><ChevronLeft className="h-4 w-4" aria-hidden /> Back to the report</Link>
         <div className="flex flex-wrap items-center gap-2">
           <PrintButton />
-          <ButtonLink href={`/lost/${item.id}/poster/image`} variant="whatsapp" size="lg" download target="_blank" rel="noopener">
+          <ButtonLink href={posterPath} variant="whatsapp" size="lg" download target="_blank" rel="noopener">
             <Download className="h-5 w-5" aria-hidden /> Image for WhatsApp
           </ButtonLink>
         </div>
-        <ShareButtons path={`/lost/${item.id}`} text={`${isLost ? "LOST" : "FOUND"} ${kind.toLowerCase()}${item.pet_name ? `: ${item.pet_name}` : ""} near ${item.last_seen_area}. Please share! 🐾`} size="sm" />
+        <ShareButtons path={`/lost/${item.id}`} text={lostShareText({ headline: lostHeadline(item), area: item.last_seen_area, reward: item.reward_text, reunited: item.status === "reunited" })} poster={{ path: posterPath, filename: posterFilename(item) }} size="sm" />
+        {isOwner && item.status === "open" && (
+          <Link
+            href={phone ? `/lost/${item.id}/poster` : `/lost/${item.id}/poster?phone=1`}
+            role="switch"
+            aria-checked={Boolean(phone)}
+            className="flex items-start gap-3 rounded-[var(--radius-lg)] border-2 border-border bg-surface p-3 hover:border-muted/60"
+          >
+            <span className={cn("mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2", phone ? "border-primary bg-primary text-on-primary" : "border-border")}>{phone && <Check className="h-4 w-4" aria-hidden />}</span>
+            <span>
+              <span className="block font-bold">Show my phone number on the poster</span>
+              <span className="block text-sm text-muted">Printed posters work better with a number people can call. Off by default. Anyone who sees the poster will see it, so only use it on copies you print or send.</span>
+            </span>
+          </Link>
+        )}
       </div>
 
       <section id="pm-poster" className="mx-auto flex aspect-[210/297] w-full max-w-[560px] flex-col overflow-hidden rounded-[var(--radius-lg)] bg-white text-ink shadow-[var(--shadow-lift)]">
@@ -69,8 +90,18 @@ export default async function PosterPage({ params }: { params: Promise<{ id: str
         <div className="mt-auto flex items-center gap-[4%] border-t-2 border-dashed border-[#dde2ec] px-[6%] py-[4%]">
           <div className="aspect-square w-[34%] shrink-0 [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: qr }} aria-label="QR code to this report" role="img" />
           <div className="min-w-0">
-            <p className="font-heading text-[clamp(1.1rem,4vw,1.8rem)] font-bold leading-tight">Scan to message the {isLost ? "owner" : "finder"}</p>
-            <p className="mt-1 text-[clamp(0.75rem,2.3vw,1rem)] font-semibold text-[#3b4456]">Your number and theirs stay private.</p>
+            {phone ? (
+              <>
+                <p className="text-[clamp(0.8rem,2.6vw,1.1rem)] font-extrabold text-[#3b4456]">Call or WhatsApp</p>
+                <p className="font-heading text-[clamp(1.5rem,6vw,2.6rem)] font-bold leading-tight">{formatPhone(phone)}</p>
+                <p className="mt-1 text-[clamp(0.7rem,2.1vw,0.95rem)] font-semibold text-[#3b4456]">or scan the code to message</p>
+              </>
+            ) : (
+              <>
+                <p className="font-heading text-[clamp(1.1rem,4vw,1.8rem)] font-bold leading-tight">Scan to message the {isLost ? "owner" : "finder"}</p>
+                <p className="mt-1 text-[clamp(0.75rem,2.3vw,1rem)] font-semibold text-[#3b4456]">Your number and theirs stay private.</p>
+              </>
+            )}
             <p className="mt-2 flex items-center gap-1.5 text-[clamp(0.75rem,2.3vw,1rem)] font-extrabold"><LogoMark size={22} /> pupmeow</p>
             <p className="break-all text-[clamp(0.6rem,1.8vw,0.8rem)] text-[#566174]">{url.replace(/^https?:\/\//, "")}</p>
           </div>

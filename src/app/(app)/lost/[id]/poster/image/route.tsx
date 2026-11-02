@@ -3,16 +3,20 @@ import { ImageResponse } from "next/og";
 import QRCode from "qrcode";
 import { env } from "@/lib/env";
 import { formatDate } from "@/lib/utils";
+import { formatPhone, posterFilename } from "@/lib/lost-share";
 import { OG_MARK_URI, ogFonts, ogPhoto, ogText } from "@/lib/og";
-import { getLostFound } from "../../data";
+import { getLostFound, getOwnerPhone } from "../../data";
 
 export const runtime = "nodejs";
 
 /** 1080×1350 poster image for WhatsApp status, society groups and Instagram. */
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const item = await getLostFound((await params).id, true);
   if (!item || item.is_hidden) return new Response("Not found", { status: 404 });
   const url = `${env.siteUrl}/lost/${item.id}`;
+  // The owner can opt in to printing their number. It's only added for the signed-in author, and never cached.
+  const wantsPhone = new URL(req.url).searchParams.get("phone") === "1";
+  const phone = wantsPhone ? await getOwnerPhone(item) : null;
   const [qr, photo, fonts] = await Promise.all([
     QRCode.toDataURL(url, { margin: 1, width: 400, color: { dark: "#1a2233", light: "#ffffff" } }),
     ogPhoto(item.photo_urls[0]),
@@ -46,10 +50,18 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         <div style={{ display: "flex", alignItems: "center", margin: "auto 48px 40px", gap: 30, paddingTop: 22, borderTop: "4px dashed #dde2ec" }}>
           <img src={qr} alt="" width={210} height={210} />
           <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-            <div style={{ display: "flex", fontFamily: "Fredoka", fontSize: 50, lineHeight: 1.05, color: "#1a2233" }}>Scan to message the {lost ? "owner" : "finder"}</div>
+            {phone ? (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div style={{ display: "flex", fontFamily: "Fredoka", fontSize: 38, lineHeight: 1.05, color: "#3b4456" }}>Call or WhatsApp</div>
+                <div style={{ display: "flex", fontFamily: "Fredoka", fontSize: 66, lineHeight: 1.05, color: "#1a2233", marginTop: 4 }}>{ogText(formatPhone(phone))}</div>
+                <div style={{ display: "flex", fontSize: 28, fontWeight: 700, color: "#3b4456", marginTop: 4 }}>or scan the code to message</div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", fontFamily: "Fredoka", fontSize: 50, lineHeight: 1.05, color: "#1a2233" }}>Scan to message the {lost ? "owner" : "finder"}</div>
+            )}
             {item.reward_text ? <div style={{ display: "flex", fontFamily: "Fredoka", fontSize: 58, color: "#c32f3a", marginTop: 10 }}>{ogText(item.reward_text)}</div> : null}
             <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 32, fontWeight: 800, color: "#1a2233", marginTop: 12 }}>
-              <img src={OG_MARK_URI} alt="" width={44} height={44} /> pupmeow · numbers stay private
+              <img src={OG_MARK_URI} alt="" width={44} height={44} /> pupmeow{phone ? "" : " · numbers stay private"}
             </div>
           </div>
         </div>
@@ -59,7 +71,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       width: 1080,
       height: 1350,
       fonts,
-      headers: { "Content-Disposition": `inline; filename="pupmeow-${lost ? "lost" : "found"}-${(item.pet_name ?? item.species).toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png"`, "Cache-Control": "public, max-age=300" },
+      headers: {
+        "Content-Disposition": `inline; filename="${posterFilename(item)}"`,
+        // Anything asked for with ?phone=1 is private to the owner's browser.
+        "Cache-Control": wantsPhone ? "private, no-store" : "public, max-age=300",
+      },
     },
   );
 }
