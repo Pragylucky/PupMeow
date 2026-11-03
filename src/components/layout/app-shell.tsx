@@ -3,6 +3,7 @@ import { Sidebar } from "./sidebar";
 import { BottomNav } from "./bottom-nav";
 import { CreateSheetProvider } from "./create-sheet";
 import { AssistantFab } from "./assistant-fab";
+import { SiteFooter } from "@/components/marketing/site-footer";
 import type { ProfileRow } from "@/types/database";
 
 export function AppShell({
@@ -25,6 +26,8 @@ export function AppShell({
           <main id="main" className={profile ? "w-full flex-1 px-4 pb-28 pt-5 md:px-6 md:pb-12 md:pt-6 lg:px-8" : "mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-6 md:px-6"}>
             {children}
           </main>
+          {/* Signed-out visitors browsing lost pets / adoptions still need Privacy, Terms and Contact. */}
+          {!profile && <SiteFooter />}
         </div>
       </div>
       {profile && (
