@@ -16,9 +16,10 @@ import { Steps, TipCard } from "@/components/brand/bits";
 import { PetImage } from "@/components/brand/pet-image";
 import { Avatar } from "@/components/ui/avatar";
 import { ButtonLink } from "@/components/ui/button";
-import { displayName, formatDate, sinceLabel } from "@/lib/utils";
+import { displayName, formatDate, shortArea, sinceLabel } from "@/lib/utils";
 import { createAdminClient, hasServiceRole } from "@/lib/supabase/admin";
 import { lostShareText, posterFilename } from "@/lib/lost-share";
+import { inviteText } from "@/lib/invite";
 import { getLostFound, lostHeadline } from "./data";
 import { OwnerActions, PossibleMatches } from "./lost-client";
 
@@ -127,12 +128,20 @@ export default async function LostDetailPage({ params, searchParams }: { params:
             <h2 id="live-h" className="text-[1.5rem] font-semibold leading-tight">{justPosted ? "Your report is live. Now spread the word." : `${item.pet_name ?? "Your pet"} is still missing. Share again.`}</h2>
             <p className="font-semibold text-white/85">
               {alerted ? `We alerted ${alerted} ${alerted === 1 ? "neighbour" : "neighbours"} in ${item.last_seen_area}. ` : ""}
+              {alerted === 0 ? `Nobody in ${shortArea(item.last_seen_area)} has joined Pupmeow yet, so no one was alerted. Your poster and WhatsApp groups are the fastest way right now. ` : ""}
               {justPosted
                 ? `The first hours matter most. Send the poster to your society, RWA and building WhatsApp groups, and put it up near where ${item.pet_name ?? "your pet"} was last seen.`
                 : "A fresh share reaches new people. Send the poster to your groups again, and put copies up where people walk and ask."}
             </p>
             <ShareButtons path={`/lost/${item.id}`} text={caption} poster={poster} className="[&>button:last-child:hover]:bg-white/10 [&>button:last-child]:text-white" />
             <ButtonLink href={`/lost/${item.id}/poster`} variant="white" size="sm"><Printer className="h-4 w-4" aria-hidden /> Print the poster</ButtonLink>
+            {alerted === 0 && (
+              <div className="space-y-2 border-t border-white/15 pt-3">
+                <p className="font-heading text-lg font-semibold">Bring your neighbours in</p>
+                <p className="text-sm font-semibold text-white/80">Once they join, future alerts in {shortArea(item.last_seen_area)} reach them instantly.</p>
+                <ShareButtons path="/?ref=invite" text={inviteText(shortArea(item.last_seen_area))} size="sm" className="[&>button:last-child:hover]:bg-white/10 [&>button:last-child]:text-white" />
+              </div>
+            )}
           </section>
         )}
 
