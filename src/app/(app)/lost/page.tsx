@@ -101,7 +101,7 @@ export default async function LostPage({ searchParams }: { searchParams: Promise
     >
       <section className="halftone relative mb-5 overflow-hidden rounded-[var(--radius-xl)] bg-danger p-5 text-white sm:p-7">
         <div className="relative max-w-xl">
-          <p className="font-heading text-[2.6rem] font-bold leading-none tracking-[0.03em] sm:text-[3.2rem]">LOST &amp; FOUND</p>
+          <h1 className="font-heading text-[2.6rem] font-bold leading-none tracking-[0.03em] sm:text-[3.2rem]">LOST &amp; FOUND</h1>
           <p className="mt-2 text-[1.02rem] font-semibold text-white/90 text-pretty">Most pets are found within a few kilometres. A report alerts everyone in that area and gives you a poster for WhatsApp.</p>
           <div className="mt-5 flex flex-wrap gap-2">
             {user ? (
