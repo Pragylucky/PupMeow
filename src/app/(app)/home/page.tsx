@@ -20,6 +20,7 @@ import { birthdaySoon, cn, daysUntil, dueLabel, formatAge, formatDate, greeting,
 import { WelcomeToast } from "../feed/welcome-toast";
 import { PushPromptCard } from "@/components/features/push/push-toggle";
 import { GetStartedCard } from "@/components/features/home/get-started";
+import { InviteCard } from "@/components/features/home/invite-card";
 
 export const metadata: Metadata = { title: "Home", robots: { index: false } };
 
@@ -137,6 +138,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <ButtonLink href="/pets/new"><Plus className="h-4 w-4" aria-hidden /> Add a pet</ButtonLink>
           </section>
         ) : null}
+
+        <InviteCard hood={hood} neighbours={d.neighbours} />
 
         {/* Quick actions */}
         <nav aria-label="Quick actions" className="grid grid-cols-2 gap-3 sm:grid-cols-4">

@@ -11,7 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FilterChip } from "@/components/ui/chip";
 import { PetImage } from "@/components/brand/pet-image";
 import { REPORT_REASONS } from "@/lib/constants";
-import { cn, displayName, formatDate, sinceLabel } from "@/lib/utils";
+import { cn, displayName, formatDate, shortArea, sinceLabel } from "@/lib/utils";
 import { moderationPreviewImage } from "@/lib/moderation/visibility";
 import { ReportActions, BanButton, NgoVerifyForm } from "./admin-client";
 import { ReportQueueRow } from "./report-queue-row";
@@ -94,10 +94,38 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           </div>
         ))}
       </dl>
+      <MembersByArea supabase={supabase} />
       <NgoVerifyForm />
       {tab === "reports" ? <ReportsQueue status={status} type={type} selected={sp.report} supabase={supabase} /> : <UsersPanel q={sp.q ?? ""} supabase={supabase} />}
       <AuditLog supabase={supabase} />
     </div>
+  );
+}
+
+/** Where members are, so you can launch area by area and see which neighbourhoods are still thin. */
+async function MembersByArea({ supabase }: { supabase: Awaited<ReturnType<typeof createClient>> }) {
+  const { data } = await supabase.from("profiles").select("area").eq("onboarded", true).eq("is_banned", false).limit(5000);
+  const counts = new Map<string, { name: string; n: number }>();
+  for (const r of (data ?? []) as { area: string | null }[]) {
+    const name = shortArea(r.area);
+    const key = name.toLowerCase();
+    counts.set(key, { name, n: (counts.get(key)?.n ?? 0) + 1 });
+  }
+  const top = [...counts.values()].sort((a, b) => b.n - a.n).slice(0, 12);
+  if (!top.length) return null;
+  return (
+    <details className="rounded-[var(--radius-lg)] bg-surface p-4 shadow-[var(--shadow-card)]">
+      <summary className="cursor-pointer text-lg font-semibold">Members by area <span className="text-sm font-semibold text-muted">(top {top.length})</span></summary>
+      <p className="mb-3 mt-1 text-sm text-muted">Lost-pet alerts only reach people in the same area. Aim for 25+ in an area before promoting it.</p>
+      <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {top.map((a) => (
+          <li key={a.name} className="flex items-center justify-between rounded-xl bg-surface-2 px-3 py-2 text-[0.95rem] font-bold">
+            <span className="truncate">{a.name}</span>
+            <span className={cn("ml-2 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-extrabold", a.n >= 25 ? "bg-primary text-on-primary" : "bg-secondary text-ink")}>{a.n}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
 

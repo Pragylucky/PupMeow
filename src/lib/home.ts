@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ADOPTION_COLUMNS, LOST_FOUND_COLUMNS, MINI_PET, MINI_PROFILE, POST_WITH_RELATIONS } from "@/lib/columns";
 import { speciesIn } from "@/lib/species";
 import { withLikes } from "@/lib/feed";
-import { sameNeighbourhood } from "@/lib/utils";
+import { sameNeighbourhood, shortArea } from "@/lib/utils";
 import type { AdoptionRow, HealthRecordRow, LostFoundRow, PetRow, SpeciesPref } from "@/types/database";
 import type { FeedPost, MatchRequestWithPets } from "@/types/models";
 
@@ -20,6 +20,8 @@ export interface HomeData {
   hasReminder: boolean;
   /** Has started at least one Kaia chat. */
   kaiaTried: boolean;
+  /** Other members in the same neighbourhood (for the invite nudge). */
+  neighbours: number;
 }
 
 /** Everything the Home dashboard needs, in parallel. */
@@ -29,7 +31,7 @@ export async function loadHome(opts: { userId: string; area: string | null; spec
   const in30 = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
   const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
 
-  const [pets, due, lost, reunited, reunitedAny, requests, posts, adoptions, reminders, chats] = await Promise.all([
+  const [pets, due, lost, reunited, reunitedAny, requests, posts, adoptions, reminders, chats, neighbours] = await Promise.all([
     supabase.from("pets").select("*").eq("owner_id", opts.userId).order("created_at"),
     supabase.from("pet_health_records").select("*").eq("owner_id", opts.userId).not("next_due_date", "is", null).lte("next_due_date", in30).order("next_due_date").limit(6),
     supabase.from("lost_found").select(LOST_FOUND_COLUMNS).eq("status", "open").eq("type", "lost").eq("is_hidden", false).in("species", sp).order("created_at", { ascending: false }).limit(30),
@@ -50,6 +52,9 @@ export async function loadHome(opts: { userId: string; area: string | null; spec
     supabase.from("adoptions").select(ADOPTION_COLUMNS).eq("status", "available").eq("is_hidden", false).in("species", sp).order("created_at", { ascending: false }).limit(12),
     supabase.from("pet_health_records").select("id", { count: "exact", head: true }).eq("owner_id", opts.userId).not("next_due_date", "is", null),
     supabase.from("ai_conversations").select("id", { count: "exact", head: true }).eq("user_id", opts.userId),
+    opts.area
+      ? supabase.from("profiles").select("id", { count: "exact", head: true }).eq("onboarded", true).eq("is_banned", false).neq("id", opts.userId).ilike("area", `${shortArea(opts.area).replace(/[%_,()*\\]/g, "")}%`)
+      : Promise.resolve({ count: 0 }),
   ]);
 
   const petList = (pets.data ?? []) as PetRow[];
@@ -70,5 +75,6 @@ export async function loadHome(opts: { userId: string; area: string | null; spec
     adoptions: [...adoptNear, ...adoptAll.filter((a) => !adoptNear.includes(a))].slice(0, 3),
     hasReminder: (reminders.count ?? 0) > 0,
     kaiaTried: (chats.count ?? 0) > 0,
+    neighbours: neighbours.count ?? 0,
   };
 }
