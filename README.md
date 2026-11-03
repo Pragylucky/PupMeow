@@ -91,14 +91,15 @@ Pupmeow puts the pet, the owner and the neighbourhood in one place, and keeps ev
 | | Feature | What you can do |
 |:---:|---|---|
 | 🏠 | **Home** | See your pets' next care date, lost pets near you, playdate requests and new posts |
-| 🚨 | **Lost & Found** | Report from your pet's page, print an A4 poster with QR, share a ready-made WhatsApp image, see the map |
+| 🚨 | **Lost & Found** | Report from your pet's page, print an A4 poster with QR, send the poster image straight to your WhatsApp groups, see the map |
 | 👀 | **"I saw him / her"** | Notify the owner in the app with where and when; then continue on WhatsApp if you choose |
 | 🎉 | **Reunited** | Mark a pet home, stop the alert and celebrate with everyone who helped |
-| 💛 | **Adopt** | Free listings from families and NGOs, filters for age, vaccines and sterilisation |
+| 💛 | **Adopt** | Free listings from families and NGOs, search and filters for age, vaccines and sterilisation, and a **Verified NGO** badge |
 | 🤝 | **Playdates** | Request, accept, then the number unlocks and you add the plan to your calendar |
 | 💉 | **Pet health** | Vaccines, tick, deworming, vet visits and weight, with a chart |
-| 📅 | **Reminders** | Google Calendar or an .ics file for any phone, plus "Mark as given" for the next date |
-| 🤖 | **Kaia** | Pet-care chat with an emergency banner when something sounds urgent (not a vet) |
+| 📅 | **Reminders** | Google Calendar or an .ics file for any phone, plus "Mark as given" for the next date. One-tap "next dose in…" buttons when you add a vaccine |
+| 🔔 | **Phone alerts** | Push notifications for lost pets near you and vaccine reminders (3 days before, on the day, a week late), plus check-ins while your own lost pet is still missing |
+| 🤖 | **Kaia** | Pet-care chat that knows today's date, the weather and AQI in your area, upcoming festivals and your pets' due dates, with an emergency banner when something sounds urgent (not a vet). "Write it for me" drafts descriptions and bios |
 | 📣 | **Feed** | Photos, hashtags, likes, comments, follows and search |
 | 🌙 | **Dark mode** | Light, dark or match your phone |
 | 📱 | **Install it** | Add to home screen, with an offline page when the network drops |
@@ -159,8 +160,9 @@ Then run the SQL files in `supabase/migrations/` **in filename order** (Supabase
 | `SUPABASE_SERVICE_ROLE_KEY` | **Secret.** Server only, never in the browser |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` or `https://pupmeow.in` |
 | `NEXT_PUBLIC_INSTAGRAM_URL` | Optional; defaults to [instagram.com/pupmeow.in](https://www.instagram.com/pupmeow.in) (header & footer in the app) |
-| `AI_PROVIDER` | `google` or `openai`. Leave empty to hide Kaia |
-| `GOOGLE_GENERATIVE_AI_API_KEY` / `OPENAI_API_KEY` | Only when AI is on |
+| `GROQ_API_KEY` · `CEREBRAS_API_KEY` · `GOOGLE_GENERATIVE_AI_API_KEY` · `OPENAI_API_KEY` · `XAI_API_KEY` | Add at least one to turn Kaia on. She tries them in that order and uses the first that answers. `AI_ENABLED=false` hides Kaia |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` · `VAPID_PRIVATE_KEY` · `VAPID_SUBJECT` | Phone notifications. Generate keys with `npx web-push generate-vapid-keys` |
+| `CRON_SECRET` | **Secret.** Protects the daily reminders job (`/api/cron/reminders`, 9:00 AM IST via `vercel.json`) |
 
 🔐 Never commit `.env.local`. It's already in `.gitignore`.
 
@@ -184,7 +186,7 @@ Then run the SQL files in `supabase/migrations/` **in filename order** (Supabase
 
 **Live site:** [**pupmeow.in**](https://pupmeow.in) — set `NEXT_PUBLIC_SITE_URL` to `https://pupmeow.in` on Vercel (Production + Preview) and in Supabase Auth. Redeploy after changing env vars.
 
-Host on **[Vercel](https://vercel.com)** (Mumbai **bom1** region), run Supabase migrations on production, and see **[docs/LAUNCH_HANDOFF.md](./docs/LAUNCH_HANDOFF.md)** for the launch checklist.
+Host on **[Vercel](https://vercel.com)** (Mumbai **bom1** region), run Supabase migrations on production, set the notification and cron variables above, and see **[docs/LAUNCH_HANDOFF.md](./docs/LAUNCH_HANDOFF.md)** for the launch checklist.
 
 **Android app:** The site is a PWA at **pupmeow.in**. Users can **Install app** from Chrome, or you can wrap the same URL with **[PWABuilder](https://www.pwabuilder.com)** into an APK/AAB for testers and Play Store — full steps in **[docs/ANDROID_APP.md](./docs/ANDROID_APP.md)** and **[pupmeow.in/get-app](https://pupmeow.in/get-app)**.
 
@@ -228,7 +230,9 @@ docs/assets/          the animated pictures in this README
 - [x] Free adoption, playdates, pet health and Kaia
 - [x] Redesigned web app with dark mode
 - [x] **Live at [pupmeow.in](https://pupmeow.in)**
+- [x] Phone alerts, vaccine reminders and a Verified NGO badge
 - [ ] 📲 **Android:** PWA install + [APK / Play steps](./docs/ANDROID_APP.md) · site page [**/get-app**](https://pupmeow.in/get-app)
+- [ ] 🚑 Emergency vet list for Delhi NCR
 - [ ] 🩺 Vets and groomers near you
 - [ ] 🎪 Pet meetups and adoption camps
 - [ ] 🏙️ More cities beyond Delhi NCR
