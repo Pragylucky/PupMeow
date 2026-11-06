@@ -58,17 +58,25 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
   const [remaining, setRemaining] = useState(initialRemaining);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [toDelete, setToDelete] = useState<string | null>(null);
-  const endRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
   const toast = useToast();
   const pet = pets.find((p) => p.id === petId);
 
+  // The panel is pinned to the screen and only the messages scroll, so the input is always in view.
   const firstRender = useRef(true);
   useEffect(() => {
-    if (firstRender.current) { firstRender.current = false; return; }
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    const el = scrollRef.current;
+    if (!el) return;
+    // Open saved chats at the latest message; after that, follow new text smoothly.
+    el.scrollTo({ top: el.scrollHeight, behavior: firstRender.current ? "instant" : "smooth" });
+    firstRender.current = false;
   }, [messages]);
+  // On laptops, start typing straight away. Phones skip this so the keyboard doesn't pop up uninvited.
+  useEffect(() => {
+    if (window.matchMedia("(pointer: fine)").matches) inputRef.current?.focus({ preventScroll: true });
+  }, []);
   useEffect(() => {
     const el = inputRef.current;
     if (!el) return;
@@ -144,6 +152,7 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
     } finally {
       window.clearTimeout(waitTimer);
       setBusy(false);
+      if (window.matchMedia("(pointer: fine)").matches) inputRef.current?.focus({ preventScroll: true });
     }
   };
 
@@ -163,12 +172,13 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-      <div className="flex min-h-[calc(100dvh-10.5rem)] flex-col overflow-hidden rounded-[var(--radius-xl)] bg-surface shadow-[var(--shadow-card)]">
+      {/* Height = screen minus header, page padding and (on phones) the bottom bar + iPhone safe area. */}
+      <div className="flex h-[calc(100dvh-10.75rem-env(safe-area-inset-bottom,0px))] min-h-[26rem] flex-col overflow-hidden rounded-[var(--radius-xl)] bg-surface shadow-[var(--shadow-card)] max-md:-mb-7 md:h-[calc(100dvh-8.6rem)]">
         <div className="flex items-center gap-2 border-b border-border px-3 py-3 sm:gap-3 sm:px-4">
           <KaiaAvatar size={44} />
           <div className="min-w-0 flex-1">
             <p className="font-heading text-xl font-semibold leading-tight">Kaia</p>
-            <p className="truncate text-[0.82rem] text-muted"><span className="sm:hidden">AI helper, not a vet</span><span className="hidden sm:inline">AI helper, not a vet · in an emergency, call a clinic</span></p>
+            <p className="hidden truncate text-[0.82rem] text-muted sm:block">AI helper, not a vet · in an emergency, call a clinic</p>
           </div>
           {pets.length > 0 && (
             <label className="flex items-center gap-2 text-sm font-bold">
@@ -183,9 +193,9 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
           <Button variant="soft" size="sm" onClick={() => router.push("/assistant")} aria-label="New chat"><Plus className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">New</span></Button>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-6" aria-live="polite" aria-busy={busy}>
+        <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6" aria-live="polite" aria-busy={busy}>
           {messages.length === 0 && (
-            <div className="mx-auto max-w-lg py-6 text-center">
+            <div className="mx-auto max-w-lg py-2 text-center sm:py-6">
               <KaiaAvatar size={88} className="mx-auto animate-[pm-bob_3s_ease-in-out_infinite]" />
               <h2 className="mt-3 text-[1.9rem] font-semibold">Hi {firstName}! I&apos;m Kaia</h2>
               <p className="mx-auto mt-1 max-w-sm text-muted">Ask me about food, ticks, Delhi heat, vaccines, behaviour, or how to use Pupmeow.{pet ? ` I'll keep ${pet.name} in mind.` : pets.length ? " Pick a pet above for personal tips." : ""}</p>
@@ -201,7 +211,7 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
                   })}
                 </ul>
               )}
-              <div className="stagger mt-5 grid gap-2 text-left sm:grid-cols-2">
+              <div className="stagger mt-5 grid gap-2 text-left sm:grid-cols-2 max-sm:[&>button:nth-child(n+5)]:hidden">
                 {starters.map((s) => (
                   <button key={s} type="button" onClick={() => send(s)} className="rounded-[var(--radius-md)] border-2 border-border bg-surface px-4 py-3 text-[0.92rem] font-bold hover:border-text">{s}</button>
                 ))}
@@ -238,7 +248,6 @@ export function ChatClient({ conversationId, conversations, initialMessages, pet
               </div>
             )
           ))}
-          <div ref={endRef} />
         </div>
 
         <div className="border-t border-border p-3 sm:p-4">
