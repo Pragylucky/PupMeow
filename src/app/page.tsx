@@ -57,6 +57,7 @@ export default async function LandingPage() {
         <section className="relative overflow-hidden bg-primary text-on-primary">
           <div className="mx-auto grid max-w-6xl items-end gap-8 px-5 pb-0 pt-12 md:grid-cols-[1.15fr_1fr] md:pt-20 [&>*]:min-w-0">
             <div className="pb-12 md:pb-20">
+              <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3.5 py-1.5 text-sm font-extrabold"><MapPin className="h-4 w-4" aria-hidden /> Starting in West Delhi · everyone in NCR welcome</p>
               <h1 className="text-[2.9rem] font-bold leading-[1.02] tracking-tight text-balance sm:text-[4.2rem]">
                 Pet neighbours, from Dwarka to <RotatingWord words={["Noida", "Gurugram", "Ghaziabad", "Faridabad"]} />.
               </h1>

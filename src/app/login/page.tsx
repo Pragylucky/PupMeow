@@ -75,7 +75,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </div>
           <div className="relative rounded-[var(--radius-xl)] bg-surface p-6 shadow-[var(--shadow-card)] animate-[pm-rise_600ms_ease-out_both] [animation-delay:150ms] sm:p-8">
             <h2 className="text-[2rem] font-semibold leading-tight">Welcome to Pupmeow</h2>
-            <p className="mb-6 mt-1 text-muted">Log in or create your free account. Browsing lost pets never needs one.</p>
+            <p className="mb-4 mt-1 text-muted">Log in or create your free account. Browsing lost pets never needs one.</p>
+            <p className="mb-5 flex items-start gap-2 rounded-[var(--radius-md)] bg-secondary-soft px-3 py-2.5 text-sm font-semibold text-ink"><MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden /> We&apos;re starting in West Delhi, so alerts are busiest there. Everyone in Delhi NCR is welcome.</p>
             <LoginForm next={next} initialError={loginErrorMessage(sp.error)} />
           </div>
           <p className="mt-5 text-center text-sm text-muted">
