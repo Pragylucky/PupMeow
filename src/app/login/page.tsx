@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HeartHandshake, MapPin, PawPrint, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { PetArt } from "@/components/brand/pet-art";
+import { PetSign } from "@/components/brand/pet-sign";
 import { HeroPets, RotatingWord } from "@/components/marketing/landing-motion";
 import { LoginForm } from "./login-form";
 import { loginErrorMessage } from "@/lib/login-errors";
@@ -51,6 +52,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <PetArt pet={{ species: "cat", look: "black" }} animated className="h-44 w-44" />
           </HeroPets>
           <PetArt pet={{ species: "dog", look: "golden" }} animated className="pointer-events-none -ml-10 h-48 w-48" />
+          <PetSign paw="left" className="-ml-9 mb-5 hidden w-[8.75rem] xl:block" />
         </div>
       </section>
 
@@ -66,17 +68,19 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" /><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" /></span>
               Lost-pet alerts for <RotatingWord words={CITIES} className="text-primary" />
             </p>
-            <div className="mt-2 flex items-end justify-end pr-5">
-              <HeroPets>
-                <PetArt pet={{ species: "dog", look: "golden" }} animated className="h-24 w-24" />
-                <PetArt pet={{ species: "cat", look: "violet" }} animated className="h-20 w-20" />
-              </HeroPets>
-            </div>
           </div>
+          {/* Phones: the dog holds the note. Medium screens: just the taped note. Wide screens: the green panel's dog holds it. */}
+          <div className="mt-6 flex items-end justify-end pr-3 lg:hidden">
+            <PetSign paw="right" className="-mr-3 mb-3" />
+            <HeroPets>
+              <PetArt pet={{ species: "dog", look: "golden" }} animated className="h-24 w-24" />
+              <PetArt pet={{ species: "cat", look: "violet" }} animated className="h-20 w-20" />
+            </HeroPets>
+          </div>
+          <div className="mb-3 mt-2 hidden justify-end pr-2 lg:flex xl:hidden"><PetSign /></div>
           <div className="relative rounded-[var(--radius-xl)] bg-surface p-6 shadow-[var(--shadow-card)] animate-[pm-rise_600ms_ease-out_both] [animation-delay:150ms] sm:p-8">
             <h2 className="text-[2rem] font-semibold leading-tight">Welcome to Pupmeow</h2>
-            <p className="mb-4 mt-1 text-muted">Log in or create your free account. Browsing lost pets never needs one.</p>
-            <p className="mb-5 flex items-start gap-2 rounded-[var(--radius-md)] bg-secondary-soft px-3 py-2.5 text-sm font-semibold text-ink"><MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden /> We&apos;re starting in West Delhi, so alerts are busiest there. Everyone in Delhi NCR is welcome.</p>
+            <p className="mb-6 mt-1 text-muted">Log in or create your free account. Browsing lost pets never needs one.</p>
             <LoginForm next={next} initialError={loginErrorMessage(sp.error)} />
           </div>
           <p className="mt-5 text-center text-sm text-muted">
