@@ -11,6 +11,7 @@ import { LostFoundCard, AdoptionCard, LostRow } from "@/components/features/list
 import { PostCard } from "@/components/features/feed/post-card";
 import { AddToCalendar, MarkGivenButton } from "@/components/features/care/reminder-actions";
 import { PetArt } from "@/components/brand/pet-art";
+import { HeroPets } from "@/components/marketing/landing-motion";
 import { PetImage } from "@/components/brand/pet-image";
 import { DateTile, SectionTitle, Stamp } from "@/components/brand/bits";
 import { KaiaAvatar } from "@/components/features/ai/kaia-avatar";
@@ -76,9 +77,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             )}
             <SpeciesToggle tone="onColor" className="mt-5" />
           </div>
-          <div className="pointer-events-none absolute -bottom-2 right-3 hidden items-end sm:flex" aria-hidden>
-            <PetArt pet={{ species: "dog", look: "golden" }} className="h-36 w-36 animate-[pm-bob_3.2s_ease-in-out_infinite]" />
-            <PetArt pet={{ species: "cat", look: "violet" }} className="-ml-10 h-28 w-28" />
+          <div className="absolute -bottom-2 right-3 hidden items-end sm:flex">
+            <HeroPets overlap="-ml-10">
+              <PetArt pet={{ species: "dog", look: "golden" }} animated className="h-36 w-36" />
+              <PetArt pet={{ species: "cat", look: "violet" }} animated className="h-28 w-28" />
+            </HeroPets>
           </div>
         </section>
 

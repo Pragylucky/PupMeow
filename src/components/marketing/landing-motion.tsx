@@ -162,14 +162,16 @@ export function RotatingWord({
 }
 
 /** The hero dog and cat: idle animations from <PetArt animated>, eyes that follow the pointer, and a hop (dog) or stretch (cat) with a heart when tapped. */
-export function HeroPets({ children }: { children: [React.ReactNode, React.ReactNode] }) {
+export function HeroPets({ children, overlap = "-ml-10 sm:-ml-16" }: { children: [React.ReactNode, React.ReactNode]; overlap?: string }) {
   const pets = useRef<(HTMLButtonElement | null)[]>([]);
   const [excited, setExcited] = useState<[number, number]>([0, 0]);
 
   useEffect(() => {
-    if (prefersReducedMotion() || !window.matchMedia("(pointer: fine)").matches) return;
+    if (prefersReducedMotion()) return;
     let raf = 0;
     const onMove = (e: PointerEvent) => {
+      // Touch screens fire pointermove while scrolling, so only mouse / pen move the eyes; a tap still gets a glance.
+      if (e.pointerType === "touch" && e.type === "pointermove") return;
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         for (const el of pets.current) {
@@ -178,15 +180,18 @@ export function HeroPets({ children }: { children: [React.ReactNode, React.React
           const dx = e.clientX - (r.left + r.width / 2);
           const dy = e.clientY - (r.top + r.height * 0.45);
           const d = Math.hypot(dx, dy) || 1;
-          const pull = Math.min(1, d / 300) * 2.6;
+          // Looks at the cursor even when it's close, reaching full glance within ~60px.
+          const pull = Math.min(1, d / 60) * 4;
           el.style.setProperty("--look-x", `${((dx / d) * pull).toFixed(2)}px`);
           el.style.setProperty("--look-y", `${((dy / d) * pull * 0.7).toFixed(2)}px`);
         }
       });
     };
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerdown", onMove, { passive: true });
     return () => {
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerdown", onMove);
       cancelAnimationFrame(raf);
     };
   }, []);
@@ -207,7 +212,7 @@ export function HeroPets({ children }: { children: [React.ReactNode, React.React
       onClick={() => poke(k as 0 | 1)}
       className={cn(
         "relative cursor-pointer touch-manipulation outline-none",
-        k === 1 && "-ml-10 sm:-ml-16",
+        k === 1 && overlap,
       )}
     >
       {/* Remounting on each poke restarts the animation. */}
